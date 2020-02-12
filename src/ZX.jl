@@ -1,5 +1,6 @@
 module ZX
 
-greet() = print("Hello World!")
+include("graph.jl")
+include("ZX_diagram.jl")
 
 end # module

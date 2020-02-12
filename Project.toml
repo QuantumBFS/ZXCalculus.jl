@@ -3,6 +3,9 @@ uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
 authors = ["Chen Zhao"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1.2"
 
