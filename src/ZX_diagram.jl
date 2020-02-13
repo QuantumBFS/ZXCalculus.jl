@@ -56,10 +56,10 @@ find_nbhd(zxd::ZX_diagram{T}, v) where {T<:Integer} = find_nbhd(zxd.g, v)
 remove_edge!(zxd::ZX_diagram, es) where {T<:Integer} = remove_edge!(zxd.g, es)
 
 function remove_spider!(zxd::ZX_diagram{T}, vs::Vector{T}) where {T<:Integer}
-    remove_vertex!(zxd.g, vs)
+    vmap = remove_vertex!(zxd.g, vs)
     deleteat!(zxd.phases, sort(vs))
     deleteat!(zxd.v_type, sort(vs))
-    zxd
+    return vmap
 end
 
 remove_spider!(zxd::ZX_diagram{T}, v::T) where {T<:Integer} = remove_spider!(zxd, [v])
@@ -83,100 +83,179 @@ function insert_spider!(zxd::ZX_diagram{T}, v1::T, v2::T, vt::V_Type, phase::Rat
     zxd
 end
 
-function rule_f!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
+function check_rule_f(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
     adjmat = zxd.g.adjmat
-    if adjmat[v1, v2] != 0 && zxd.v_type[v1] == zxd.v_type[v2] && (zxd.v_type[v1] == Z || zxd.v_type[v1] == X)
-        adjmat[v1,:] += adjmat[v2,:]
-        adjmat[:,v1] += adjmat[:,v2]
-        adjmat[v1,v1] = 0
-        zxd.g.ne -= adjmat[v1, v2]
-
-        zxd.phases[v1] += zxd.phases[v2]
-
-        remove_spider!(zxd, v2)
+    if adjmat[v1, v2] == 0
+        error("Spiders $(v1) and $(v2) are not connected!")
+    end
+    if zxd.v_type[v1] == zxd.v_type[v2]
+        if ~(zxd.v_type[v1] == Z || zxd.v_type[v1] == X)
+            error("Spiders $(v1) and $(v2) are not X or Z spiders!")
+        end
     else
-        #error message
+        error("Spiders $(v1) and $(v2) are not the same type!")
     end
     zxd
+end
+
+function rule_f!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
+    check_rule_f(zxd, v1, v2)
+    adjmat = zxd.g.adjmat
+    adjmat[v1,:] += adjmat[v2,:]
+    adjmat[:,v1] += adjmat[:,v2]
+    adjmat[v1,v1] = 0
+    zxd.g.ne -= adjmat[v1, v2]
+    zxd.phases[v1] += zxd.phases[v2]
+    remove_spider!(zxd, v2)
+    zxd
+    # returning a vmap maybe better...
+end
+
+function check_rule_h(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
+    if ~(zxd.v_type[v] ∈ V_Type.([0,1]))
+        error("Spider $(v) is not a Z or X spider!")
+    end
 end
 
 function rule_h!(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    if zxd.v_type[v] ∈ V_Type.([0,1])
-        zxd.v_type[v] = V_Type(1 - Int(zxd.v_type[v]))
-        nbhd = find_nbhd(zxd, v)
-        for v1 in nbhd
-            insert_spider!(zxd, v1, v, H)
-        end
+    check_rule_h(zxd, v)
+    zxd.v_type[v] = V_Type(1 - Int(zxd.v_type[v]))
+    nbhd = find_nbhd(zxd, v)
+    for v1 in nbhd
+        insert_spider!(zxd, v1, v, H)
     end
     zxd
+end
+
+function check_rule_i1(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
+    if zxd.v_type[v] == Z::V_Type || zxd.v_type[v] == X::V_Type
+         if zxd.phases[v] == 0
+             nbhd = find_nbhd(zxd, v)
+             if size(nbhd, 1) != 2
+                 error("Spider $(v) is not of degree 2!")
+             end
+         else
+             error("The phase of spider $(v) is not 0!")
+         end
+    else
+        error("Spider $(v) is not a Z or X spider!")
+    end
 end
 
 function rule_i1!(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    if zxd.v_type[v] == Z::V_Type && zxd.phases[v] == 0
-        nbhd = find_nbhd(zxd, v)
-        if size(nbhd, 1) == 2
-            add_edge!(zxd.g, nbhd[1], nbhd[2])
-            remove_spider!(zxd, v)
-        end
-    else
-        # error message
-    end
+    check_rule_i1(zxd, v)
+    nbhd = find_nbhd(zxd, v)
+    add_edge!(zxd.g, nbhd[1], nbhd[2])
+    remove_spider!(zxd, v)
+
     zxd
+end
+
+function check_rule_i2(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
+    if ~(zxd.v_type[v1] == H::V_Type && size(find_nbhd(zxd, v1),1) == 2)
+        error("Spider $(v1) is not an H spider!")
+    end
+    if ~(zxd.v_type[v2] == H::V_Type && size(find_nbhd(zxd, v2),1) == 2)
+        error("Spider $(v2) is not an H spider!")
+    end
 end
 
 function rule_i2!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    if zxd.v_type[v1] == H::V_Type && zxd.v_type[v1] == H::V_Type
-        nbhd = [find_nbhd(zxd, v1); find_nbhd(zxd, v2)]
-        nbhd = setdiff(nbhd, [v1 v2])
-        if size(nbhd, 1) == 2
-            add_edge!(zxd.g, nbhd[1], nbhd[2])
-        end
-        remove_spider!(zxd, [v1, v2])
-    else
-        # error message
+    check_rule_i2(zxd, v1, v2)
+    nbhd = [find_nbhd(zxd, v1); find_nbhd(zxd, v2)]
+    nbhd = setdiff(nbhd, [v1 v2])
+
+    if size(nbhd, 1) == 2
+        add_edge!(zxd.g, nbhd[1], nbhd[2])
     end
+
+    remove_spider!(zxd, [v1, v2])
+
     zxd
 end
 
-function rule_pi!(zxd::ZX_diagram, v1::T, v2::T) where {T<:Integer}
-    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 1
+function check_rule_pi(zxd::ZX_diagram, v1::T, v2::T) where {T<:Integer}
+    if zxd.g.adjmat[v1, v2] == 0
+        error("Spiders $(v1) and $(v2) are not connected!")
+    end
+    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 1//1
         nbhd1 = find_nbhd(zxd, v1)
         if size(nbhd1, 1) == 2
-            if zxd.v_type[v2] == Z::V_Type
-                zxd.phases[v2] = -zxd.phases[v2]
-                nbhd2 = find_nbhd(zxd, v2)
-                for v in nbhd2
-                    if v != v1
-                        insert_spider!(zxd, v2, v, X, 1//1)
-                    end
-                end
-                add_edge!(zxd.g, nbhd1)
-                remove_spider!(zxd, v1)
+            if zxd.v_type[v2] != Z::V_Type
+                error("Spider $(v2) is not a Z spider!")
             end
+        else
+            error("Spider $(v1) is not of degree 2!")
         end
     else
-        # error
+        error("Spider $(v1) is not an X spider of phase π!")
+    end
+end
+
+function rule_pi!(zxd::ZX_diagram, v1::T, v2::T) where {T<:Integer}
+    check_rule_pi(zxd, v1, v2)
+    nbhd1 = find_nbhd(zxd, v1)
+    zxd.phases[v2] = -zxd.phases[v2]
+    nbhd2 = find_nbhd(zxd, v2)
+    for v in nbhd2
+        if v != v1
+            insert_spider!(zxd, v2, v, X, 1//1)
+        end
+    end
+    add_edge!(zxd.g, nbhd1)
+    remove_spider!(zxd, v1)
+
+    zxd
+end
+
+function checke_rule_c(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
+    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 0//1
+        if zxd.v_type[v2] == Z::V_Type
+            nbhd1 = find_nbhd(zxd, v1)
+            if nbhd1 != [v2]
+                error("Spider $(v2) is not the only spider connected to spider $(v1)!")
+            end
+        else
+            error("Spider $(v2) is not a Z spider!")
+        end
+    else
+        error("Spider $(v1) is not an X spider of phase 0!")
     end
     zxd
 end
 
 function rule_c!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 0//1 && zxd.v_type[v2] == Z::V_Type
-        nbhd1 = find_nbhd(zxd, v1)
-        if nbhd1 == [v2]
-            remove_edge!(zxd, [v1, v2])
-            nbhd2 = find_nbhd(zxd, v2)
-            for v in nbhd2
-                insert_spider!(zxd, v2, v, X)
-            end
-            remove_spider!(zxd, [v1, v2])
-        end
+    nbhd1 = find_nbhd(zxd, v1)
+    remove_edge!(zxd, [v1, v2])
+    nbhd2 = find_nbhd(zxd, v2)
+    for v in nbhd2
+        insert_spider!(zxd, v2, v, X)
     end
+    remove_spider!(zxd, [v1, v2])
+
     zxd
 end
 
+function check_rule_b(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
+    if (zxd.v_type[v1] == Z && zxd.v_type[v2] == X) || (zxd.v_type[v1] == X && zxd.v_type[v2] == Z)
+        if zxd.phases[v1] == 0//1 && zxd.phases[v1] == 0//1
+            if zxd.g.adjmat[v1,v2] != 0
+                if ~(size(find_nbhd(zxd, v1), 1) == 3 && size(find_nbhd(zxd, v2), 1) == 3)
+                    error("Spiders $(v1) or $(v2) is not of degree 3!")
+                end
+            else
+                error("Spiders $(v1) and $(v2) are not connected!")
+            end
+        else
+            error("Spiders $(v1) or $(v2) is not of phase 0!")
+        end
+    else
+        error("Spiders ($(v1), $(v2)) are not a (Z, X) pair!")
+    end
+end
+
 function rule_b!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    # check_rule_b(zxd, v1, v2)
+    check_rule_b(zxd, v1, v2)
     remove_edge!(zxd, [v1, v2])
     nbhd1 = find_nbhd(zxd, v1)
     for v in nbhd1
