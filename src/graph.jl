@@ -9,6 +9,8 @@ mutable struct Graph{T<:Integer}
     adjmat::Array{T,2}
 end
 
+Graph(nv::T) where {T<:Integer} = Graph{T}(nv, 0, zeros(T,nv,nv))
+
 function Graph(m::Array{T,2}) where {T<:Integer}
     n1, n2 = size(m)
     if issymmetric(m) && n1 == n2
@@ -61,15 +63,21 @@ function add_vertex!(g::Graph{T}, n::T) where {T<:Integer}
 end
 
 function remove_vertex!(g::Graph{T}, v::T) where {T<:Integer}
+    vmap = [i for i in one(T):g.nv]
     g.adjmat = g.adjmat[1:g.nv .!= v, 1:g.nv .!= v]
     g.nv -= 1
     g.ne = sum(g.adjmat) ÷ 2
+    deleteat!(vmap, v)
+    return vmap
 end
 
 function remove_vertex!(g::Graph{T}, vs::Vector{T}) where {T<:Integer}
+    vmap = [i for i in one(T):g.nv]
     for v in sort(vs, rev=true)
         remove_vertex!(g, v)
     end
+    deleteat!(vmap, sort(vs))
+    return vmap
 end
 
 function remove_edge!(g::Graph{T}, e::Vector{T}) where {T<:Integer}
