@@ -4,7 +4,8 @@ authors = ["Chen Zhao"]
 version = "0.1.0"
 
 [deps]
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 
 [compat]
 julia = "1.2"

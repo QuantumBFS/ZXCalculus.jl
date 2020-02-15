@@ -1,278 +1,358 @@
-# include("graph.jl")
-import Base.show
+using LightGraphs, Multigraphs
+import Base: show
+import LightGraphs: nv, ne, outneighbors, rem_edge!
 
-export ZX_diagram, V_Type, Z, X, H, In, Out
+export ZXDiagram, V_Type, Z, X, H, In, Out
 export rule_f!, rule_h!, rule_i1!, rule_i2!, rule_pi!, rule_b!, rule_c!
 
-@enum V_Type Z X H In Out
+@enum SType Z X H In Out
 
-mutable struct ZX_diagram{T<:Integer}
-    g::Graph{T}
+mutable struct ZXDiagram{T<:Integer, U<:Integer, P}
+    g::Multigraph{T,U}
 
-    phases::Vector{Rational{T}}
-    v_type::Vector{V_Type}
+    st::Vector{SType}
+    ps::Vector{P}
 
-    # cir_ind::Vector{Vector{T}}
-    # nqubits::T
-    # depth::T
+    function ZXDiagram(g::Multigraph{T, U}, st::Vector{SType}, ps::Vector{P}) where {T<:Integer, U<:Integer, P}
+        if nv(g) == length(ps) && nv(g) == length(st)
+            zxd = new{T, U, P}(g, st, ps)
+            rounding_phases!(zxd)
+            return zxd
+        else
+            error("There should be a phase and a type for each spider!")
+        end
+    end
 end
 
-function show(io::IO, zxd::ZX_diagram{T}) where {T<:Integer}
-    println(io, "A ZX-diagram with $(zxd.g.nv) vertices and $(zxd.g.ne) edges:")
-    for v1 in 1:zxd.g.nv
-        for v2 in (v1+1):zxd.g.nv
-            if zxd.g.adjmat[v1, v2] > 0
-                for i in 1:zxd.g.adjmat[v1, v2]
-                    print(io, "(")
-                    print_spider(io, zxd, v1)
-                    print(io, " <--> ")
-                    print_spider(io, zxd, v2)
-                    print(io, ")\n")
-                end
+spider_type(zxd::ZXDiagram{T, U, P}, v::T) where {T<:Integer, U<:Integer, P} = zxd.st[v]
+
+function print_spider(io::IO, zxd::ZXDiagram{T, U, P}, v::T) where {T<:Integer, U<:Integer, P}
+    st_v = spider_type(zxd, v)
+    if st_v == Z
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])⋅π}"; color = :green)
+    elseif st_v == X
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])⋅π}"; color = :red)
+    elseif st_v == H
+        printstyled(io, "S_$(v){H}"; color = :yellow)
+    elseif st_v == In
+        print(io, "S_$(v){input}")
+    elseif st_v == Out
+        print(io, "S_$(v){output}")
+    end
+end
+
+function show(io::IO, zxd::ZXDiagram{T, U, P}) where {T<:Integer, U<:Integer, P}
+    println(io, "ZX-diagram with $(nv(zxd.g)) vertices and $(ne(zxd.g)) multiple edges:")
+    for v1 in vertices(zxd.g)
+        for v2 in outneighbors(zxd.g, v1)
+            if v2 >= v1
+                print(io, "(")
+                print_spider(io, zxd, v1)
+                print(io, " <-$(zxd.g.adjmx[v2, v1])-> ")
+                print_spider(io, zxd, v2)
+                print(io, ")\n")
             end
         end
     end
 end
 
-function print_spider(io::IO, zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    if zxd.v_type[v] == Z
-        printstyled(io, "V_$(v){phase = $(zxd.phases[v])⋅π}"; color = :green)
-    end
-    if zxd.v_type[v] == X
-        printstyled(io, "V_$(v){phase = $(zxd.phases[v])⋅π}"; color = :red)
-    end
-    if zxd.v_type[v] == H
-        printstyled(io, "V_$(v){H}"; color = :yellow)
-    end
-    if zxd.v_type[v] == In
-        print(io, "V_$(v){input}")
-    end
-    if zxd.v_type[v] == Out
-        print(io, "V_$(v){output}")
-    end
+nv(zxd::ZXDiagram) = nv(zxd.g)
+ne(zxd::ZXDiagram, count_mul::Bool = false) = ne(zxd.g, count_mul)
+outneighbors(zxd::ZXDiagram, v) = outneighbors(zxd.g, v)
+function rem_edge!(zxd::ZXDiagram, x...)
+    rem_edge!(zxd.g, x...)
+    zxd
 end
 
-find_nbhd(zxd::ZX_diagram{T}, v) where {T<:Integer} = find_nbhd(zxd.g, v)
-remove_edge!(zxd::ZX_diagram, es) where {T<:Integer} = remove_edge!(zxd.g, es)
-
-function remove_spider!(zxd::ZX_diagram{T}, vs::Vector{T}) where {T<:Integer}
-    vmap = remove_vertex!(zxd.g, vs)
-    deleteat!(zxd.phases, sort(vs))
-    deleteat!(zxd.v_type, sort(vs))
+function rem_spiders!(zxd::ZXDiagram{T,U,P}, vs::Vector{T}) where {T<:Integer, U<:Integer, P}
+    vmap = rem_vertices!(zxd.g, vs)
+    deleteat!(zxd.ps, sort(vs))
+    deleteat!(zxd.st, sort(vs))
     return vmap
 end
+rem_spider!(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P} = rem_spiders!(zxd, [v])
 
-remove_spider!(zxd::ZX_diagram{T}, v::T) where {T<:Integer} = remove_spider!(zxd, [v])
-
-function add_spider!(zxd::ZX_diagram, connect::Vector{T}, vt::V_Type, phase::Rational{T}) where {T<:Integer}
+function add_spider!(zxd::ZXDiagram{T,U,P}, st::SType, phase::P, connect::Vector{T}=T[]) where {T<:Integer, U<:Integer, P}
     add_vertex!(zxd.g)
-    v = zxd.g.nv
+    v = nv(zxd.g)
+    push!(zxd.ps, phase)
+    push!(zxd.st, st)
     for c in connect
         add_edge!(zxd.g, v, c)
     end
-    push!(zxd.v_type, vt)
-    push!(zxd.phases, phase)
     zxd
 end
 
-function insert_spider!(zxd::ZX_diagram{T}, v1::T, v2::T, vt::V_Type, phase::Rational{T} = 0//1) where {T<:Integer}
-    for i = 1:zxd.g.adjmat[v1,v2]
-        add_spider!(zxd::ZX_diagram, [v1,v2], vt, phase)
-        remove_edge!(zxd, [v1,v2])
+function insert_spider!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T, st::SType, phase::P = zero(P)) where {T<:Integer, U<:Integer, P}
+    for i = 1:zxd.g.adjmx[v1,v2]
+        add_spider!(zxd, st, phase, [v1, v2])
+        rem_edge!(zxd, v1, v2)
     end
     zxd
 end
 
-function check_rule_f(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    adjmat = zxd.g.adjmat
-    if adjmat[v1, v2] == 0
-        error("Spiders $(v1) and $(v2) are not connected!")
-    end
-    if zxd.v_type[v1] == zxd.v_type[v2]
-        if ~(zxd.v_type[v1] == Z || zxd.v_type[v1] == X)
-            error("Spiders $(v1) and $(v2) are not X or Z spiders!")
+function rounding_phases!(zxd::ZXDiagram{T,U,P}) where {T<:Integer, U<:Integer, P}
+    ps = zxd.ps
+    ps .+= one(P)
+    ps = rem.(ps, one(P)+one(P))
+    ps .-= one(P)
+    zxd.ps = ps
+end
+
+function check_rule_f(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v1 <= nv(zxd) && v2 <= nv(zxd)
+        if !has_edge(zxd.g, v1, v2)
+            msg = "Spiders $(v1) and $(v2) are not connected!"
+        end
+        if spider_type(zxd, v1) == spider_type(zxd, v2)
+            if ~(spider_type(zxd, v1) == Z || spider_type(zxd, v1) == X)
+                msg = "Spiders $(v1) and $(v2) are not X or Z spiders!"
+            end
+        else
+            msg = "Spiders $(v1) and $(v2) are not the same type!"
         end
     else
-        error("Spiders $(v1) and $(v2) are not the same type!")
+        msg = "Spider $(v1) or $(v2) is not in this ZX-diagram!"
     end
-    zxd
+    return msg
 end
 
-function rule_f!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    check_rule_f(zxd, v1, v2)
-    adjmat = zxd.g.adjmat
-    adjmat[v1,:] += adjmat[v2,:]
-    adjmat[:,v1] += adjmat[:,v2]
-    adjmat[v1,v1] = 0
-    zxd.g.ne -= adjmat[v1, v2]
-    zxd.phases[v1] += zxd.phases[v2]
-    remove_spider!(zxd, v2)
+function rule_f!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_f(zxd, v1, v2)
+    if msg != true
+        error(msg)
+    end
+    adjmx = zxd.g.adjmx
+    adjmx[v1,:] += adjmx[v2,:]
+    adjmx[:,v1] += adjmx[:,v2]
+    adjmx[v1,v1] = 0
+    zxd.ps[v1] += zxd.ps[v2]
+    rem_spider!(zxd, v2)
+    rounding_phases!(zxd)
     zxd
     # returning a vmap maybe better...
 end
 
-function check_rule_h(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    if ~(zxd.v_type[v] ∈ V_Type.([0,1]))
-        error("Spider $(v) is not a Z or X spider!")
+function check_rule_h(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v <= nv(zxd)
+        if ~(spider_type(zxd, v) ∈ [Z, X])
+            msg = "Spider $(v) is not a Z or X spider!"
+        end
+    else
+        msg = "Spider $(v) is not in this ZX-diagram!"
     end
+    return msg
 end
 
-function rule_h!(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    check_rule_h(zxd, v)
-    zxd.v_type[v] = V_Type(1 - Int(zxd.v_type[v]))
-    nbhd = find_nbhd(zxd, v)
-    for v1 in nbhd
+function rule_h!(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_h(zxd, v)
+    if msg != true
+        error(msg)
+    end
+    zxd.st[v] = SType(1 - Int(zxd.st[v]))
+    for v1 in outneighbors(zxd, v)
         insert_spider!(zxd, v1, v, H)
     end
     zxd
 end
 
-function check_rule_i1(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    if zxd.v_type[v] == Z::V_Type || zxd.v_type[v] == X::V_Type
-         if zxd.phases[v] == 0
-             nbhd = find_nbhd(zxd, v)
-             if size(nbhd, 1) != 2
-                 error("Spider $(v) is not of degree 2!")
+function check_rule_i1(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v <= nv(zxd)
+        if zxd.st[v] == Z || zxd.st[v] == X
+             if zxd.ps[v] == zero(P)
+                 if degree(zxd.g, v) != 2
+                     msg = "Spider $(v) is not of degree 2!"
+                 end
+             else
+                 msg = "The phase of spider $(v) is not 0!"
              end
-         else
-             error("The phase of spider $(v) is not 0!")
-         end
+        else
+            msg = "Spider $(v) is not a Z or X spider!"
+        end
     else
-        error("Spider $(v) is not a Z or X spider!")
+        msg = "Spider $(v) is not in this ZX-diagram!"
     end
+    return msg
 end
 
-function rule_i1!(zxd::ZX_diagram{T}, v::T) where {T<:Integer}
-    check_rule_i1(zxd, v)
-    nbhd = find_nbhd(zxd, v)
-    add_edge!(zxd.g, nbhd[1], nbhd[2])
-    remove_spider!(zxd, v)
+function rule_i1!(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_i1(zxd, v)
+    if msg != true
+        error(msg)
+    end
+    nbhd = outneighbors(zxd, v)
+    if length(nbhd) == 2
+        add_edge!(zxd.g, nbhd[1], nbhd[2])
+    end
+    rem_spider!(zxd, v)
 
     zxd
 end
 
-function check_rule_i2(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    if ~(zxd.v_type[v1] == H::V_Type && size(find_nbhd(zxd, v1),1) == 2)
-        error("Spider $(v1) is not an H spider!")
+function check_rule_i2(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v1 <= nv(zxd) && v2 <= nv(zxd)
+        if !(zxd.st[v1] == H && degree(zxd.g, v1) == 2)
+            msg = "Spider $(v1) is not an H spider!"
+        end
+        if !(zxd.st[v2] == H && degree(zxd.g, v2) == 2)
+            msg = "Spider $(v2) is not an H spider!"
+        end
+        if !has_edge(zxd.g, v1, v2)
+            msg = "Spiders $(v1) and $(v2) are not connected!"
+        end
+    else
+        msg = "Spider $(v1) or $(v2) is not in this ZX-diagram!"
     end
-    if ~(zxd.v_type[v2] == H::V_Type && size(find_nbhd(zxd, v2),1) == 2)
-        error("Spider $(v2) is not an H spider!")
-    end
+    return msg
 end
 
-function rule_i2!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    check_rule_i2(zxd, v1, v2)
-    nbhd = [find_nbhd(zxd, v1); find_nbhd(zxd, v2)]
-    nbhd = setdiff(nbhd, [v1 v2])
+function rule_i2!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_i2(zxd, v1, v2)
+    if msg != true
+        error(msg)
+    end
+    nbhd = [outneighbors(zxd, v1); outneighbors(zxd, v2)]
+    nbhd = setdiff(nbhd, [v1, v2])
 
     if size(nbhd, 1) == 2
         add_edge!(zxd.g, nbhd[1], nbhd[2])
     end
 
-    remove_spider!(zxd, [v1, v2])
+    rem_spiders!(zxd, [v1, v2])
 
     zxd
 end
 
-function check_rule_pi(zxd::ZX_diagram, v1::T, v2::T) where {T<:Integer}
-    if zxd.g.adjmat[v1, v2] == 0
-        error("Spiders $(v1) and $(v2) are not connected!")
-    end
-    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 1//1
-        nbhd1 = find_nbhd(zxd, v1)
-        if size(nbhd1, 1) == 2
-            if zxd.v_type[v2] != Z::V_Type
-                error("Spider $(v2) is not a Z spider!")
+function check_rule_pi(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v1 <= nv(zxd) && v2 <= nv(zxd)
+        if zxd.g.adjmx[v1, v2] != 1
+            msg = "Spiders $(v1) and $(v2) are not connected with a simple edge!"
+        end
+        if zxd.st[v1] == X && (zxd.ps[v1] == one(P) || zxd.ps[v1] == -one(P))
+            if degree(zxd.g, v1) == 2
+                if zxd.st[v2] != Z::SType
+                    msg = "Spider $(v2) is not a Z spider!"
+                end
+            else
+                msg = "Spider $(v1) is not of degree 2!"
             end
         else
-            error("Spider $(v1) is not of degree 2!")
+            msg = "Spider $(v1) is not an X spider of phase π!"
         end
     else
-        error("Spider $(v1) is not an X spider of phase π!")
+        msg = "Spider $(v1) or $(v2) is not in this ZX-diagram!"
     end
+    return msg
 end
 
-function rule_pi!(zxd::ZX_diagram, v1::T, v2::T) where {T<:Integer}
-    check_rule_pi(zxd, v1, v2)
-    nbhd1 = find_nbhd(zxd, v1)
-    zxd.phases[v2] = -zxd.phases[v2]
-    nbhd2 = find_nbhd(zxd, v2)
+function rule_pi!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_pi(zxd, v1, v2)
+    if msg != true
+        error(msg)
+    end
+    nbhd1 = outneighbors(zxd, v1)
+    zxd.ps[v2] = -zxd.ps[v2]
+    nbhd2 = outneighbors(zxd, v2)
     for v in nbhd2
         if v != v1
             insert_spider!(zxd, v2, v, X, 1//1)
         end
     end
-    add_edge!(zxd.g, nbhd1)
-    remove_spider!(zxd, v1)
-
+    add_edge!(zxd.g, nbhd1[1], nbhd1[2])
+    rem_spider!(zxd, v1)
+    rounding_phases!(zxd)
     zxd
 end
 
-function checke_rule_c(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    if zxd.v_type[v1] == X::V_Type && zxd.phases[v1] == 0//1
-        if zxd.v_type[v2] == Z::V_Type
-            nbhd1 = find_nbhd(zxd, v1)
-            if nbhd1 != [v2]
-                error("Spider $(v2) is not the only spider connected to spider $(v1)!")
+function check_rule_c(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v1 <= nv(zxd) && v2 <= nv(zxd)
+        if zxd.st[v1] == X && zxd.ps[v1] == zero(P)
+            if zxd.st[v2] == Z
+                if degree(zxd.g, v1) != 1 || !has_edge(zxd.g, v1, v2)
+                    msg = "Spider $(v1) is not a degree 1 spider connected to spider $(v2)!"
+                end
+            else
+                msg = "Spider $(v2) is not a Z spider!"
             end
         else
-            error("Spider $(v2) is not a Z spider!")
+            msg = "Spider $(v1) is not an X spider of phase 0!"
         end
     else
-        error("Spider $(v1) is not an X spider of phase 0!")
+        msg = "Spider $(v1) or $(v2) is not in this ZX-diagram!"
     end
-    zxd
+    return msg
 end
 
-function rule_c!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    nbhd1 = find_nbhd(zxd, v1)
-    remove_edge!(zxd, [v1, v2])
-    nbhd2 = find_nbhd(zxd, v2)
+function rule_c!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_c(zxd, v1, v2)
+    if msg != true
+        error(msg)
+    end
+    rem_edge!(zxd, v1, v2)
+    nbhd2 = outneighbors(zxd, v2)
     for v in nbhd2
         insert_spider!(zxd, v2, v, X)
     end
-    remove_spider!(zxd, [v1, v2])
+    rem_spiders!(zxd, [v1, v2])
 
     zxd
 end
 
-function check_rule_b(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    if (zxd.v_type[v1] == Z && zxd.v_type[v2] == X) || (zxd.v_type[v1] == X && zxd.v_type[v2] == Z)
-        if zxd.phases[v1] == 0//1 && zxd.phases[v1] == 0//1
-            if zxd.g.adjmat[v1,v2] != 0
-                if ~(size(find_nbhd(zxd, v1), 1) == 3 && size(find_nbhd(zxd, v2), 1) == 3)
-                    error("Spiders $(v1) or $(v2) is not of degree 3!")
+function check_rule_b(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = true
+    if v1 <= nv(zxd) && v2 <= nv(zxd)
+        if (zxd.st[v1] == Z && zxd.st[v2] == X) || (zxd.st[v1] == X && zxd.st[v2] == Z)
+            if zxd.ps[v1] == zero(P) && zxd.ps[v1] == zero(P)
+                if has_edge(zxd.g, v1, v2)
+                    if !(degree(zxd.g, v1) == 3 && degree(zxd.g, v2) == 3)
+                        msg = "Spiders $(v1) or $(v2) is not of degree 3!"
+                    end
+                else
+                    msg = "Spiders $(v1) and $(v2) are not connected!"
                 end
             else
-                error("Spiders $(v1) and $(v2) are not connected!")
+                msg = "Spiders $(v1) or $(v2) is not of phase 0!"
             end
         else
-            error("Spiders $(v1) or $(v2) is not of phase 0!")
+            msg = "Spiders ($(v1), $(v2)) are not a (Z, X) pair!"
         end
     else
-        error("Spiders ($(v1), $(v2)) are not a (Z, X) pair!")
+        msg = "Spider $(v1) or $(v2) is not in this ZX-diagram!"
     end
+    return msg
 end
 
-function rule_b!(zxd::ZX_diagram{T}, v1::T, v2::T) where {T<:Integer}
-    check_rule_b(zxd, v1, v2)
-    remove_edge!(zxd, [v1, v2])
-    nbhd1 = find_nbhd(zxd, v1)
-    for v in nbhd1
-        insert_spider!(zxd, v1, v, V_Type(1-Int(zxd.v_type[v1])))
+function rule_b!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
+    msg = check_rule_b(zxd, v1, v2)
+    if msg != true
+        error(msg)
     end
-    v1_1 = zxd.g.nv
+    rem_edge!(zxd, v1, v2)
+    nbhd1 = outneighbors(zxd, v1)
+    for v in nbhd1
+        insert_spider!(zxd, v1, v, SType(1-Int(zxd.st[v1])))
+    end
+    v1_1 = nv(zxd)
     v1_2 = v1_1 - 1
 
-    nbhd2 = find_nbhd(zxd, v2)
+    nbhd2 = outneighbors(zxd, v2)
     for v in nbhd2
-        insert_spider!(zxd, v2, v, V_Type(1-Int(zxd.v_type[v2])))
+        insert_spider!(zxd, v2, v, SType(1-Int(zxd.st[v2])))
     end
-    v2_1 = zxd.g.nv
+    v2_1 = nv(zxd)
     v2_2 = v2_1 - 1
 
-    add_edge!(zxd.g, [[v1_1, v2_1], [v1_1, v2_2], [v1_2, v2_1], [v1_2, v2_2]])
-    remove_spider!(zxd, [v1, v2])
+    add_edge!(zxd.g, v1_1, v2_1)
+    add_edge!(zxd.g, v1_1, v2_2)
+    add_edge!(zxd.g, v1_2, v2_1)
+    add_edge!(zxd.g, v1_2, v2_2)
+    rem_spiders!(zxd, [v1, v2])
 
     zxd
 end
