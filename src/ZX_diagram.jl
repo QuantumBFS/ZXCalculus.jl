@@ -1,5 +1,5 @@
 using LightGraphs, Multigraphs
-import Base: show
+import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, rem_edge!
 
 export ZXDiagram, V_Type, Z, X, H, In, Out
@@ -23,6 +23,8 @@ mutable struct ZXDiagram{T<:Integer, U<:Integer, P}
         end
     end
 end
+
+copy(zxd::ZXDiagram) = ZXDiagram(copy(zxd.g), copy(zxd.st), copy(zxd.ps))
 
 spider_type(zxd::ZXDiagram{T, U, P}, v::T) where {T<:Integer, U<:Integer, P} = zxd.st[v]
 
@@ -128,10 +130,10 @@ function rule_f!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Inte
     adjmx[:,v1] += adjmx[:,v2]
     adjmx[v1,v1] = 0
     zxd.ps[v1] += zxd.ps[v2]
-    rem_spider!(zxd, v2)
+    vmap = rem_spider!(zxd, v2)
     rounding_phases!(zxd)
-    zxd
-    # returning a vmap maybe better...
+
+    return vmap
 end
 
 function check_rule_h(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
@@ -187,9 +189,9 @@ function rule_i1!(zxd::ZXDiagram{T,U,P}, v::T) where {T<:Integer, U<:Integer, P}
     if length(nbhd) == 2
         add_edge!(zxd.g, nbhd[1], nbhd[2])
     end
-    rem_spider!(zxd, v)
+    vmap = rem_spider!(zxd, v)
 
-    zxd
+    return vmap
 end
 
 function check_rule_i2(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
@@ -222,9 +224,9 @@ function rule_i2!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Int
         add_edge!(zxd.g, nbhd[1], nbhd[2])
     end
 
-    rem_spiders!(zxd, [v1, v2])
+    vmap = rem_spiders!(zxd, [v1, v2])
 
-    zxd
+    return vmap
 end
 
 function check_rule_pi(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
@@ -264,9 +266,10 @@ function rule_pi!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Int
         end
     end
     add_edge!(zxd.g, nbhd1[1], nbhd1[2])
-    rem_spider!(zxd, v1)
+    vmap = rem_spider!(zxd, v1)
     rounding_phases!(zxd)
-    zxd
+
+    return vmap
 end
 
 function check_rule_c(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
@@ -299,9 +302,9 @@ function rule_c!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Inte
     for v in nbhd2
         insert_spider!(zxd, v2, v, X)
     end
-    rem_spiders!(zxd, [v1, v2])
+    vmap = rem_spiders!(zxd, [v1, v2])
 
-    zxd
+    return vmap
 end
 
 function check_rule_b(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Integer, P}
@@ -352,7 +355,9 @@ function rule_b!(zxd::ZXDiagram{T,U,P}, v1::T, v2::T) where {T<:Integer, U<:Inte
     add_edge!(zxd.g, v1_1, v2_2)
     add_edge!(zxd.g, v1_2, v2_1)
     add_edge!(zxd.g, v1_2, v2_2)
-    rem_spiders!(zxd, [v1, v2])
+    vmap = rem_spiders!(zxd, [v1, v2])
 
-    zxd
+    return
 end
+
+find_spiders(zxd::ZXDiagram, st::SType) = findall(zxd.st .== st)
