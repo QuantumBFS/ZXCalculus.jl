@@ -4,7 +4,8 @@ import Base: show
 
 export ZXGraph
 
-struct ZXGraph{T}
+struct ZXGraph{T, P}
+    defaultphase::P
     mg::MetaGraph{T, F} where F
 end
 
@@ -110,5 +111,5 @@ function ZXGraph(zxd::ZXDiagram{T, U, P}) where {T, U, P}
             set_prop!(mg, e[1], e[2], :is_hadamard, true)
         end
     end
-    return ZXGraph{T}(mg)
+    return ZXGraph{T, P}(zero(P), mg)
 end
