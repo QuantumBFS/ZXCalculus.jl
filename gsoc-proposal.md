@@ -39,50 +39,61 @@ Read articles on ZX-calculus
 
 ### **Community Bonding Period**
 
-April 28, 2020 - May 7, 2020
+**April 28, 2020 - May 7, 2020**
 
-Discuss about the implementation with the mentors.
+Discuss about the implementation with the mentor.
 
-May 8, 2020 - May 19, 2020
+**May 8, 2020 - May 17, 2020**
 
 Implement data structures for representing ZX-diagrams.
 
 ### **Phase 1**
 
-May 19, 2020 - May 31, 2020
+**May 18, 2020 - May 31, 2020**
 
 Develop basic rules.
 
-June 1, 2020 - June 21, 2020
+**June 1, 2020 - June 14, 2020**
 
 Implement circuit simplification algorithms with basic rules.
 
+**June 15, 2020 - June 19, 2020**
+
+Submit Phase 1 evaluations.
+
 ### **Phase 2**
 
-June 22, 2020 - July 5, 2020
+**June 20, 2020 - July 30, 2020**
 
 Add visualization support for ZX-diagram and quantum circuits.
 
-July 6, 2020 - July 19, 2020
+**July 1, 2020 - July 12, 2020**
 
 Develop transformation between YaoIR and ZX-diagrams.
 
-July 20, 2020 - August 4, 2020
+**July 13, 2020 - July 17, 2020**
+
+Submit Phase 2 evaluations.
+
+### **Final Phase**
+
+**July 18, 2020 - August 1, 2020**
 
 Integrate circuit simplification algorithms to the compiler in `Yao.jl`.
 
+**August 1, 2020 - August 9, 2020**
+
+Make full documentation, refine tests, and show some demenstration for `ZX.jl`.
+
 ### **Final Week**
 
-August 5, 2020 - August 11, 2020
+**August 10, 2020 - August 17, 2020**
 
-Make full documentation and show some demenstration for `ZX.jl`.
-
+Submit final evaluations.
 
 ## About me
 
-
 I'm Chen Zhao, currently a Ph.D student majoring applied mathematics in Academy of Mathematics and System Science, Chinese Academy of Sciences. I'm researching on quantum machine learning and quantum algorithms.
-
 
 * E-mail: zhaochen17@mails.ucas.ac.cn
 
@@ -90,5 +101,5 @@ I'm Chen Zhao, currently a Ph.D student majoring applied mathematics in Academy 
 
 ## Development Experience
 
-* [`Multigraphs.jl`](https://github.com/QuantumBFS/Multigraphs.jl): a multigraph extension for `LightGraphs.jl`
 * [`QDNN.jl`](https://github.com/ChenZhao44/QDNN.jl): an implementation of the model [QDNN (deep neural networks with quantum layers)](https://arxiv.org/abs/1912.12660).
+* [`Multigraphs.jl`](https://github.com/QuantumBFS/Multigraphs.jl): a multigraph extension for `LightGraphs.jl`
