@@ -6,25 +6,30 @@ Academy of Mathematics and System Science, Chinese Academy of Sciences
 
 ## Abstract
 
-[ZX-calculus](http://zxcalculus.com) is a graphical language which can characterize quantum circuits. It is usually used for quantum circuit simplification. `ZX.jl` will implement quantum circuit simplification algorithms based on ZX-calculus in pure Julia. Also, it will provide interfaces to import and export quantum circuits to the form of YaoIR, such that one can get quantum circuits with higher performance when designing quantum algorithms with `Yao.jl`.
+[ZX-calculus](http://zxcalculus.com) is a graphical language which can characterize quantum circuits. It is a powerful tool which is usually used for quantum ciucuits simplification. `ZX.jl` will implement quantum ciucuits simplification algorithms based on ZX-calculus in pure Julia. Also, it will provide interfaces to import and export quantum circuits to the form of YaoIR, an intermediate representation for quantum programs in the [`Yao.jl`](https://github.com/QuantumBFS/Yao.jl). So that one can get quantum circuits with higher performance automatically when designing quantum programs with `Yao.jl`.
 
 ## Why this project?
 
-Since Shor's factoring algorithm, people believe that quantum computers are more powerful than classical computers. However, quantum hardware developing is so difficult. Hence, in the near-term future, only limited number of qubits will be available and only small size of quantum circuits can be run on quantum devices. On the other hand, simulating quantum computer on classical computer need exponential resources. Simpler circuits will help us developing more efficient quantum simulation algorithms. As a result, circuit simplification is a very important problem when designing quantum algorithms.
+Since Shor's factoring quantum algorithm, people believe that quantum computers are more powerful than classical computers and quantum algorithms are more efficient than classical algorithms on some computational tasks. The basic model for describing quantum algorithms is the quantum circuit. And what quantum compiler do is compiling quantum programs to quantum circuits.
 
-ZX-calculus is a powerful tool for circuit simplification and lots of algorithms are developed. There exist a Python implementation [`PyZX`](https://github.com/Quantomatic/pyzx). But there is no Julia implementation of these algorithms. `Yao.jl` is a high-performance and extensive package for quantum software framework. I use `Yao.jl` when I study on quantum machine learning algorihms. However, only weak circuit simplification algorithms are available in `Yao.jl`. For these reasons, I want to develop `ZX.jl`.
+On one hand, as quantum hardware developing is so difficult, only limited number of qubits will be available and only small size of quantum circuits can be run on quantum devices in the near-term future. On the other hand, simulating quantum computer on classical computer need exponential resources. Simpler circuits will help us developing more efficient quantum simulation algorithms. If we have good quantum ciucuits simplification algorithms in the quantum compiler, we can get faster quantum algorithms.
+
+ZX-calculus is a powerful tool for quantum ciucuits simplification. And lots of algorithms are developed based on it. There exist a Python implementation [`PyZX`](https://github.com/Quantomatic/pyzx). With `PyZX`, one can simplify quantum circuits with ZX-calculus. Several input and output forms of quantum circuits are provided and visualization of quantum circuits are available.
+But there is no Julia implementation of these algorithms. In Julia, `Yao.jl` is a high-performance and extensive package for quantum software framework. However, only simple ciucuits simplification algorithms are available in `Yao.jl`. If one want to develop better ciucuits simplification algorithms to the quantum compiler in `Yao.jl`, a high-performance pure Julia implementation of ZX-calculus is necessary.
 
 ## Technical Details
 
-`ZX.jl` will be a package for ZX-calculus which any Julia user can install. With `ZX.jl`, one will be develop quantum circuits simplification algorithms, which are important for current quantum algorithm designning, in pure Julia.
+`ZX.jl` will be a package for ZX-calculus which any Julia user can install. With `ZX.jl`, one will be develop quantum circuits simplification algorithms, which are important for current quantum algorithm designing, in pure Julia.
 
-The first thing that ZX.jl has to provide is data structures for representing ZX-diagrams which are the basic objects in ZX-calculus. In general, ZX-diagrams are multigraphs with extra information of their edges and vertices, (for example, phases of vertices). Fortunately, there has been [`LightGraphs.jl`](https://github.com/JuliaGraphs/LightGraphs.jl) for simple graphs already. And I have developed [`Multigraphs.jl`](https://github.com/QuantumBFS/Multigraphs.jl) as a multigraph extension for `LightGraphs.jl`. Hence, problems of representing ZX-diagrams can be solved.
+The implementation of ZX-calculus consist three levels.
 
-Secondly, for developing quantum circuits simplification algorithms, I will develop basic rules which will be applied on ZX-diagrams. These rules are operation on the multigraphs and its extra information. These can be implemented by operating multigraphs.
+The first level is the backend data structures for representing ZX-diagrams, the basic objects in ZX-calculus. In general, ZX-diagrams are multigraphs with extra information of their edges and vertices, (for example, phases of vertices). Fortunately, there has been [`LightGraphs.jl`](https://github.com/JuliaGraphs/LightGraphs.jl) for simple graphs already. And I have developed [`Multigraphs.jl`](https://github.com/QuantumBFS/Multigraphs.jl) as a multigraph extension for `LightGraphs.jl`. Hence, problems of representing ZX-diagrams can be solve by using these existing packages.
 
-After defining basic rules, quantum circuit simplification algorithms based on ZX-calculus can be implemented. For example, the state-of-art algorithm for reducing T-count. All these algorithms can be found on [ZX-calculus](http://zxcalculus.com/publications.html).
+The second level is the basic rules in ZX-calculus. These basic rules define equivalence relations between ZX-diagrams and can be found in [this paper](https://arxiv.org/abs/1903.10477). In ZX-calculus, All simplification algorithms are based on these basic rules. These rules can be implemented by operating the backend multigraphs and extra information of ZX-diagrams.
 
-As an application, I will develop interfaces for importing and exporting quantum circuits in the form of YaoIR. So that, `Yao.jl` can simplify quantum circuits defined by users when compiling quantum algorithms.
+The third level is the quantum ciucuits simplification algorithms. These algorithms can be implemented by using basic rules. For example, the state-of-art algorithm for reducing T-count. All these algorithms can be found on [ZX-calculus](http://zxcalculus.com/publications.html).
+
+As an application, I'm going to develop interfaces for importing and exporting quantum circuits in the form of YaoIR. So that, `Yao.jl` can simplify quantum circuits defined by users when compiling quantum algorithms.
 
 For data visualization, I will provide ways to plot ZX-diagrams and quantum circuits. This will based on the graph visualization tool [`GraphPlot.jl`](https://github.com/JuliaGraphs/GraphPlot.jl).
 
@@ -32,16 +37,15 @@ For data visualization, I will provide ways to plot ZX-diagrams and quantum circ
 
 ### Before Community Bonding Period
 
-April 1, 2020 - April 27, 2020
+**April 1, 2020 - April 27, 2020**
 
-Read articles on ZX-calculus
-. Be familar with the developing tools, working flow, test systems and documentation systems.
+Read articles on ZX-calculus. Be familiar with the developing tools, working flow, test systems and documentation systems.
 
 ### **Community Bonding Period**
 
 **April 28, 2020 - May 7, 2020**
 
-Discuss about the implementation with the mentor.
+Discuss about the implementation details with the mentor.
 
 **May 8, 2020 - May 17, 2020**
 
@@ -49,13 +53,15 @@ Implement data structures for representing ZX-diagrams.
 
 ### **Phase 1**
 
-**May 18, 2020 - May 31, 2020**
+**May 18, 2020 - May 27, 2020**
 
-Develop basic rules.
+Develop algorithms for matching and applying basic rules (including rule f, h, i1, i2, pi, b, c) in [this paper](https://arxiv.org/abs/1903.10477).
 
-**June 1, 2020 - June 14, 2020**
+**May 28, 2020 - June 14, 2020**
 
-Implement circuit simplification algorithms with basic rules.
+Implement ZX-diagrams simplification algorithms with basic rules.
+
+Implement circuits to circuits simplification algorithms including [circuits extraction algorithm](https://arxiv.org/abs/1902.03178) and [phase teleportation algorithm](https://arxiv.org/abs/1903.10477).
 
 **June 15, 2020 - June 19, 2020**
 
@@ -79,11 +85,11 @@ Submit Phase 2 evaluations.
 
 **July 18, 2020 - August 1, 2020**
 
-Integrate circuit simplification algorithms to the compiler in `Yao.jl`.
+Integrate ciucuits simplification algorithms to the compiler in `Yao.jl`.
 
 **August 1, 2020 - August 9, 2020**
 
-Make full documentation, refine tests, and show some demenstration for `ZX.jl`.
+Make full documentation, refine tests, and show some demonstration for `ZX.jl`.
 
 ### **Final Week**
 
