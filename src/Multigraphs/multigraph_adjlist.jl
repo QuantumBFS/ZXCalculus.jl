@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 using LightGraphs, SparseArrays, LinearAlgebra
-=======
-using LightGraphs, SparseArrays
->>>>>>> ec15f8d14e930b8ceafae205ac4984abe1f145df
 
 import Base: copy
 import LightGraphs: nv, has_edge, add_edge!, rem_edge!, rem_vertex!,
