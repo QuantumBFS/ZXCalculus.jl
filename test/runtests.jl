@@ -2,25 +2,6 @@ using ZX
 using Test
 using LightGraphs
 
-# @testset "ZX.jl" begin
-#     # Write your own tests here.
-# end
-
-@testset "zx_plot.jl" begin
-    include("../script/zx_plot.jl")
-    g = Multigraph(6)
-    for e in [[1,3],[2,3],[3,4],[4,5],[4,6]]
-        add_edge!(g, e)
-    end
-    ps = [0, 0, 0//1, 2//1, 0, 0]
-    v_t = [In, Out, X, Z, Out, In]
-    zxd = ZXDiagram(g, v_t, ps)
-    ZXplot(zxd)
-
-    # rule_b!(zxd, 4, 3)
-    # ZXplot(zxd)
-end
-
 @testset "zx_diagram.jl" begin
     g = Multigraph([0 1 0; 1 0 1; 0 1 0])
     ps = [Rational(0) for i = 1:3]
