@@ -6,7 +6,11 @@ export ZXDiagram, SType, Z, X, H, In, Out
 
 @enum SType Z X H In Out
 
-mutable struct ZXDiagram{T<:Integer, P}
+"""
+    ZXDiagram{T, P}
+This is the type for representing ZX-diagrams.
+"""
+struct ZXDiagram{T<:Integer, P}
     mg::Multigraph{T}
 
     st::Dict{T, SType}
@@ -81,7 +85,7 @@ function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
 end
 rem_spider!(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = rem_spiders!(zxd, [v])
 
-function add_spider!(zxd::ZXDiagram{T, P}, st::SType, phase::P, connect::Vector{T}=T[]) where {T<:Integer, P}
+function add_spider!(zxd::ZXDiagram{T, P}, st::SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
     add_vertex!(zxd.mg)
     v = vertices(zxd.mg)[end]
     zxd.ps[v] = phase
@@ -103,13 +107,9 @@ end
 
 function rounding_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     ps = zxd.ps
-    for (v, p) in ps
-        p += one(P)
-        p = rem(p, one(P)+one(P))
-        p -= one(P)
-        ps[v] = p
+    for v in keys(ps)
+        ps[v] = rem(ps[v], one(P)+one(P))
     end
-    zxd.ps = ps
 end
 
-find_spiders(zxd::ZXDiagram, st::SType) = findall(zxd.st .== st)
+# find_spiders(zxd::ZXDiagram, st::SType) = findall(zxd.st .== st)
