@@ -29,11 +29,11 @@ ZX2nodefillc(zxd::ZXDiagram) = [st2color(zxd.st[v]) for v in vertices(zxd.mg)]
 function ZX2nodelabel(zxd::ZXDiagram)
     nodelabel = String[]
     for v in vertices(zxd.mg)
-        zxd.st[v] == Z && push!(nodelabel, "$(zxd.ps[v]) π")
-        zxd.st[v] == X && push!(nodelabel, "$(zxd.ps[v]) π")
-        zxd.st[v] == H && push!(nodelabel, "H")
-        zxd.st[v] == In && push!(nodelabel, "In")
-        zxd.st[v] == Out && push!(nodelabel, "Out")
+        zxd.st[v] == Z && push!(nodelabel, "[$(v)] $(zxd.ps[v]) π")
+        zxd.st[v] == X && push!(nodelabel, "[$(v)] $(zxd.ps[v]) π")
+        zxd.st[v] == H && push!(nodelabel, "[$(v)] H")
+        zxd.st[v] == In && push!(nodelabel, "[$(v)] In")
+        zxd.st[v] == Out && push!(nodelabel, "[$(v)] Out")
     end
     return nodelabel
 end
@@ -43,5 +43,7 @@ function ZXplot(zxd::ZXDiagram)
     nodelabel = ZX2nodelabel(zxd)
     nodefillc = ZX2nodefillc(zxd)
     edgelabelc = colorant"black"
-    gplot(g, nodelabel = nodelabel, edgelabel = edgelabel, edgelabelc = edgelabelc, nodefillc = nodefillc)
+    gplot(g, nodelabel = nodelabel, edgelabel = edgelabel, edgelabelc = edgelabelc, nodefillc = nodefillc,
+        # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
+        )
 end
