@@ -1,8 +1,8 @@
 using LightGraphs
 import Base: show, copy
-import LightGraphs: nv, ne, outneighbors, rem_edge!
+import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!, add_edge!
 
-export ZXDiagram, SType, Z, X, H, In, Out
+export ZXDiagram, SType, Z, X, H, In, Out, spiders, spider_type, phase
 
 @enum SType Z X H In Out
 
@@ -35,6 +35,7 @@ ZXDiagram(mg::Multigraph{T}, st::Vector{SType},
 
 copy(zxd::ZXDiagram) = ZXDiagram(copy(zxd.mg), copy(zxd.st), copy(zxd.ps))
 spider_type(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.st[v]
+phase(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.ps[v]
 
 function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
     st_v = spider_type(zxd, v)
@@ -54,7 +55,7 @@ end
 function show(io::IO, zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     println(io, "ZX-diagram with $(nv(zxd.mg)) vertices and $(ne(zxd.mg)) multiple edges:")
     for v1 in vertices(zxd.mg)
-        for v2 in outneighbors(zxd.mg, v1)
+        for v2 in neighbors(zxd.mg, v1)
             if v2 >= v1
                 print(io, "(")
                 print_spider(io, zxd, v1)
@@ -67,10 +68,15 @@ function show(io::IO, zxd::ZXDiagram{T, P}) where {T<:Integer, P}
 end
 
 nv(zxd::ZXDiagram) = nv(zxd.mg)
-ne(zxd::ZXDiagram, count_mul::Bool = false) = ne(zxd.mg, count_mul)
-outneighbors(zxd::ZXDiagram, v) = outneighbors(zxd.mg, v)
+ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
+outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
+inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
+neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
 function rem_edge!(zxd::ZXDiagram, x...)
     rem_edge!(zxd.mg, x...)
+end
+function add_edge!(zxd::ZXDiagram, x...)
+    add_edge!(zxd.mg, x...)
 end
 
 function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
@@ -108,8 +114,11 @@ end
 function rounding_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     ps = zxd.ps
     for v in keys(ps)
+        while ps[v] < 0
+            ps[v] += 2
+        end
         ps[v] = rem(ps[v], one(P)+one(P))
     end
 end
 
-# find_spiders(zxd::ZXDiagram, st::SType) = findall(zxd.st .== st)
+spiders(zxd::ZXDiagram) = vertices(zxd.mg)
