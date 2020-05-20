@@ -44,7 +44,7 @@ function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
 end
 
 # TODO: need new implementation of rules
-function ZXGraph(zxd::ZXDiagram{T, U, P}) where {T, U, P}
+# function ZXGraph(zxd::ZXDiagram{T, U, P}) where {T, U, P}
 #     nzxd = copy(zxd)
 #
 #     for v in nv(nzxd):-1:1
@@ -121,4 +121,4 @@ function ZXGraph(zxd::ZXDiagram{T, U, P}) where {T, U, P}
 #         end
 #     end
 #     return ZXGraph{T, P}(zero(P), mg)
-end
+# end
