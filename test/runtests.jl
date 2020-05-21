@@ -15,7 +15,7 @@ using LightGraphs
 #     zxd = ZXDiagram(g, v_t, ps)
 #     ZXplot(zxd)
 #
-#     # rule_b!(zxd, 4, 3)
+#     # Rule{:b}!(zxd, 4, 3)
 #     # ZXplot(zxd)
 # end
 
@@ -46,8 +46,8 @@ end
     ps = [i//4 for i = 1:3]
     v_t = [Z, Z, X]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_f(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:f}(), zxd)
+    rewrite!(Rule{:f}(), zxd, matches)
     @test spiders(zxd) == [1, 3]
     @test phase(zxd, 1) == phase(zxd, 3) == 3//4
 
@@ -56,21 +56,20 @@ end
     ps = [1, 0//1, 0, 0, 1]
     v_t = [X, X, Z, Z, Z]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_i1(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:i1}(), zxd)
+    rewrite!(Rule{:i1}(), zxd, matches)
     @test nv(zxd) == 3 && ne(zxd, count_mul = true) == 3 && ne(zxd) == 2
 
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     ps = [i//4 for i = 1:3]
     v_t = [X, X, Z]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_h(), zxd)
-    rewrite!(zxd, matches[1])
-    rewrite!(zxd, matches[2])
+    matches = match(Rule{:h}(), zxd)
+    rewrite!(Rule{:h}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
 
-    matches = match_rule(Rule_i2(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:i2}(), zxd)
+    rewrite!(Rule{:i2}(), zxd, matches)
     @test nv(zxd) == 4 && ne(zxd, count_mul = true) == 4 && ne(zxd) == 3
 
     g = Multigraph(6)
@@ -82,16 +81,16 @@ end
     ps = [0, 1, 1//2, 0, 0, 0]
     v_t = [In, X, Z, Out, Out, Out]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_pi(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:pi}(), zxd)
+    rewrite!(Rule{:pi}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 7
 
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     ps = [1, 1//2, 0]
     v_t = [X, Z, In]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_pi(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:pi}(), zxd)
+    rewrite!(Rule{:pi}(), zxd, matches)
     @test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul = true) == 4
 
     g = Multigraph(5)
@@ -102,8 +101,8 @@ end
     ps = [0, 1//2, 0, 0, 0]
     v_t = [X, Z, Out, Out, Out]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_c(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:c}(), zxd)
+    rewrite!(Rule{:c}(), zxd, matches)
     @test nv(zxd) == 7 && ne(zxd) == 4
 
     g = Multigraph(6)
@@ -115,7 +114,7 @@ end
     ps = [0//1 for i = 1:6]
     v_t = [In, In, X, Z, Out, Out]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match_rule(Rule_b(), zxd)
-    rewrite!(zxd, matches)
+    matches = match(Rule{:b}(), zxd)
+    rewrite!(Rule{:b}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
 end
