@@ -2,8 +2,8 @@ using LightGraphs, SparseArrays, LinearAlgebra
 
 import Base: copy
 import LightGraphs: nv, has_edge, add_edge!, rem_edge!, rem_vertex!,
-    rem_vertices!, add_vertex!, add_vertices!, outneighbors, inneighbors, vertices,
-    adjacency_matrix, ne, is_directed, degree, indegree, outdegree, edges
+    rem_vertices!, add_vertex!, add_vertices!, outneighbors, inneighbors, neighbors,
+    vertices, adjacency_matrix, ne, is_directed, degree, indegree, outdegree, edges
 
 export Multigraph
 
@@ -119,13 +119,18 @@ function add_vertices!(mg::Multigraph{T}, n::Integer) where {T<:Integer}
     mg
 end
 
-function outneighbors(mg::Multigraph, v::Integer)
+function outneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false)
     if v in vertices(mg)
-        return mg.adjlist[v]
+        if count_mul
+            return copy(mg.adjlist[v])
+        else
+            return sort!(collect(Set(mg.adjlist[v])))
+        end
     end
 end
+neighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg, v, count_mul = count_mul)
+inneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg, v, count_mul = count_mul)
 
-inneighbors(mg::Multigraph, v::Integer) = outneighbors(mg, v)
 function mul(mg::Multigraph, s::Integer, d::Integer)
     if s in vertices(mg) && d in vertices(mg)
         return length(searchsorted(mg.adjlist[s], d))
@@ -135,7 +140,7 @@ function mul(mg::Multigraph, s::Integer, d::Integer)
 end
 
 is_directed(mg::Multigraph) = false
-function ne(mg::Multigraph, count_mul::Bool = false)
+function ne(mg::Multigraph; count_mul::Bool = false)
     if count_mul
         return sum([sum(mg.adjlist[v] .>= v) for v in vertices(mg)])
     else
