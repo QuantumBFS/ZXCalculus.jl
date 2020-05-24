@@ -1,11 +1,13 @@
 using LightGraphs
 
 import Base: show
+import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+    add_edge!, has_edge
 
-export ZXGraph
+export ZXGraph, spider_type, phase, mul
 
-const hadamard_edge = 1
-const other_edge = 2
+const non_hadamard_edge = 1
+const hadamard_edge = 2
 
 """
     ZXGraph{T, P}
@@ -17,10 +19,45 @@ struct ZXGraph{T<:Integer, P}
     st::Dict{T, SType}
 end
 
+has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
+nv(zxg::ZXGraph) = nv(zxg.mg)
+ne(zxg::ZXGraph) = ne(zxg.mg)
+outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
+inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
+neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
+rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer) = rem_edge!(zxg.mg, v1, v2, mul(zxg.mg, v1, v2))
+function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Int = hadamard_edge)
+    if v1 in vertices(zxg.mg) && v2 in vertices(zxg.mg)
+        if v1 == v2
+            if edge_type == hadamard_edge
+                zxg.ps[v1] += 1
+            end
+            return true
+        else
+            if has_edge(zxg, v1, v2)
+                if is_hadamard(zxg, v1, v2)
+                    return rem_edge!(zxg, v1, v2)
+                else
+                    return false
+                end
+            else
+                return add_edge!(zxg.mg, v1, v2, edge_type)
+            end
+        end
+    else
+        return false
+    end
+end
+
+spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
+phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
+is_hadamard(e::MultipleEdge) = (mul(e) == hadamard_edge)
+is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer) = (mul(zxg.mg, v1, v2) == hadamard_edge)
+
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
-    st_v = get_prop(zxg.mg, v, :spider_type)
+    st_v = spider_type(zxg, v)
     if st_v == Z
-        printstyled(io, "S_$(v){phase = $(get_prop(zxg.mg, v, :phase))⋅π}"; color = :green)
+        printstyled(io, "S_$(v){phase = $(phase(zxg, v))⋅π}"; color = :green)
     elseif st_v == In
         print(io, "S_$(v){input}")
     elseif st_v == Out
@@ -29,11 +66,11 @@ function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
 end
 
 function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
-    println(io, "ZX-graph with $(nv(zxg.mg)) vertices and $(ne(zxg.mg)) edges:")
+    println(io, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges:")
     for e in edges(zxg.mg)
         print(io, "(")
         print_spider(io, zxg, src(e))
-        if get_prop(zxg.mg, e, :is_hadamard) == true
+        if is_hadamard(e)
             printstyled(io, " <-> "; color = :blue)
         else
             print(io, " <-> ")
@@ -43,82 +80,50 @@ function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     end
 end
 
+include("../script/zx_plot.jl")
+
 # TODO: need new implementation of rules
-# function ZXGraph(zxd::ZXDiagram{T, U, P}) where {T, U, P}
-#     nzxd = copy(zxd)
-#
-#     for v in nv(nzxd):-1:1
-#         if check_rule_i1(nzxd, v) == true
-#             rule_i1!(nzxd, v)
-#         end
-#     end
-#
-#     for v in ZX.find_spiders(nzxd, X)
-#         rule_h!(nzxd, v)
-#     end
-#
-#     vH = ZX.find_spiders(nzxd, H)
-#     while length(vH) > 0
-#         v1 = pop!(vH)
-#         nb = outneighbors(nzxd, v1)
-#         v2 = v1
-#         if nb[1] in vH
-#             v2 = nb[1]
-#         elseif nb[2] in vH
-#             v2 = nb[2]
-#         end
-#
-#         setdiff!(vH, v2)
-#         if v1 != v2
-#             vmap = rule_i2!(nzxd, v1, v2)
-#             vH = [findfirst(x->x==v, vmap) for v in vH]
-#         end
-#     end
-#
-#     vZ = find_spiders(nzxd, Z)
-#     while length(vZ) > 0
-#         v1 = pop!(vZ)
-#         for v2 in vZ
-#             if check_rule_f(nzxd, v1, v2) == true
-#                 rule_f!(nzxd, v1, v2)
-#                 break
-#             end
-#         end
-#     end
-#
-#     vH = find_spiders(nzxd, H)
-#     eH = [outneighbors(nzxd, v) for v in vH]
-#     vmap = rem_spiders!(nzxd, vH)
-#     for e in eH
-#         e[1] = findfirst(x->x==e[1], vmap)
-#         e[2] = findfirst(x->x==e[2], vmap)
-#     end
-#
-#     g = SimpleGraph(nzxd.g.adjmx)
-#     mg = MetaGraph(g)
-#     for v in vertices(g)
-#         set_prop!(mg, v, :spider_type, nzxd.st[v])
-#         set_prop!(mg, v, :phase, nzxd.ps[v])
-#     end
-#     for e in edges(g)
-#         if src(e) == dst(e)
-#             rem_edge!(mg, e)
-#         else
-#             set_prop!(mg, e, :is_hadamard, false)
-#         end
-#     end
-#     for e in eH
-#         if has_edge(mg, e[1], e[2])
-#             if get_prop(mg, e[1], e[2], :is_hadamard) == true
-#                 rem_edge!(mg, e[1], e[2])
-#             end
-#         elseif e[1] == e[2]
-#             new_phase = rem(get_prop(mg, e[1], :phase) + P(2), P(2)) - P(1)
-#             set_prop!(mg, e[1], :phase, new_phase)
-#         else
-#             add_edge!(mg, e[1], e[2])
-#             set_prop!(mg, e[1], e[2], :is_hadamard, true)
-#         end
-#     end
-#     return ZXGraph{T, P}(zero(P), mg)
-# end
+function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
+    nzxd = copy(zxd)
+
+    r_i1 = Rule{:i1}()
+    matches = match(r_i1, nzxd)
+    rewrite!(r_i1, nzxd, matches)
+
+    r_h = Rule{:h}()
+    matches = match(r_h, nzxd)
+    rewrite!(r_h, nzxd, matches)
+
+    r_i2 = Rule{:i2}()
+    matches = match(r_i2, nzxd)
+    rewrite!(r_i2, nzxd, matches)
+
+    r_f = Rule{:f}()
+    matches = match(r_f, nzxd)
+    rewrite!(r_f, nzxd, matches)
+
+    vs = spiders(nzxd)
+    vH = T[]
+    vZ = T[]
+    vB = T[]
+    for v in vs
+        if spider_type(nzxd, v) == H
+            push!(vH, v)
+        elseif spider_type(nzxd, v) == Z
+            push!(vZ, v)
+        else
+            push!(vB, v)
+        end
+    end
+
+    zxg = copy(nzxd)
+    rem_spiders!(zxg, vH)
+    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st)
+
+    for v in vH
+        v1, v2 = neighbors(nzxd, v, count_mul = true)
+        add_edge!(zxg, v1, v2)
+    end
+
+    return zxg
+end
