@@ -80,9 +80,6 @@ function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     end
 end
 
-include("../script/zx_plot.jl")
-
-# TODO: need new implementation of rules
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
 
