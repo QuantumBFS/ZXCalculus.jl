@@ -1,4 +1,4 @@
-module ZX
+module ZXCalculus
 
 include("Multigraphs/multiple_edge.jl")
 include("Multigraphs/abstract_multigraph.jl")
