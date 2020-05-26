@@ -1,4 +1,4 @@
-using ZX
+using ZXCalculus
 using Test
 using LightGraphs
 
