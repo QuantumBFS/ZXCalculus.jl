@@ -1,4 +1,4 @@
-using ZX
+using ZXCalculus
 using LightGraphs
 using GraphPlot: gplot
 using Colors
