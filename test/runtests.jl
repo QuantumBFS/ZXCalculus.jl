@@ -131,8 +131,7 @@ end
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
     @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
-    matches = match(Rule{:b}(), zxd)
-    rewrite!(Rule{:b}(), zxd, matches)
+    replace!(Rule{:b}(), zxd)
     zxg2 = ZXGraph(zxd)
     @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
 end

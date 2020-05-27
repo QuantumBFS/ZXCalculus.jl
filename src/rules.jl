@@ -1,4 +1,4 @@
-import Base: match
+import Base: match, replace!
 
 export Rule, Match
 export rewrite!
@@ -303,5 +303,15 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     add_edge!(zxd, a1, a4)
     add_edge!(zxd, a2, a3)
     add_edge!(zxd, a2, a4)
+    zxd
+end
+
+"""
+    replace!(r, zxd)
+Match and replace with the rule `r`.
+"""
+function replace!(r::AbstractRule, zxd::ZXDiagram)
+    matches = match(r, zxd)
+    rewrite!(r, zxd, matches)
     zxd
 end

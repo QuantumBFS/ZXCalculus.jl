@@ -83,21 +83,10 @@ end
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
 
-    r_i1 = Rule{:i1}()
-    matches = match(r_i1, nzxd)
-    rewrite!(r_i1, nzxd, matches)
-
-    r_h = Rule{:h}()
-    matches = match(r_h, nzxd)
-    rewrite!(r_h, nzxd, matches)
-
-    r_i2 = Rule{:i2}()
-    matches = match(r_i2, nzxd)
-    rewrite!(r_i2, nzxd, matches)
-
-    r_f = Rule{:f}()
-    matches = match(r_f, nzxd)
-    rewrite!(r_f, nzxd, matches)
+    replace!(Rule{:i1}(), nzxd)
+    replace!(Rule{:h}(), nzxd)
+    replace!(Rule{:i2}(), nzxd)
+    replace!(Rule{:f}(), nzxd)
 
     vs = spiders(nzxd)
     vH = T[]
