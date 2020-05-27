@@ -6,8 +6,8 @@ import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
 
 export ZXGraph, spider_type, phase, mul
 
-const non_hadamard_edge = 1
-const hadamard_edge = 2
+const NON_HADAMARD = 1
+const HADAMARD = 2
 
 """
     ZXGraph{T, P}
@@ -26,10 +26,10 @@ outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
 inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
 neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
 rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer) = rem_edge!(zxg.mg, v1, v2, mul(zxg.mg, v1, v2))
-function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Int = hadamard_edge)
+function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Int = HADAMARD)
     if v1 in vertices(zxg.mg) && v2 in vertices(zxg.mg)
         if v1 == v2
-            if edge_type == hadamard_edge
+            if edge_type == HADAMARD
                 zxg.ps[v1] += 1
             end
             return true
@@ -51,8 +51,8 @@ end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
-is_hadamard(e::MultipleEdge) = (mul(e) == hadamard_edge)
-is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer) = (mul(zxg.mg, v1, v2) == hadamard_edge)
+is_hadamard(e::MultipleEdge) = (mul(e) == HADAMARD)
+is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer) = (mul(zxg.mg, v1, v2) == HADAMARD)
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
