@@ -136,3 +136,17 @@ function rounding_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
         ps[v] = rem(ps[v], one(P)+one(P))
     end
 end
+
+"""
+    is_interior(zxg::ZXGraph, v)
+Return `true` if `v` is a interior spider of `zxg`.
+"""
+function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
+    if v in spiders(zxg)
+        nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
+        if !(In in nb_st || Out in nb_st)
+            return true
+        end
+    end
+    return false
+end

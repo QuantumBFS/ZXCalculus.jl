@@ -132,6 +132,26 @@ end
     @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
     @test phase(zxg, 2) == 3//2 && phase(zxg, 3) == 7//4 &&
         phase(zxg, 4) == 0//1 && phase(zxg, 5) == 1//4
+
+    g = Multigraph(14)
+    for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14]]
+        add_edge!(g, e[1], e[2])
+    end
+    ps = [1//1, 0, 1//4, 1//2, 3//4, 1, 5//4, 3//2, 0, 0, 0, 0, 0, 0]
+    st = [Z, Z, Z, Z, Z, Z, Z, Z, In, Out, In, Out, In, Out]
+    zxg = ZXGraph(ZXDiagram(g, st, ps))
+    for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
+        add_edge!(zxg, e[1], e[2])
+    end
+    zxg
+    ZXplot(zxg)
+
+    replace!(Rule{:p1}(), zxg)
+    @test !has_edge(zxg, 3, 4) && !has_edge(zxg, 5, 6) && !has_edge(zxg, 7, 8)
+    @test nv(zxg) == 12 && ne(zxg) == 18
+    @test phase(zxg, 3) == 1//4 && phase(zxg, 4) == 1//2 &&
+        phase(zxg, 5) == 3//4 && phase(zxg, 6) == 1//1 &&
+        phase(zxg, 7) == 1//4 && phase(zxg, 8) == 1//2
 end
 
 @testset "zx_graph.jl" begin
