@@ -118,3 +118,20 @@ end
     rewrite!(Rule{:b}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
 end
+
+@testset "zx_graph.jl" begin
+    g = Multigraph(6)
+    add_edge!(g, 1, 3)
+    add_edge!(g, 2, 4)
+    add_edge!(g, 3, 4)
+    add_edge!(g, 3, 5)
+    add_edge!(g, 4, 6)
+    ps = [0//1 for i = 1:6]
+    v_t = [In, In, X, Z, Out, Out]
+    zxd = ZXDiagram(g, v_t, ps)
+    zxg1 = ZXGraph(zxd)
+    @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
+    replace!(Rule{:b}(), zxd)
+    zxg2 = ZXGraph(zxd)
+    @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
+end
