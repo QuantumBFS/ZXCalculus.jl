@@ -105,6 +105,19 @@ function match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
+function match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
+    matches = Match{T}[]
+    for v in spiders(zxg)
+        if spider_type(zxg, v) == Z && (phase(zxg, v) == 1//2 || phase(zxg, v) == 3//2)
+            nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
+            if !(In in nb_st || Out in nb_st)
+                push!(matches, Match{T}([v]))
+            end
+        end
+    end
+    return matches
+end
+
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
     for each in matches
         rewrite!(r, zxd, each)
@@ -306,6 +319,37 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     zxd
 end
 
+function check_rule(::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    vs ⊆ spiders(zxg) || return false
+    v = vs[1]
+    if v in spiders(zxg)
+        if spider_type(zxg, v) == Z && (phase(zxg, v) == 1//2 || phase(zxg, v) == 3//2)
+            nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
+            if !(In in nb_st || Out in nb_st)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    v = vs[1]
+    phase_v = phase(zxg, v)
+    nb = neighbors(zxg, v)
+    rem_spider!(zxg, v)
+    for u1 in nb, u2 in nb
+        if u2 > u1
+            add_edge!(zxg, u1, u2)
+        end
+    end
+    for u in nb
+        zxg.ps[u] -= phase_v
+    end
+    rounding_phases!(zxg)
+    zxg
+end
+
 """
     replace!(r, zxd)
 Match and replace with the rule `r`.
@@ -314,4 +358,9 @@ function replace!(r::AbstractRule, zxd::ZXDiagram)
     matches = match(r, zxd)
     rewrite!(r, zxd, matches)
     zxd
+end
+function replace!(r::AbstractRule, zxg::ZXGraph)
+    matches = match(r, zxg)
+    rewrite!(r, zxg, matches)
+    zxg
 end

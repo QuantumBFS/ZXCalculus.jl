@@ -117,6 +117,21 @@ end
     matches = match(Rule{:b}(), zxd)
     rewrite!(Rule{:b}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
+
+    g = Multigraph(9)
+    for e in [[2,6],[3,7],[4,8],[5,9]]
+        add_edge!(g, e[1], e[2])
+    end
+    ps = [1//2, 0, 1//4, 1//2, 3//4, 0, 0, 0, 0]
+    st = [Z, Z, Z, Z, Z, In, In, Out, Out]
+    zxg = ZXGraph(ZXDiagram(g, st, ps))
+    for e in [[1,2],[1,3],[1,4],[1,5],[2,3]]
+        add_edge!(zxg, e[1], e[2])
+    end
+    replace!(Rule{:lc}(), zxg)
+    @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
+    @test phase(zxg, 2) == 3//2 && phase(zxg, 3) == 7//4 &&
+        phase(zxg, 4) == 0//1 && phase(zxg, 5) == 1//4
 end
 
 @testset "zx_graph.jl" begin
