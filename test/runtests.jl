@@ -29,14 +29,14 @@ using LightGraphs
 
     zxd2 = copy(zxd)
     @test zxd.st == zxd2.st && zxd.ps == zxd2.ps
-    @test ZX.spider_type(zxd, 1) == X
+    @test ZXCalculus.spider_type(zxd, 1) == X
     @test nv(zxd) == 3 && ne(zxd) == 2
 
     @test rem_edge!(zxd, 2, 3)
     @test outneighbors(zxd, 2) == [1]
 
-    ZX.add_spider!(zxd, H, 0//1, [2, 3])
-    ZX.insert_spider!(zxd, 2, 4, H)
+    ZXCalculus.add_spider!(zxd, H, 0//1, [2, 3])
+    ZXCalculus.insert_spider!(zxd, 2, 4, H)
     @test nv(zxd) == 5 && ne(zxd) == 4
 end
 
@@ -130,8 +130,8 @@ end
     v_t = [In, In, X, Z, Out, Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
-    @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
+    @test !ZXCalculus.is_hadamard(zxg1, 2, 4) && !ZXCalculus.is_hadamard(zxg1, 4, 6)
     replace!(Rule{:b}(), zxd)
     zxg2 = ZXGraph(zxd)
-    @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
+    @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
 end
