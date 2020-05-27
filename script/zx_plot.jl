@@ -55,7 +55,6 @@ function ZXplot(zxd::ZXDiagram)
 end
 function ZXplot(zxd::ZXGraph)
     g, edge_types = ZX2Graph(zxd)
-    println(edge_types)
 
     nodelabel = ZX2nodelabel(zxd)
     nodefillc = ZX2nodefillc(zxd)

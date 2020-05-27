@@ -11,7 +11,7 @@ struct Match{T<:Integer}
     vertices::Vector{T}
 end
 
-match(::AbstractRule, zxd::ZXDiagram{T, P}) where {T, P} = Match{T}[]
+match(::AbstractRule, zxd::AbstractZXDiagram{T, P}) where {T, P} = Match{T}[]
 
 function match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
@@ -105,14 +105,14 @@ function match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function rewrite!(r::AbstractRule, zxd::ZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
+function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
     for each in matches
         rewrite!(r, zxd, each)
     end
     zxd
 end
 
-function rewrite!(r::AbstractRule, zxd::ZXDiagram{T, P}, matched::Match{T}) where {T, P}
+function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matched::Match{T}) where {T, P}
     vs = matched.vertices
     if check_rule(r, zxd, vs)
         return rewrite!(r, zxd, vs)

@@ -10,7 +10,7 @@ export ZXDiagram, SType, Z, X, H, In, Out, spiders, spider_type, phase
     ZXDiagram{T, P}
 This is the type for representing ZX-diagrams.
 """
-struct ZXDiagram{T<:Integer, P}
+struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
     st::Dict{T, SType}
