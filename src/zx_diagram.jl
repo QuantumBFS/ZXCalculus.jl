@@ -146,9 +146,10 @@ function add_spider!(zxd::ZXDiagram{T, P}, st::SType, phase::P = zero(P), connec
     v = vertices(zxd.mg)[end]
     zxd.ps[v] = phase
     zxd.st[v] = st
-    connect ⊆ vertices(zxd.mg)
-    for c in connect
-        add_edge!(zxd.mg, v, c)
+    if connect ⊆ vertices(zxd.mg)
+        for c in connect
+            add_edge!(zxd.mg, v, c)
+        end
     end
     zxd
 end

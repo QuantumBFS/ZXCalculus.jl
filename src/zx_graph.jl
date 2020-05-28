@@ -101,6 +101,23 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
+function add_spider!(zxg::ZXGraph{T, P}, st::SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
+    add_vertex!(zxg.mg)
+    v = vertices(zxg.mg)[end]
+    zxg.ps[v] = phase
+    zxg.st[v] = st
+    if connect ⊆ spiders(zxg)
+        for c in connect
+            add_edge!(zxg, v, c)
+        end
+    end
+    zxg
+end
+function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
+    add_spider!(zxg, Z, phase, [v1, v2])
+    rem_edge!(zxg, v1, v2)
+end
+
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
     if st_v == Z
