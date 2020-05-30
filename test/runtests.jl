@@ -38,6 +38,10 @@ using LightGraphs
     ZXCalculus.add_spider!(zxd, H, 0//1, [2, 3])
     ZXCalculus.insert_spider!(zxd, 2, 4, H)
     @test nv(zxd) == 5 && ne(zxd) == 4
+
+    zxd3 = ZXDiagram(3)
+    ZXCalculus.insert_spider!(zxd3, 1, 2, H)
+    @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2) == ZXCalculus.qubit_loc(zxd3, 7)
 end
 
 @testset "rules.jl" begin
@@ -113,9 +117,11 @@ end
     add_edge!(g, 4, 6)
     ps = [0//1 for i = 1:6]
     v_t = [In, In, X, Z, Out, Out]
-    zxd = ZXDiagram(g, v_t, ps)
+    layout = ZXCalculus.ZXLayout(2, [[1,3,5],[2,4,6]])
+    zxd = ZXDiagram(g, v_t, ps, layout)
     matches = match(Rule{:b}(), zxd)
     rewrite!(Rule{:b}(), zxd, matches)
+    @test zxd.layout.spider_seq == [[1, 7, 8, 5], [2, 9, 10, 6]]
     @test nv(zxd) == 8 && ne(zxd) == 8
 
     g = Multigraph(9)
@@ -130,8 +136,7 @@ end
     end
     replace!(Rule{:lc}(), zxg)
     @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
-    @test phase(zxg, 2) == 3//2 && phase(zxg, 3) == 7//4 &&
-        phase(zxg, 4) == 0//1 && phase(zxg, 5) == 1//4
+    @test phase(zxg, 2) == 3//2 && phase(zxg, 3) == 7//4 && phase(zxg, 4) == 0//1 && phase(zxg, 5) == 1//4
 
     g = Multigraph(14)
     for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14]]
@@ -147,9 +152,7 @@ end
     replace!(Rule{:p1}(), zxg)
     @test !has_edge(zxg, 3, 4) && !has_edge(zxg, 5, 6) && !has_edge(zxg, 7, 8)
     @test nv(zxg) == 12 && ne(zxg) == 18
-    @test phase(zxg, 3) == 1//4 && phase(zxg, 4) == 1//2 &&
-        phase(zxg, 5) == 3//4 && phase(zxg, 6) == 1//1 &&
-        phase(zxg, 7) == 1//4 && phase(zxg, 8) == 1//2
+    @test phase(zxg, 3) == 1//4 && phase(zxg, 4) == 1//2 && phase(zxg, 5) == 3//4 && phase(zxg, 6) == 1//1 && phase(zxg, 7) == 1//4 && phase(zxg, 8) == 1//2
 
     g = Multigraph(6)
     for e in [[2,6]]

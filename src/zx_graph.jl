@@ -17,6 +17,7 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
     ps::Dict{T, P}
     st::Dict{T, SType}
+    layout::ZXLayout
 end
 
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
@@ -43,7 +44,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
 
     zxg = copy(nzxd)
     rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st)
+    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout)
 
     for v in vH
         v1, v2 = neighbors(nzxd, v, count_mul = true)
@@ -94,6 +95,7 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         for v in vs
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
+            rem_vertex!(zxg.layout, v)
         end
         return true
     end
@@ -116,6 +118,14 @@ end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
     add_spider!(zxg, Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
+    l1 = qubit_loc(zxg.layout, v1)
+    l2 = qubit_loc(zxg.layout, v2)
+    if l1 == l2 && l1 != nothing
+        t1 = findfirst(isequal(v1), zxg.layout.spider_seq[l1])
+        t2 = findfirst(isequal(v2), zxg.layout.spider_seq[l1])
+        t = min(t1, t2) + 1
+        insert!(zxg.layout.spider_seq[l1], t, spiders(zxg)[end])
+    end
 end
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}

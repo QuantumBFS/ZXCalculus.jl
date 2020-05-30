@@ -2,67 +2,56 @@ using ZXCalculus, LightGraphs
 
 include("../script/zx_plot.jl")
 
-mg = Multigraph(8)
-ps = [0//1 for _ = 1:8]
-st = [In, Out, In, Out, In, Out, In, Out]
+function generate_example()
+    zxd = ZXDiagram(4)
+    push_Z!(zxd, 1, 3//2)
+    push_H!(zxd, 1)
+    push_Z!(zxd, 1, 1//2)
+    push_Z!(zxd, 2, 1//2)
+    push_H!(zxd, 4)
+    push_CNOT!(zxd, 2, 3)
+    push_CZ!(zxd, 1, 4)
+    push_H!(zxd, 2)
+    push_CNOT!(zxd, 2, 3)
+    push_CNOT!(zxd, 4, 1)
+    push_H!(zxd, 1)
+    push_Z!(zxd, 2, 1//4)
+    push_Z!(zxd, 3, 1//2)
+    push_H!(zxd, 4)
+    push_Z!(zxd, 1, 1//4)
+    push_H!(zxd, 2)
+    push_H!(zxd, 3)
+    push_Z!(zxd, 4, 3//2)
+    push_Z!(zxd, 3, 1//2)
+    push_X!(zxd, 4, 1//1)
+    push_CNOT!(zxd, 2, 3)
+    push_H!(zxd, 1)
+    push_Z!(zxd, 4, 1//2)
+    push_X!(zxd, 4, 1//1)
 
-zxd = ZXDiagram(mg, st, ps)
-for e in [[1,2],[3,4],[5,6],[7,8]]
-    add_edge!(zxd, e[1], e[2])
+    zxd
 end
-ZXCalculus.insert_spider!(zxd, 1, 2, Z, 3//2)
-ZXCalculus.insert_spider!(zxd, 9, 2, H)
-ZXCalculus.insert_spider!(zxd, 10, 2, Z, 1//2)
-ZXCalculus.insert_spider!(zxd, 3, 4, Z, 1//2)
-ZXCalculus.insert_spider!(zxd, 7, 8, H)
 
-ZXCalculus.insert_spider!(zxd, 12, 4, Z)
-ZXCalculus.insert_spider!(zxd, 5, 6, X)
-add_edge!(zxd, 14, 15)
-
-ZXCalculus.insert_spider!(zxd, 11, 2, Z)
-ZXCalculus.insert_spider!(zxd, 13, 8, Z)
-add_edge!(zxd, 16, 17)
-ZXCalculus.insert_spider!(zxd, 16, 17, H)
-
-ZXCalculus.insert_spider!(zxd, 14, 4, H)
-ZXCalculus.insert_spider!(zxd, 19, 4, Z)
-ZXCalculus.insert_spider!(zxd, 15, 6, X)
-add_edge!(zxd, 20, 21)
-
-ZXCalculus.insert_spider!(zxd, 16, 2, X)
-ZXCalculus.insert_spider!(zxd, 17, 8, Z)
-add_edge!(zxd, 22, 23)
-
-ZXCalculus.insert_spider!(zxd, 22, 2, H)
-ZXCalculus.insert_spider!(zxd, 24, 2, Z, 1//4)
-ZXCalculus.insert_spider!(zxd, 25, 2, H)
-ZXCalculus.insert_spider!(zxd, 23, 8, H)
-ZXCalculus.insert_spider!(zxd, 27, 8, Z, 3//2)
-ZXCalculus.insert_spider!(zxd, 28, 8, X, 1//1)
-ZXCalculus.insert_spider!(zxd, 29, 8, Z, 1//2)
-ZXCalculus.insert_spider!(zxd, 30, 8, X, 1//1)
-
-ZXCalculus.insert_spider!(zxd, 20, 4, Z, 1//4)
-ZXCalculus.insert_spider!(zxd, 32, 4, H)
-ZXCalculus.insert_spider!(zxd, 21, 6, Z, 1//2)
-ZXCalculus.insert_spider!(zxd, 34, 6, H)
-ZXCalculus.insert_spider!(zxd, 35, 6, Z, 1//2)
-ZXCalculus.insert_spider!(zxd, 33, 4, Z)
-ZXCalculus.insert_spider!(zxd, 36, 6, X)
-add_edge!(zxd, 37, 38)
-
+zxd = generate_example()
 ZXplot(zxd)
+zxd.layout.spider_seq
 
 zxg = ZXGraph(zxd)
+ZXplot(zxg)
 matches = match(Rule{:lc}(), zxg)
+[matches[i].vertices[1] for i = 1:5]
 rewrite!(Rule{:lc}(), zxg, matches[1])
-rewrite!(Rule{:lc}(), zxg, matches[2])
-rewrite!(Rule{:lc}(), zxg, matches[4])
+ZXplot(zxg)
 rewrite!(Rule{:lc}(), zxg, matches[3])
+ZXplot(zxg)
+rewrite!(Rule{:lc}(), zxg, matches[2])
+ZXplot(zxg)
+rewrite!(Rule{:lc}(), zxg, matches[5])
+ZXplot(zxg)
 
 matches = match(Rule{:pab}(), zxg)
 rewrite!(Rule{:pab}(), zxg, matches[2])
 rewrite!(Rule{:pab}(), zxg, matches[4])
 
 ZXplot(zxg)
+zxg.layout.spider_seq
