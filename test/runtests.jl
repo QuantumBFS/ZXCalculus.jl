@@ -117,6 +117,54 @@ end
     matches = match(Rule{:b}(), zxd)
     rewrite!(Rule{:b}(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
+
+    g = Multigraph(9)
+    for e in [[2,6],[3,7],[4,8],[5,9]]
+        add_edge!(g, e[1], e[2])
+    end
+    ps = [1//2, 0, 1//4, 1//2, 3//4, 0, 0, 0, 0]
+    st = [Z, Z, Z, Z, Z, In, In, Out, Out]
+    zxg = ZXGraph(ZXDiagram(g, st, ps))
+    for e in [[1,2],[1,3],[1,4],[1,5],[2,3]]
+        add_edge!(zxg, e[1], e[2])
+    end
+    replace!(Rule{:lc}(), zxg)
+    @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
+    @test phase(zxg, 2) == 3//2 && phase(zxg, 3) == 7//4 &&
+        phase(zxg, 4) == 0//1 && phase(zxg, 5) == 1//4
+
+    g = Multigraph(14)
+    for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14]]
+        add_edge!(g, e[1], e[2])
+    end
+    ps = [1//1, 0, 1//4, 1//2, 3//4, 1, 5//4, 3//2, 0, 0, 0, 0, 0, 0]
+    st = [Z, Z, Z, Z, Z, Z, Z, Z, In, Out, In, Out, In, Out]
+    zxg = ZXGraph(ZXDiagram(g, st, ps))
+    for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
+        add_edge!(zxg, e[1], e[2])
+    end
+
+    replace!(Rule{:p1}(), zxg)
+    @test !has_edge(zxg, 3, 4) && !has_edge(zxg, 5, 6) && !has_edge(zxg, 7, 8)
+    @test nv(zxg) == 12 && ne(zxg) == 18
+    @test phase(zxg, 3) == 1//4 && phase(zxg, 4) == 1//2 &&
+        phase(zxg, 5) == 3//4 && phase(zxg, 6) == 1//1 &&
+        phase(zxg, 7) == 1//4 && phase(zxg, 8) == 1//2
+
+    g = Multigraph(6)
+    for e in [[2,6]]
+        add_edge!(g, e[1], e[2])
+    end
+    ps = [1//1, 1//4, 1//2, 3//4, 1, 0]
+    st = [Z, Z, Z, Z, Z, In]
+    zxg = ZXGraph(ZXDiagram(g, st, ps))
+    for e in [[1,2],[2,3],[1,4],[1,5]]
+        add_edge!(zxg, e[1], e[2])
+    end
+
+    @test length(match(Rule{:p1}(), zxg)) == 1
+    replace!(Rule{:pab}(), zxg)
+    @test nv(zxg) == 6 && ne(zxg) == 6
 end
 
 @testset "zx_graph.jl" begin
