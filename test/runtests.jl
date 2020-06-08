@@ -2,7 +2,7 @@ using ZXCalculus
 using Test
 using LightGraphs
 
-# include("../script/zx_plot.jl")
+include("../script/zx_plot.jl")
 
 # @testset "zx_plot.jl" begin
 #     include("../script/zx_plot.jl")
@@ -11,7 +11,7 @@ using LightGraphs
 #         add_edge!(g, e)
 #     end
 #     ps = [0, 0, 0//1, 2//1, 0, 0]
-#     v_t = [In, Out, X, Z, Out, In]
+#     v_t = [SpiderType.In, SpiderType.Out, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.In]
 #     zxd = ZXDiagram(g, v_t, ps)
 #     ZXplot(zxd)
 #
@@ -22,25 +22,25 @@ using LightGraphs
 @testset "zx_diagram.jl" begin
     g = Multigraph([0 1 0; 1 0 1; 0 1 0])
     ps = [Rational(0) for i = 1:3]
-    v_t = [X, Z, X]
+    v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
     zxd = ZXDiagram(g, v_t, ps)
     zxd2 = ZXDiagram(g, Dict(zip(1:3,v_t)), Dict(zip(1:3,ps)))
     @test zxd.mg == zxd2.mg && zxd.st == zxd2.st && zxd.ps == zxd2.ps
 
     zxd2 = copy(zxd)
     @test zxd.st == zxd2.st && zxd.ps == zxd2.ps
-    @test ZXCalculus.spider_type(zxd, 1) == X
+    @test ZXCalculus.spider_type(zxd, 1) == SpiderType.X
     @test nv(zxd) == 3 && ne(zxd) == 2
 
     @test rem_edge!(zxd, 2, 3)
     @test outneighbors(zxd, 2) == [1]
 
-    ZXCalculus.add_spider!(zxd, H, 0//1, [2, 3])
-    ZXCalculus.insert_spider!(zxd, 2, 4, H)
+    ZXCalculus.add_spider!(zxd, SpiderType.H, 0//1, [2, 3])
+    ZXCalculus.insert_spider!(zxd, 2, 4, SpiderType.H)
     @test nv(zxd) == 5 && ne(zxd) == 4
 
     zxd3 = ZXDiagram(3)
-    ZXCalculus.insert_spider!(zxd3, 1, 2, H)
+    ZXCalculus.insert_spider!(zxd3, 1, 2, SpiderType.H)
     @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2) == ZXCalculus.qubit_loc(zxd3, 7)
 end
 
@@ -48,7 +48,7 @@ end
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     collect(edges(g))
     ps = [i//4 for i = 1:3]
-    v_t = [Z, Z, X]
+    v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:f}(), zxd)
     rewrite!(Rule{:f}(), zxd, matches)
@@ -58,7 +58,7 @@ end
     g = Multigraph(path_graph(5))
     add_edge!(g, 1, 2)
     ps = [1, 0//1, 0, 0, 1]
-    v_t = [X, X, Z, Z, Z]
+    v_t = [SpiderType.X, SpiderType.X, SpiderType.Z, SpiderType.Z, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:i1}(), zxd)
     rewrite!(Rule{:i1}(), zxd, matches)
@@ -66,7 +66,7 @@ end
 
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     ps = [i//4 for i = 1:3]
-    v_t = [X, X, Z]
+    v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:h}(), zxd)
     rewrite!(Rule{:h}(), zxd, matches)
@@ -83,7 +83,7 @@ end
     add_edge!(g, 3, 5)
     add_edge!(g, 3, 6)
     ps = [0, 1, 1//2, 0, 0, 0]
-    v_t = [In, X, Z, Out, Out, Out]
+    v_t = [SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:pi}(), zxd)
     rewrite!(Rule{:pi}(), zxd, matches)
@@ -91,7 +91,7 @@ end
 
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     ps = [1, 1//2, 0]
-    v_t = [X, Z, In]
+    v_t = [SpiderType.X, SpiderType.Z, SpiderType.In]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:pi}(), zxd)
     rewrite!(Rule{:pi}(), zxd, matches)
@@ -103,7 +103,7 @@ end
     add_edge!(g, 2, 4)
     add_edge!(g, 2, 5)
     ps = [0, 1//2, 0, 0, 0]
-    v_t = [X, Z, Out, Out, Out]
+    v_t = [SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:c}(), zxd)
     rewrite!(Rule{:c}(), zxd, matches)
@@ -116,7 +116,7 @@ end
     add_edge!(g, 3, 5)
     add_edge!(g, 4, 6)
     ps = [0//1 for i = 1:6]
-    v_t = [In, In, X, Z, Out, Out]
+    v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     layout = ZXCalculus.ZXLayout(2, [[1,3,5],[2,4,6]])
     zxd = ZXDiagram(g, v_t, ps, layout)
     matches = match(Rule{:b}(), zxd)
@@ -129,7 +129,7 @@ end
         add_edge!(g, e[1], e[2])
     end
     ps = [1//2, 0, 1//4, 1//2, 3//4, 0, 0, 0, 0]
-    st = [Z, Z, Z, Z, Z, In, In, Out, Out]
+    st = [SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.In, SpiderType.In, SpiderType.Out, SpiderType.Out]
     zxg = ZXGraph(ZXDiagram(g, st, ps))
     for e in [[1,2],[1,3],[1,4],[1,5],[2,3]]
         add_edge!(zxg, e[1], e[2])
@@ -143,7 +143,7 @@ end
         add_edge!(g, e[1], e[2])
     end
     ps = [1//1, 0, 1//4, 1//2, 3//4, 1, 5//4, 3//2, 0, 0, 0, 0, 0, 0]
-    st = [Z, Z, Z, Z, Z, Z, Z, Z, In, Out, In, Out, In, Out]
+    st = [SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.In, SpiderType.Out, SpiderType.In, SpiderType.Out, SpiderType.In, SpiderType.Out]
     zxg = ZXGraph(ZXDiagram(g, st, ps))
     for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
         add_edge!(zxg, e[1], e[2])
@@ -159,7 +159,7 @@ end
         add_edge!(g, e[1], e[2])
     end
     ps = [1//1, 1//4, 1//2, 3//4, 1, 0]
-    st = [Z, Z, Z, Z, Z, In]
+    st = [SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.In]
     zxg = ZXGraph(ZXDiagram(g, st, ps))
     for e in [[1,2],[2,3],[1,4],[1,5]]
         add_edge!(zxg, e[1], e[2])
@@ -178,9 +178,10 @@ end
     add_edge!(g, 3, 5)
     add_edge!(g, 4, 6)
     ps = [0//1 for i = 1:6]
-    v_t = [In, In, X, Z, Out, Out]
+    v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
+    ZXplot(zxg1)
     @test !ZXCalculus.is_hadamard(zxg1, 2, 4) && !ZXCalculus.is_hadamard(zxg1, 4, 6)
     replace!(Rule{:b}(), zxd)
     zxg2 = ZXGraph(zxd)

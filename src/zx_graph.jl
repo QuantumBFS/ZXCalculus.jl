@@ -17,7 +17,7 @@ This is the type for representing the graph-like ZX-diagrams.
 struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
     ps::Dict{T, P}
-    st::Dict{T, SType}
+    st::Dict{T, SpiderType.SType}
     layout::ZXLayout{T}
 end
 
@@ -37,9 +37,9 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     vZ = T[]
     vB = T[]
     for v in vs
-        if spider_type(nzxd, v) == H
+        if spider_type(nzxd, v) == SpiderType.H
             push!(vH, v)
-        elseif spider_type(nzxd, v) == Z
+        elseif spider_type(nzxd, v) == SpiderType.Z
             push!(vZ, v)
         else
             push!(vB, v)
@@ -107,7 +107,7 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
-function add_spider!(zxg::ZXGraph{T, P}, st::SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
+function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
     add_vertex!(zxg.mg)
     v = vertices(zxg.mg)[end]
     zxg.ps[v] = phase
@@ -120,7 +120,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SType, phase::P = zero(P), connect:
     zxg
 end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
-    add_spider!(zxg, Z, phase, [v1, v2])
+    add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
     l1 = qubit_loc(zxg.layout, v1)
     l2 = qubit_loc(zxg.layout, v2)
@@ -134,11 +134,11 @@ end
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
-    if st_v == Z
+    if st_v == SpiderType.Z
         printstyled(io, "S_$(v){phase = $(phase(zxg, v))⋅π}"; color = :green)
-    elseif st_v == In
+    elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
-    elseif st_v == Out
+    elseif st_v == SpiderType.Out
         print(io, "S_$(v){output}")
     end
 end
@@ -176,7 +176,7 @@ Return `true` if `v` is a interior spider of `zxg`.
 function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     if v in spiders(zxg)
         nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
-        if !(In in nb_st || Out in nb_st)
+        if !(SpiderType.In in nb_st || SpiderType.Out in nb_st)
             return true
         end
     end

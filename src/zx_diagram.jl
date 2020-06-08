@@ -2,10 +2,12 @@ using LightGraphs
 import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!, add_edge!
 
-export ZXDiagram, SType, Z, X, H, In, Out, spiders, spider_type, phase
+export ZXDiagram, SpiderType, spiders, spider_type, phase
 export push_gate!, push_ctrl_gate!
 
-@enum SType Z X H In Out
+module SpiderType
+    @enum SType Z X H In Out
+end  # module SpiderType
 
 """
     ZXDiagram{T, P}
@@ -14,12 +16,12 @@ This is the type for representing ZX-diagrams.
 struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
-    st::Dict{T, SType}
+    st::Dict{T, SpiderType.SType}
     ps::Dict{T, P}
 
     layout::ZXLayout{T}
 
-    function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SType}, ps::Dict{T, P},
+    function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             zxd = new{T, P}(mg, st, ps, layout)
@@ -31,20 +33,20 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     end
 end
 
-ZXDiagram(mg::Multigraph{T}, st::Dict{T, SType}, ps::Dict{T, P},
+ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout)
-ZXDiagram(mg::Multigraph{T}, st::Vector{SType}, ps::Vector{P},
+ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} =
     ZXDiagram(mg, Dict(zip(vertices(mg), st)), Dict(zip(vertices(mg), ps)), layout)
 
 function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
-    st = [In for _ = 1:2*nbits]
+    st = [SpiderType.In for _ = 1:2*nbits]
     ps = [0//1 for _ = 1:2*nbits]
     layout = ZXLayout(nbits, [[2*i-1, 2*i] for i = 1:nbits])
     for i = 1:nbits
         add_edge!(mg, 2*i-1, 2*i)
-        st[2*i] = Out
+        st[2*i] = SpiderType.Out
     end
     ZXDiagram(mg, st, ps, layout)
 end
@@ -67,15 +69,15 @@ phase(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.ps[v]
 
 function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
     st_v = spider_type(zxd, v)
-    if st_v == Z
+    if st_v == SpiderType.Z
         printstyled(io, "S_$(v){phase = $(zxd.ps[v])⋅π}"; color = :green)
-    elseif st_v == X
+    elseif st_v == SpiderType.X
         printstyled(io, "S_$(v){phase = $(zxd.ps[v])⋅π}"; color = :red)
-    elseif st_v == H
+    elseif st_v == SpiderType.H
         printstyled(io, "S_$(v){H}"; color = :yellow)
-    elseif st_v == In
+    elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
-    elseif st_v == Out
+    elseif st_v == SpiderType.Out
         print(io, "S_$(v){output}")
     end
 end
@@ -158,7 +160,7 @@ rem_spider!(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = rem_spiders!(zxd
 Add a new spider which is of the type `spider_type` with phase `phase` and
 connected to the vertices `connect`.
 """
-function add_spider!(zxd::ZXDiagram{T, P}, st::SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
+function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
     add_vertex!(zxd.mg)
     v = vertices(zxd.mg)[end]
     zxd.ps[v] = phase
@@ -179,7 +181,7 @@ vertices `v1` and `v2`. It will insert multiple times if the edge between
 `v1` and `v2` is a multiple edge. Also it will remove the original edge between
 `v1` and `v2`.
 """
-function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SType, phase::P = zero(P)) where {T<:Integer, P}
+function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType, phase::P = zero(P)) where {T<:Integer, P}
     for i = 1:mul(zxd.mg, v1, v2)
         add_spider!(zxd, st, phase, [v1, v2])
         rem_edge!(zxd, v1, v2)
@@ -222,21 +224,21 @@ and `:H`.
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     bound_id = zxd.layout.spider_seq[loc][end-1]
     out_id = zxd.layout.spider_seq[loc][end]
-    insert_spider!(zxd, bound_id, out_id, Z, phase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, phase)
     zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
     bound_id = zxd.layout.spider_seq[loc][end-1]
     out_id = zxd.layout.spider_seq[loc][end]
-    insert_spider!(zxd, bound_id, out_id, X, phase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.X, phase)
     zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     bound_id = zxd.layout.spider_seq[loc][end-1]
     out_id = zxd.layout.spider_seq[loc][end]
-    insert_spider!(zxd, bound_id, out_id, H)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.H)
     zxd
 end
 
@@ -259,26 +261,26 @@ function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) wher
     push_gate!(zxd, Val{:Z}(), loc)
     v1, v2 = spiders(zxd)[end-1:end]
     add_edge!(zxd, v1, v2)
-    insert_spider!(zxd, v1, v2, H)
+    insert_spider!(zxd, v1, v2, SpiderType.H)
     zxd
 end
 
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
-    insert_spider!(zxd, in_id, bound_id, Z, phase)
+    insert_spider!(zxd, in_id, bound_id, SpiderType.Z, phase)
     zxd
 end
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
-    insert_spider!(zxd, in_id, bound_id, X, phase)
+    insert_spider!(zxd, in_id, bound_id, SpiderType.X, phase)
     zxd
 end
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
-    insert_spider!(zxd, in_id, bound_id, H)
+    insert_spider!(zxd, in_id, bound_id, SpiderType.H)
     zxd
 end
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {T, P}
@@ -307,6 +309,6 @@ function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T)
     pushfirst_gate!(zxd, Val{:Z}(), loc)
     v1, v2 = spiders(zxd)[end-1:end]
     add_edge!(zxd, v1, v2)
-    insert_spider!(zxd, v1, v2, H)
+    insert_spider!(zxd, v1, v2, SpiderType.H)
     zxd
 end

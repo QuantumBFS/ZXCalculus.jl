@@ -28,12 +28,12 @@ function et2color(et::String)
     et == "×2" && return colorant"blue"
 end
 
-function st2color(S::SType)
-    S == Z && return colorant"green"
-    S == X && return colorant"red"
-    S == H && return colorant"yellow"
-    S == In && return colorant"lightblue"
-    S == Out && return colorant"gray"
+function st2color(S::SpiderType.SType)
+    S == SpiderType.Z && return colorant"green"
+    S == SpiderType.X && return colorant"red"
+    S == SpiderType.H && return colorant"yellow"
+    S == SpiderType.In && return colorant"lightblue"
+    S == SpiderType.Out && return colorant"gray"
 end
 
 ZX2nodefillc(zxd) = [st2color(zxd.st[v]) for v in vertices(zxd.mg)]
@@ -41,11 +41,11 @@ ZX2nodefillc(zxd) = [st2color(zxd.st[v]) for v in vertices(zxd.mg)]
 function ZX2nodelabel(zxd)
     nodelabel = String[]
     for v in vertices(zxd.mg)
-        zxd.st[v] == Z && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
-        zxd.st[v] == X && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
-        zxd.st[v] == H && push!(nodelabel, "[$(v)]")
-        zxd.st[v] == In && push!(nodelabel, "[$(v)]")
-        zxd.st[v] == Out && push!(nodelabel, "[$(v)]")
+        zxd.st[v] == SpiderType.Z && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
+        zxd.st[v] == SpiderType.X && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
+        zxd.st[v] == SpiderType.H && push!(nodelabel, "[$(v)]")
+        zxd.st[v] == SpiderType.In && push!(nodelabel, "[$(v)]")
+        zxd.st[v] == SpiderType.Out && push!(nodelabel, "[$(v)]")
     end
     return nodelabel
 end
@@ -81,13 +81,21 @@ function ZXplot(zxd::ZXDiagram)
     nodelabel = ZX2nodelabel(zxd)
     nodefillc = ZX2nodefillc(zxd)
     edgelabelc = colorant"black"
-    locs_x, locs_y = layout2locs(zxd)
-    gplot(g,
-        locs_x, locs_y,
-        nodelabel = nodelabel, edgelabel = edgelabel, edgelabelc = edgelabelc, nodefillc = nodefillc,
-        linetype = "curve",
-        # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
+    if zxd.layout.nbits > 0
+        locs_x, locs_y = layout2locs(zxd)
+        gplot(g,
+            locs_x, locs_y,
+            nodelabel = nodelabel, edgelabel = edgelabel, edgelabelc = edgelabelc, nodefillc = nodefillc,
+            linetype = "curve",
+            # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
         )
+    else
+        gplot(g,
+            nodelabel = nodelabel, edgelabel = edgelabel, edgelabelc = edgelabelc, nodefillc = nodefillc,
+            linetype = "curve",
+            # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
+        )
+    end
 end
 function ZXplot(zxd::ZXGraph)
     g, edge_types = ZX2Graph(zxd)
@@ -95,13 +103,23 @@ function ZXplot(zxd::ZXGraph)
     nodelabel = ZX2nodelabel(zxd)
     nodefillc = ZX2nodefillc(zxd)
     edgestrokec = et2color.(edge_types)
-    locs_x, locs_y = layout2locs(zxd)
-    gplot(g,
-        locs_x, locs_y,
-        nodelabel = nodelabel,
-        edgestrokec = edgestrokec,
-        nodefillc = nodefillc,
-        linetype = "curve",
-        # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
-        )
+    if zxd.layout.nbits > 0
+        locs_x, locs_y = layout2locs(zxd)
+        gplot(g,
+            locs_x, locs_y,
+            nodelabel = nodelabel,
+            edgestrokec = edgestrokec,
+            nodefillc = nodefillc,
+            linetype = "curve",
+            # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
+            )
+    else
+        gplot(g,
+            nodelabel = nodelabel,
+            edgestrokec = edgestrokec,
+            nodefillc = nodefillc,
+            linetype = "curve",
+            # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
+            )
+    end
 end

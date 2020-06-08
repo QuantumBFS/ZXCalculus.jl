@@ -17,8 +17,8 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     else
         vs = spiders(nzxg)
         sts = [st[v] for v in vs]
-        Outs = vs[sts .== Out]
-        Ins = vs[sts .== In]
+        Outs = vs[sts .== SpiderType.Out]
+        Ins = vs[sts .== SpiderType.In]
         if length(Outs) == length(Ins)
             return
         end
@@ -69,13 +69,13 @@ Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
-    frontier = frontier[[spider_type(zxg, f) == Z for f in frontier]]
+    frontier = frontier[[spider_type(zxg, f) == SpiderType.Z for f in frontier]]
     N = Set{T}()
     for f in frontier
         union!(N, neighbors(zxg, f))
     end
     N = collect(N)
-    # N = N[[spider_type(zxg, nh) == Z for nh in N]]
+    # N = N[[spider_type(zxg, nh) == SpiderType.Z for nh in N]]
     sort!(N, by = v -> qubit_loc(zxg.layout, v))
     M = biadjancency(zxg, frontier, N)
     M0, _ = gaussian_elimination(M)
@@ -112,7 +112,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
 
     for w in ws
         pushfirst_gate!(cir, Val{:H}(), qubit_loc(zxg.layout, w))
-        if spider_type(zxg, w) == Z
+        if spider_type(zxg, w) == SpiderType.Z
             pushfirst_gate!(cir, Val{:Z}(), qubit_loc(zxg.layout, w), phase(zxg, w))
             zxg.ps[w] = 0
         end
