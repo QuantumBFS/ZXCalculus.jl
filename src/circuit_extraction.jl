@@ -63,6 +63,12 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     return cir
 end
 
+"""
+    update_frontier!(zxg, frontier, cir)
+
+Update frontier. This is a important step in the circuit extraction algorithm.
+For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
+"""
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
     frontier = frontier[[spider_type(zxg, f) == Z for f in frontier]]
     N = Set{T}()
@@ -85,7 +91,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
         rem_edge!(zxg, frontier[e[1]], N[e[2]])
     end
     M0, steps = gaussian_elimination(M1)
-    M0 = reverse_gauss_elimination(M, steps[end:-1:1])
+    M0 = reverse_gaussian_elimination(M, steps[end:-1:1])
     for e in findall(M0 .== 1)
         if sum(M0[e[1],:]) != 1
             add_edge!(zxg, frontier[e[1]], N[e[2]])
@@ -128,6 +134,11 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
     return frontier
 end
 
+"""
+    biadjancency(zxg, F, N)
+
+Return the biadjancency matrix of `zxg` from vertices in `F` to vertices in `N`.
+"""
 function biadjancency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, P}
     M = zeros(Int, length(F), length(N))
 
@@ -141,12 +152,23 @@ function biadjancency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, 
     return M
 end
 
+"""
+    GEStep
+
+A struct for representing steps in the Gaussian elimination.
+"""
 struct GEStep
     op::Symbol
     r1::Int
     r2::Int
 end
 
+"""
+    gaussian_elimination(M[, steps])
+
+Return result and steps of Gaussian elimination of matrix `M`. Here we assume
+that the elements of `M` is in binary field F_2 = {0,1}.
+"""
 function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}()) where {T<:Integer}
     M = copy(M)
     nr, nc = size(M)
@@ -184,7 +206,12 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
     M, steps
 end
 
-function reverse_gauss_elimination(M, steps)
+"""
+    reverse_gaussian_elimination(M, steps)
+
+Apply back the operations in `steps` to `M`.
+"""
+function reverse_gaussian_elimination(M, steps)
     for i = length(steps):-1:1
         s = steps[i]
         op = s.op
@@ -200,6 +227,3 @@ function reverse_gauss_elimination(M, steps)
     end
     M
 end
-
-M = rand([0,1], 5, 5)
-M == reverse_gauss_elimination(gaussian_elimination(M)...)
