@@ -11,4 +11,6 @@ include("zx_diagram.jl")
 include("zx_graph.jl")
 include("rules.jl")
 
+include("circuit_extraction.jl")
+
 end # module
