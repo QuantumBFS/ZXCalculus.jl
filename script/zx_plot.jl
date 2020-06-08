@@ -24,8 +24,8 @@ ZX2Graph(zxd::ZXDiagram) = Multigraph2Graph(zxd.mg)
 ZX2Graph(zxg::ZXGraph) = Multigraph2Graph(zxg.mg)
 
 function et2color(et::String)
-    et == "1" && return colorant"black"
-    et == "2" && return colorant"blue"
+    et == "" && return colorant"black"
+    et == "×2" && return colorant"blue"
 end
 
 function st2color(S::SType)
@@ -41,11 +41,11 @@ ZX2nodefillc(zxd) = [st2color(zxd.st[v]) for v in vertices(zxd.mg)]
 function ZX2nodelabel(zxd)
     nodelabel = String[]
     for v in vertices(zxd.mg)
-        zxd.st[v] == Z && push!(nodelabel, "[$(v)] $(zxd.ps[v]) π")
-        zxd.st[v] == X && push!(nodelabel, "[$(v)] $(zxd.ps[v]) π")
-        zxd.st[v] == H && push!(nodelabel, "[$(v)] H")
-        zxd.st[v] == In && push!(nodelabel, "[$(v)] In")
-        zxd.st[v] == Out && push!(nodelabel, "[$(v)] Out")
+        zxd.st[v] == Z && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
+        zxd.st[v] == X && push!(nodelabel, "[$(v)]\n$(zxd.ps[v]) π")
+        zxd.st[v] == H && push!(nodelabel, "[$(v)]")
+        zxd.st[v] == In && push!(nodelabel, "[$(v)]")
+        zxd.st[v] == Out && push!(nodelabel, "[$(v)]")
     end
     return nodelabel
 end
@@ -98,7 +98,9 @@ function ZXplot(zxd::ZXGraph)
     locs_x, locs_y = layout2locs(zxd)
     gplot(g,
         locs_x, locs_y,
-        nodelabel = nodelabel, edgestrokec = edgestrokec, nodefillc = nodefillc,
+        nodelabel = nodelabel,
+        edgestrokec = edgestrokec,
+        nodefillc = nodefillc,
         linetype = "curve",
         # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
         )

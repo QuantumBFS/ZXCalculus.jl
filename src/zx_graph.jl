@@ -58,40 +58,6 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
-function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
-    nzxd = copy(zxd)
-
-    replace!(Rule{:i1}(), nzxd)
-    replace!(Rule{:h}(), nzxd)
-    replace!(Rule{:i2}(), nzxd)
-    replace!(Rule{:f}(), nzxd)
-
-    vs = spiders(nzxd)
-    vH = T[]
-    vZ = T[]
-    vB = T[]
-    for v in vs
-        if spider_type(nzxd, v) == H
-            push!(vH, v)
-        elseif spider_type(nzxd, v) == Z
-            push!(vZ, v)
-        else
-            push!(vB, v)
-        end
-    end
-
-    zxg = copy(nzxd)
-    rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st)
-
-    for v in vH
-        v1, v2 = neighbors(nzxd, v, count_mul = true)
-        add_edge!(zxg, v1, v2)
-    end
-
-    return zxg
-end
-
 has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 nv(zxg::ZXGraph) = nv(zxg.mg)
 ne(zxg::ZXGraph) = ne(zxg.mg)

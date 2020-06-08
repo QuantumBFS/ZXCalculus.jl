@@ -55,7 +55,6 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
 
     while !isempty(setdiff(spiders(nzxg), extracted))
         frontier = update_frontier!(nzxg, frontier, cir)
-        println(frontier)
         extracted = [extracted; frontier]
     end
     replace!(Rule{:i1}(), cir)
@@ -102,12 +101,10 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
         if step.op == :addto
             ctrl = qubit_loc(zxg.layout, frontier[step.r2])
             loc = qubit_loc(zxg.layout, frontier[step.r1])
-            println((ctrl, loc), :CNOT)
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), loc, ctrl)
         else
             q1 = qubit_loc(zxg.layout, frontier[step.r1])
             q2 = qubit_loc(zxg.layout, frontier[step.r2])
-            println((q1, q2), :SWAP)
             pushfirst_gate!(cir, Val{:SWAP}(), [q1, q2])
         end
     end
