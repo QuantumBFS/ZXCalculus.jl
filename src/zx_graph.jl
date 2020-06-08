@@ -1,6 +1,6 @@
 using LightGraphs
 
-import Base: show
+import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge
 
@@ -11,14 +11,18 @@ const HADAMARD = 2
 
 """
     ZXGraph{T, P}
+
 This is the type for representing the graph-like ZX-diagrams.
 """
 struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
     ps::Dict{T, P}
     st::Dict{T, SType}
-    layout::ZXLayout
+    layout::ZXLayout{T}
 end
+
+copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
+    copy(zxg.ps), copy(zxg.st), copy(zxg.layout))
 
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
@@ -166,6 +170,7 @@ end
 
 """
     is_interior(zxg::ZXGraph, v)
+
 Return `true` if `v` is a interior spider of `zxg`.
 """
 function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
