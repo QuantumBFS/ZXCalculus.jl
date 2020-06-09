@@ -2,7 +2,7 @@ using ZXCalculus
 using Test
 using LightGraphs
 
-include("../script/zx_plot.jl")
+# include("../script/zx_plot.jl")
 
 # @testset "zx_plot.jl" begin
 #     include("../script/zx_plot.jl")
