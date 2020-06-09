@@ -181,7 +181,6 @@ end
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
-    ZXplot(zxg1)
     @test !ZXCalculus.is_hadamard(zxg1, 2, 4) && !ZXCalculus.is_hadamard(zxg1, 4, 6)
     replace!(Rule{:b}(), zxd)
     zxg2 = ZXGraph(zxd)
