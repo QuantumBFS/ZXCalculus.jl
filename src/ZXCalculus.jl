@@ -11,6 +11,9 @@ include("zx_diagram.jl")
 include("zx_graph.jl")
 include("rules.jl")
 
+include("simplify.jl")
+
 include("circuit_extraction.jl")
+include("phase_teleportation.jl")
 
 end # module

@@ -28,10 +28,10 @@ copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
 
-    replace!(Rule{:i1}(), nzxd)
-    replace!(Rule{:h}(), nzxd)
-    replace!(Rule{:i2}(), nzxd)
-    replace!(Rule{:f}(), nzxd)
+    simplify!(Rule{:i1}(), nzxd)
+    simplify!(Rule{:h}(), nzxd)
+    simplify!(Rule{:i2}(), nzxd)
+    simplify!(Rule{:f}(), nzxd)
 
     vs = spiders(nzxd)
     vH = T[]
