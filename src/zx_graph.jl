@@ -19,10 +19,11 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
     layout::ZXLayout{T}
+    phase_ids::Dict{T,Vector{T}}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
-    copy(zxg.ps), copy(zxg.st), copy(zxg.layout))
+    copy(zxg.ps), copy(zxg.st), copy(zxg.layout), deepcopy(zxg.phase_ids))
 
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
@@ -48,7 +49,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
 
     zxg = copy(nzxd)
     rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout)
+    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout, zxg.phase_ids)
 
     for v in vH
         v1, v2 = neighbors(nzxd, v, count_mul = true)
@@ -99,6 +100,7 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         for v in vs
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
+            delete!(zxg.phase_ids, v)
             rem_vertex!(zxg.layout, v)
         end
         return true
@@ -112,6 +114,9 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     v = vertices(zxg.mg)[end]
     zxg.ps[v] = phase
     zxg.st[v] = st
+    if st in [SpiderType.Z, SpiderType.X]
+        zxg.phase_ids[v] = [v]
+    end
     if connect ⊆ spiders(zxg)
         for c in connect
             add_edge!(zxg, v, c)

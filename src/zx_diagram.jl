@@ -21,10 +21,19 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
 
     layout::ZXLayout{T}
 
+    phase_ids::Dict{T, Vector{T}}
+
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T}) where {T<:Integer, P}
+        layout::ZXLayout{T}, phase_ids::Dict{T, Vector{T}} = Dict{T, Vector{T}}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
-            zxd = new{T, P}(mg, st, ps, layout)
+            if length(phase_ids) == 0
+                for v in vertices(mg)
+                    if st[v] in [SpiderType.Z, SpiderType.X]
+                        phase_ids[v] = [v]
+                    end
+                end
+            end
+            zxd = new{T, P}(mg, st, ps, layout, phase_ids)
             rounding_phases!(zxd)
             return zxd
         else
@@ -34,7 +43,8 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
 end
 
 ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-    layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout)
+    layout::ZXLayout{T} = ZXLayout{T}(),
+    phase_ids::Dict{T,Vector{T}} = Dict{T,Vector{T}}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout, phase_ids)
 ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} =
     ZXDiagram(mg, Dict(zip(vertices(mg), st)), Dict(zip(vertices(mg), ps)), layout)
@@ -51,7 +61,8 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     ZXDiagram(mg, st, ps, layout)
 end
 
-copy(zxd::ZXDiagram) = ZXDiagram(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout))
+copy(zxd::ZXDiagram) = ZXDiagram(copy(zxd.mg), copy(zxd.st), copy(zxd.ps),
+    copy(zxd.layout), deepcopy(zxd.phase_ids))
 
 """
     spider_type(zxd, v)
@@ -140,6 +151,7 @@ function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
         for v in vs
             delete!(zxd.ps, v)
             delete!(zxd.st, v)
+            delete!(zxd.phase_ids, v)
             rem_vertex!(zxd.layout, v)
         end
         return true
@@ -165,6 +177,9 @@ function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero
     v = vertices(zxd.mg)[end]
     zxd.ps[v] = phase
     zxd.st[v] = st
+    if st in [SpiderType.Z, SpiderType.X]
+        zxd.phase_ids[v] = [v]
+    end
     if connect ⊆ vertices(zxd.mg)
         for c in connect
             add_edge!(zxd.mg, v, c)
