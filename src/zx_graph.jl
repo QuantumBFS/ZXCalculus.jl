@@ -19,7 +19,7 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
     layout::ZXLayout{T}
-    phase_ids::Dict{T,Vector{T}}
+    phase_ids::Dict{T,Vector{Tuple{T, Int}}}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
@@ -115,7 +115,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     zxg.ps[v] = phase
     zxg.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
-        zxg.phase_ids[v] = [v]
+        zxg.phase_ids[v] = [(v, 1)]
     end
     if connect ⊆ spiders(zxg)
         for c in connect

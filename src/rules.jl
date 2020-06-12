@@ -187,6 +187,7 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
         end
     end
     zxd.ps[v1] += zxd.ps[v2]
+    push!(zxd.phase_ids[v1], (v2, 1))
     rem_spider!(zxd, v2)
     rounding_phases!(zxd)
     zxd
