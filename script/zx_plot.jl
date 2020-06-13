@@ -97,7 +97,7 @@ function ZXplot(zxd::ZXDiagram)
         )
     end
 end
-function ZXplot(zxd::ZXGraph)
+function ZXplot(zxd::ZXGraph; linetype = "straight")
     g, edge_types = ZX2Graph(zxd)
 
     nodelabel = ZX2nodelabel(zxd)
@@ -110,7 +110,7 @@ function ZXplot(zxd::ZXGraph)
             nodelabel = nodelabel,
             edgestrokec = edgestrokec,
             nodefillc = nodefillc,
-            linetype = "curve",
+            linetype = linetype,
             # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
             )
     else
@@ -118,7 +118,7 @@ function ZXplot(zxd::ZXGraph)
             nodelabel = nodelabel,
             edgestrokec = edgestrokec,
             nodefillc = nodefillc,
-            linetype = "curve",
+            linetype = linetype,
             # NODESIZE = 0.35 / sqrt(nv(g)), EDGELINEWIDTH = 8.0 / sqrt(nv(g))
             )
     end
