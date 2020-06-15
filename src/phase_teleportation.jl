@@ -1,12 +1,10 @@
-include("../script/zx_plot.jl")
+# include("../script/zx_plot.jl")
 
 export phase_teleportation
 function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     ncir = copy(cir)
     zxg = ZXGraph(ncir)
 
-    println(zxg.phase_ids)
-    # simplify...
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)
     simplify!(Rule{:p2}(), zxg)
@@ -29,11 +27,13 @@ function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     end
 
     phase_ids = zxg.phase_ids
+    println(spiders(zxg))
     for (v, vs) in phase_ids
+        println(vs)
         reduce_phases!(ncir, vs)
     end
-    simplify!(Rule{:i1}(), ncir)
-    simplify!(Rule{:i2}(), ncir)
+    # simplify!(Rule{:i1}(), ncir)
+    # simplify!(Rule{:i2}(), ncir)
     return ncir
 end
 
