@@ -57,7 +57,7 @@ Return `true` if `mg` has a multiple edge from `s` to `d` whose multiplicity
 is not less than `mul`.
 
 ## Examples
-```jldoctest
+```julia
 julia> using LightGraphs, Multigraphs
 
 julia> mg = Multigraph(3);
@@ -82,7 +82,7 @@ edge from `s` to `d`, it will increase its multiplicity by `mul`.
 Return `true` multiple edge was added successfully, otherwise return `false`.
 
 ## Examples
-```jldoctest
+```julia
 julia> using LightGraphs, Multigraphs
 
 julia> mg = Multigraph(3);
@@ -109,7 +109,7 @@ Remove the multiplicity of edge from `s` to `d` by `mul` in `mg`, if `mg` has su
 a multiple edge.
 
 ## Examples
-```jldoctest
+```julia
 julia> using LightGraphs, Multigraphs
 
 julia> mg = Multigraph(3);
