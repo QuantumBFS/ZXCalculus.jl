@@ -57,8 +57,8 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         frontier = update_frontier!(nzxg, frontier, cir)
         extracted = [extracted; frontier]
     end
-    replace!(Rule{:i1}(), cir)
-    replace!(Rule{:i2}(), cir)
+    simplify!(Rule{:i1}(), cir)
+    simplify!(Rule{:i2}(), cir)
     return cir
 end
 
