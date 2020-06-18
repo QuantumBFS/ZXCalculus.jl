@@ -37,21 +37,11 @@ ZXplot(zxd)
 
 zxg = ZXGraph(zxd)
 ZXplot(zxg)
-matches = match(Rule{:lc}(), zxg)
-[matches[i].vertices[1] for i = 1:5]
-rewrite!(Rule{:lc}(), zxg, matches[1])
+simplify!(Rule{:lc}(), zxg)
 ZXplot(zxg)
-rewrite!(Rule{:lc}(), zxg, matches[3])
+simplify!(Rule{:p1}(), zxg)
 ZXplot(zxg)
-rewrite!(Rule{:lc}(), zxg, matches[2])
-ZXplot(zxg)
-rewrite!(Rule{:lc}(), zxg, matches[5])
-ZXplot(zxg)
-
-matches = match(Rule{:pab}(), zxg)
-rewrite!(Rule{:pab}(), zxg, matches[2])
-rewrite!(Rule{:pab}(), zxg, matches[4])
-
+replace!(Rule{:pab}(), zxg)
 ZXplot(zxg)
 
 cir = circuit_extraction(zxg)

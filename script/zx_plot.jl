@@ -78,11 +78,9 @@ function layout2locs(zxd::ZXDiagram{T,P}) where {T,P}
                     frontier_v[q] += 1
                 else
                     v1 = nb[[qubit_loc(lo, u) != q for u in nb]][1]
-                    println(v1)
                     if spider_type(zxd, v1) == SpiderType.H
                         v1 = setdiff(neighbors(zxd, v1), [v])[1]
                     end
-                    println(lo)
                     if sum([findfirst(isequal(u), lo.spider_seq[qubit_loc(lo, u)]) != frontier_v[qubit_loc(lo, u)] for u in [v, v1]]) == 0
                         x = maximum(frontier_locs[min(qubit_loc(lo, v), qubit_loc(lo, v1)):max(qubit_loc(lo, v), qubit_loc(lo, v1))])
                         for u in [v, v1]

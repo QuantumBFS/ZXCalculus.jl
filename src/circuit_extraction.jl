@@ -46,7 +46,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     for i = 1:nbits
         for j = i+1:nbits
             if is_hadamard(nzxg, frontier[i], frontier[j])
-                pushfirst_ctrl_gate!(cir, Val{:CZ}(), frontier[i], frontier[j])
+                pushfirst_ctrl_gate!(cir, Val{:CZ}(), i, j)
                 rem_edge!(nzxg, frontier[i], frontier[j])
             end
         end
