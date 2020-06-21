@@ -75,7 +75,6 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
         union!(N, neighbors(zxg, f))
     end
     N = collect(N)
-    # N = N[[spider_type(zxg, nh) == SpiderType.Z for nh in N]]
     sort!(N, by = v -> qubit_loc(zxg.layout, v))
     M = biadjancency(zxg, frontier, N)
     M0, _ = gaussian_elimination(M)
@@ -200,7 +199,7 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
         end
         current_col += 1
     end
-    M, steps
+    return M, steps
 end
 
 """
@@ -222,5 +221,5 @@ function reverse_gaussian_elimination(M, steps)
             M[r2,:] = r_temp
         end
     end
-    M
+    return M
 end
