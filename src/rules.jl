@@ -5,6 +5,26 @@ export rewrite!
 
 abstract type AbstractRule end
 
+"""
+    Rule{L}
+
+The struct for identifying different rules.
+
+Rule list:
+* `Rule{:f}()`: rule f
+* `Rule{:h}()`: rule h
+* `Rule{:i1}()`: rule i1
+* `Rule{:i2}()`: rule i2
+* `Rule{:pi}()`: rule π
+* `Rule{:c}()`: rule c
+* `Rule{:lc}()`: local complementary rule
+* `Rule{:p1}()`: pivoting rule
+* `Rule{:pab}()`: rule for removing Paulis spiders adjancent to boundary spiders
+* `Rule{:p2}()`: rule p2
+* `Rule{:p3}()`: rule p3
+* `Rule{:id}()`: rule id
+* `Rule{:gf}()`: gadget fushion rule
+"""
 struct Rule{L} <: AbstractRule end
 
 struct Match{T<:Integer}
