@@ -95,6 +95,7 @@ end
         @test degree(g, v) == indegree(g, v) && indegree(g, v) == outdegree(g, v)
     end
     add_vertex!(g)
+    @test indegree(g) == outdegree(g)
 end
 
 @testset "multiple_edge_iter.jl" begin
@@ -105,6 +106,8 @@ end
     add_edge!(mg, 2, 4, 2)
 
     @test outneighbors(mg, 2) == [4, 5]
+    eit = edges(mg)
+    @test iterate(eit)[2] == (1, 2)
     mes = [me for me in edges(mg)]
     @test length(mes) == 2
 end
