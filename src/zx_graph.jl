@@ -24,7 +24,26 @@ end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
     copy(zxg.ps), copy(zxg.st), copy(zxg.layout), deepcopy(zxg.phase_ids))
+"""
+    ZXGraph(zxd::ZXDiagram)
 
+Convert a ZX-diagram to graph-like ZX-diagram.
+
+```jldoctest
+julia> using ZXCalculus
+
+julia> zxd = ZXDiagram(2); push_ctrl_gate!(zxd, Val{:CNOT}(), 2, 1);
+
+julia> zxg = ZXGraph(zxd)
+ZX-graph with 6 vertices and 5 edges:
+(S_1{input} <-> S_5{phase = 0//1⋅π})
+(S_2{output} <-> S_5{phase = 0//1⋅π})
+(S_3{input} <-> S_6{phase = 0//1⋅π})
+(S_4{output} <-> S_6{phase = 0//1⋅π})
+(S_5{phase = 0//1⋅π} <-> S_6{phase = 0//1⋅π})
+
+```
+"""
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
 

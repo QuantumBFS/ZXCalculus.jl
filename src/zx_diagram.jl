@@ -42,6 +42,35 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     end
 end
 
+"""
+    ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
+        layout::ZXLayout{T} = ZXLayout{T}(),
+        phase_ids::Dict{T,Vector{Tuple{T, Int}}} = Dict{T,Vector{Tuple{T,Int}}}()) where {T, P}
+    ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
+        layout::ZXLayout{T} = ZXLayout{T}()) where {T, P}
+
+Construct a ZXDiagram with all information.
+
+```jldoctest
+julia> using LightGraphs, ZXCalculus;
+
+julia> using ZXCalculus.SpiderType: In, Out, H, Z, X;
+
+julia> mg = Multigraph(5);
+
+julia> for i = 1:4
+           add_edge!(mg, i, i+1)
+       end;
+
+julia> ZXDiagram(mg, [In, Z, H, X, Out], [0//1, 1, 0, 1//2, 0])
+ZX-diagram with 5 vertices and 4 multiple edges:
+(S_1{input} <-1-> S_2{phase = 1//1⋅π})
+(S_2{phase = 1//1⋅π} <-1-> S_3{H})
+(S_3{H} <-1-> S_4{phase = 1//2⋅π})
+(S_4{phase = 1//2⋅π} <-1-> S_5{output})
+
+```
+"""
 ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
     layout::ZXLayout{T} = ZXLayout{T}(),
     phase_ids::Dict{T,Vector{Tuple{T, Int}}} = Dict{T,Vector{Tuple{T,Int}}}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout, phase_ids)
@@ -49,6 +78,20 @@ ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} =
     ZXDiagram(mg, Dict(zip(vertices(mg), st)), Dict(zip(vertices(mg), ps)), layout)
 
+"""
+    ZXDiagram(nbits)
+
+Construct a ZXDiagram of a empty circuit with qubit number `nbit`
+
+```jldoctest; setup = :(using ZXCalculus)
+julia> zxd = ZXDiagram(3)
+ZX-diagram with 6 vertices and 3 multiple edges:
+(S_1{input} <-1-> S_2{output})
+(S_3{input} <-1-> S_4{output})
+(S_5{input} <-1-> S_6{output})
+
+```
+"""
 function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]

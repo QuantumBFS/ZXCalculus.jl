@@ -1,5 +1,5 @@
-using ZXCalculus
-using LightGraphs, SparseArrays
+using ZXCalculus, LightGraphs, SparseArrays
+using Documenter
 using Test
 
 @testset "multiple_edge.jl" begin
@@ -327,10 +327,9 @@ end
     @test !add_edge!(zxg1, 2, 4)
     @test !add_edge!(zxg1, 7, 8)
     @test [ZXCalculus.is_hadamard(e) for e in edges(zxg1.mg)] == [mul(e) == 2 for e in edges(zxg1.mg)]
-        ZXplot(zxg1)
-        replace!(Rule{:b}(), zxd)
-        zxg2 = ZXGraph(zxd)
-        @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
+    replace!(Rule{:b}(), zxd)
+    zxg2 = ZXGraph(zxd)
+    @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
 end
 
 @testset "circuit_extraction.jl" begin
@@ -367,3 +366,5 @@ end
     cir = circuit_extraction(zxg)
     @test nv(cir) == 31 && ne(cir) == 31
 end
+
+doctest(ZXCalculus)
