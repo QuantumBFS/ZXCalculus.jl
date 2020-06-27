@@ -8,8 +8,6 @@ struct MultipleEdgeIter{G<:AbstractMultigraph} <:AbstractEdgeIter
     g::G
 end
 
-eltype(::Type{MultipleEdgeIter{AbstractMultigraph{T}}}) where {T<:Integer} = MultipleEdge{T, Int}
-
 function iterate(eit::MultipleEdgeIter{G}, state=(one(eltype(eit.g)), one(eltype(eit.g)))) where {G <: Multigraph}
     g = eit.g
     n = nv(g)

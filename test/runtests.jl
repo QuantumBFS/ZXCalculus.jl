@@ -109,7 +109,7 @@ end
     eit = edges(mg)
     @test iterate(eit)[2] == (1, 2)
     mes = [me for me in edges(mg)]
-    @test length(mes) == 2
+    @test length(mes) == length(eit)
 end
 
 # include("../script/zx_plot.jl")
