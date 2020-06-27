@@ -143,7 +143,7 @@ end
     @test nv(zxd) == 3 && ne(zxd) == 2
 
     @test rem_edge!(zxd, 2, 3)
-    @test outneighbors(zxd, 2) == [1]
+    @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
 
     ZXCalculus.add_spider!(zxd, SpiderType.H, 0//1, [2, 3])
     ZXCalculus.insert_spider!(zxd, 2, 4, SpiderType.H)
@@ -151,6 +151,8 @@ end
 
     zxd3 = ZXDiagram(3)
     ZXCalculus.insert_spider!(zxd3, 1, 2, SpiderType.H)
+    pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
+    push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2) == ZXCalculus.qubit_loc(zxd3, 7)
 end
 

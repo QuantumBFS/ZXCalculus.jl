@@ -3,7 +3,7 @@ import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!, add_edge!
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
-export push_gate!, push_ctrl_gate!
+export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!
 
 module SpiderType
     @enum SType Z X H In Out
@@ -257,6 +257,20 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     return zxd
 end
 
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {T, P}
+    q1, q2 = locs
+    push_gate!(zxd, Val{:Z}(), q1)
+    push_gate!(zxd, Val{:Z}(), q2)
+    push_gate!(zxd, Val{:Z}(), q1)
+    push_gate!(zxd, Val{:Z}(), q2)
+    v1, v2, bound_id1, bound_id2 = spiders(zxd)[end-3:end]
+    rem_edge!(zxd, v1, bound_id1)
+    rem_edge!(zxd, v2, bound_id2)
+    add_edge!(zxd, v1, bound_id2)
+    add_edge!(zxd, v2, bound_id1)
+    return zxd
+end
+
 """
     push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl[, phase])
 
@@ -286,31 +300,35 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zer
     insert_spider!(zxd, in_id, bound_id, SpiderType.Z, phase)
     return zxd
 end
+
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
     insert_spider!(zxd, in_id, bound_id, SpiderType.X, phase)
     return zxd
 end
+
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
     insert_spider!(zxd, in_id, bound_id, SpiderType.H)
     return zxd
 end
+
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {T, P}
     q1, q2 = locs
-    bound_id1 = zxd.layout.spider_seq[q1][2]
-    bound_id2 = zxd.layout.spider_seq[q2][2]
     pushfirst_gate!(zxd, Val{:Z}(), q1)
     pushfirst_gate!(zxd, Val{:Z}(), q2)
-    v1, v2 = spiders(zxd)[end-1:end]
+    pushfirst_gate!(zxd, Val{:Z}(), q1)
+    pushfirst_gate!(zxd, Val{:Z}(), q2)
+    v1, v2, bound_id1, bound_id2 = spiders(zxd)[end-3:end]
     rem_edge!(zxd, v1, bound_id1)
     rem_edge!(zxd, v2, bound_id2)
     add_edge!(zxd, v1, bound_id2)
     add_edge!(zxd, v2, bound_id1)
     return zxd
 end
+
 function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:X}(), loc)
@@ -318,6 +336,7 @@ function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::
     add_edge!(zxd, v1, v2)
     return zxd
 end
+
 function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:Z}(), loc)
