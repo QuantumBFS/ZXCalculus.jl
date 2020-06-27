@@ -321,10 +321,16 @@ end
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
+    @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZXCalculus.is_hadamard(zxg1, 2, 4) && !ZXCalculus.is_hadamard(zxg1, 4, 6)
-    replace!(Rule{:b}(), zxd)
-    zxg2 = ZXGraph(zxd)
-    @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
+    @test add_edge!(zxg1, 1, 1)
+    @test !add_edge!(zxg1, 2, 4)
+    @test !add_edge!(zxg1, 7, 8)
+    @test [ZXCalculus.is_hadamard(e) for e in edges(zxg1.mg)] == [mul(e) == 2 for e in edges(zxg1.mg)]
+        ZXplot(zxg1)
+        replace!(Rule{:b}(), zxd)
+        zxg2 = ZXGraph(zxd)
+        @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
 end
 
 @testset "circuit_extraction.jl" begin
