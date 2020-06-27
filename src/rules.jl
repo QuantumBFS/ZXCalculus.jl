@@ -5,6 +5,26 @@ export rewrite!
 
 abstract type AbstractRule end
 
+"""
+    Rule{L}
+
+The struct for identifying different rules.
+
+Rule list:
+* `Rule{:f}()`: rule f
+* `Rule{:h}()`: rule h
+* `Rule{:i1}()`: rule i1
+* `Rule{:i2}()`: rule i2
+* `Rule{:pi}()`: rule π
+* `Rule{:c}()`: rule c
+* `Rule{:lc}()`: local complementary rule
+* `Rule{:p1}()`: pivoting rule
+* `Rule{:pab}()`: rule for removing Paulis spiders adjancent to boundary spiders
+* `Rule{:p2}()`: rule p2
+* `Rule{:p3}()`: rule p3
+* `Rule{:id}()`: rule id
+* `Rule{:gf}()`: gadget fushion rule
+"""
 struct Rule{L} <: AbstractRule end
 
 struct Match{T<:Integer}
@@ -220,7 +240,7 @@ function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector
     for each in matches
         rewrite!(r, zxd, each)
     end
-    zxd
+    return zxd
 end
 
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matched::Match{T}) where {T, P}
@@ -258,7 +278,7 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     push!(zxd.phase_ids[v1], (v2, 1))
     rem_spider!(zxd, v2)
     rounding_phases!(zxd)
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:h}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -278,7 +298,7 @@ function rewrite!(r::Rule{:h}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
         end
     end
     zxd.st[v1] = SpiderType.Z
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:i1}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -297,7 +317,7 @@ function rewrite!(r::Rule{:i1}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
     v2, v3 = neighbors(zxd, v1, count_mul = true)
     add_edge!(zxd, v2, v3)
     rem_spider!(zxd, v1)
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:i2}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -321,7 +341,7 @@ function rewrite!(r::Rule{:i2}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
     v4 = (nb2[1] == v1 ? nb2[2] : nb2[1])
     add_edge!(zxd, v3, v4)
     rem_spiders!(zxd, [v1, v2])
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -352,7 +372,7 @@ function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
         rem_spider!(zxd, v1)
     end
     rounding_phases!(zxd)
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -379,7 +399,7 @@ function rewrite!(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
         add_spider!(zxd, SpiderType.X, ph, [v3])
     end
     rem_spider!(zxd, v2)
-    zxd
+    return zxd
 end
 
 function check_rule(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
@@ -415,7 +435,7 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     add_edge!(zxd, a1, a4)
     add_edge!(zxd, a2, a3)
     add_edge!(zxd, a2, a4)
-    zxd
+    return zxd
 end
 
 function check_rule(::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
@@ -445,7 +465,7 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         zxg.ps[u] -= phase_v
     end
     rounding_phases!(zxg)
-    zxg
+    return zxg
 end
 
 function check_rule(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
@@ -498,7 +518,7 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         zxg.ps[w0] += phase_u + phase_v + 1
     end
     rounding_phases!(zxg)
-    zxg
+    return zxg
 end
 
 function check_rule(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
@@ -534,7 +554,7 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     w = spiders(zxg)[end]
     insert_spider!(zxg, w, v_bound, phase_v)
     zxg.ps[v] = 0
-    rewrite!(Rule{:p1}(), zxg, [u, v])
+    return rewrite!(Rule{:p1}(), zxg, [u, v])
 end
 
 function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
@@ -730,10 +750,10 @@ Match and replace with the rule `r`.
 function replace!(r::AbstractRule, zxd::ZXDiagram)
     matches = match(r, zxd)
     rewrite!(r, zxd, matches)
-    zxd
+    return zxd
 end
 function replace!(r::AbstractRule, zxg::ZXGraph)
     matches = match(r, zxg)
     rewrite!(r, zxg, matches)
-    zxg
+    return zxg
 end

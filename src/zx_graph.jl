@@ -122,7 +122,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
             add_edge!(zxg, v, c)
         end
     end
-    zxg
+    return zxg
 end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
     add_spider!(zxg, SpiderType.Z, phase, [v1, v2])

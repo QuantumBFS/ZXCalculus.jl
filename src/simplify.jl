@@ -10,7 +10,7 @@ function simplify!(r::AbstractRule, zxd::ZXDiagram)
         rewrite!(r, zxd, matches)
         matches = match(r, zxd)
     end
-    zxd
+    return zxd
 end
 function simplify!(r::AbstractRule, zxg::ZXGraph)
     matches = match(r, zxg)
@@ -18,5 +18,5 @@ function simplify!(r::AbstractRule, zxg::ZXGraph)
         rewrite!(r, zxg, matches)
         matches = match(r, zxg)
     end
-    zxg
+    return zxg
 end
