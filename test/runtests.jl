@@ -1,6 +1,116 @@
-using ZXCalculus
+using ZXCalculus, LightGraphs, SparseArrays
+using Documenter
 using Test
-using LightGraphs
+
+@testset "multiple_edge.jl" begin
+    me = MultipleEdge(1, 2, 3)
+    try
+        MultipleEdge(1, 2, 0)
+    catch err
+        @test err != nothing
+    end
+    @test src(me) == 1 && dst(me) == 2 && mul(me) == 3
+    e0 = LightGraphs.SimpleEdge(me)
+    MultipleEdge(e0)
+    @test MultipleEdge(1, 2) == e0
+    @test e0 == MultipleEdge(1, 2)
+    @test e0 == MultipleEdge([1, 2])
+    @test e0 == MultipleEdge([1, 2, 1])
+    @test e0 == MultipleEdge((1, 2))
+    @test e0 == MultipleEdge((1, 2, 1))
+    @test e0 == MultipleEdge(1 => 2)
+    @test reverse(me) == MultipleEdge(2, 1, 3)
+    @test eltype(me) == Int
+
+    @test iterate(me)[2] == 2
+    @test [e0 == e for e in me] == [true for i = 1:mul(me)]
+    @test Tuple(me) == (1,2,3)
+    length(me) == mul(me)
+end
+
+@testset "multigraph_adjlist.jl" begin
+    try
+        m2 = spzeros(Int, 2, 3)
+        dg = Multigraph(m2)
+    catch e
+        @test e != nothing
+    end
+    try
+        m2 = spzeros(Int, 2, 2)
+        m2[1, 2] = 2
+        dg = Multigraph(m2)
+    catch e
+        @test e != nothing
+    end
+    try
+        m2 = spzeros(Int, 2, 2)
+        m2[1, 2] = -1
+        m2[2, 1] = -1
+        dg = Multigraph(m2)
+    catch e
+        @test e != nothing
+    end
+
+    m = spzeros(Int, 4, 4)
+    m
+    m[1,2] = 2
+    m[2,1] = 2
+    m[2,3] = 2
+    m[3,2] = 2
+    m[3,4] += 1
+    m[3,4] = 0
+    m[4,3] += 1
+    m[4,3] = 0
+    g = Multigraph(m)
+    g = Multigraph(Matrix(m))
+
+    g0 = Multigraph(2)
+    @test !add_edge!(g0, 2, 3) && !rem_edge!(g0, 1, 2)
+    g1 = Multigraph(path_graph(3))
+
+    @test !is_directed(g)
+    @test edgetype(g) == MultipleEdge{Int, Int}
+    @test size(adjacency_matrix(g), 1) == 4
+
+    @test nv(g) == 4 && ne(g, count_mul = true) == 4 && ne(g) == 2
+
+    add_vertices!(g, 3)
+    @test nv(g) == 7
+
+    @test has_edge(g, 1, 2, 2)
+    @test rem_vertices!(g, [7, 5, 4, 6])
+    add_edge!(g, [2, 3, 2])
+    rem_edge!(g, [2, 3, 2])
+    add_edge!(g, 2, 3)
+    rem_edge!(g, 2, 3)
+    add_edge!(g, 2, 3, 2)
+    rem_edge!(g, 2, 3, 1)
+
+    @test has_edge(g, 2, 3) && has_edge(g, [2, 3])
+    @test has_edge(g, 2, 3, 2) && has_edge(g, (2, 3, 2))
+    @test !has_edge(g, 2, 2) && !has_edge(g, 2, 5)
+    @test has_vertex(g, 1) && !has_vertex(g, 5)
+    for v in vertices(g)
+        @test inneighbors(g, v) == outneighbors(g, v)
+        @test degree(g, v) == indegree(g, v) && indegree(g, v) == outdegree(g, v)
+    end
+    add_vertex!(g)
+    @test indegree(g) == outdegree(g)
+end
+
+@testset "multiple_edge_iter.jl" begin
+    mg = Multigraph(3)
+    add_vertices!(mg, 3)
+    rem_vertices!(mg, [1, 3])
+    add_edge!(mg, 2, 5)
+    add_edge!(mg, 2, 4, 2)
+
+    @test outneighbors(mg, 2) == [4, 5]
+    eit = edges(mg)
+    @test iterate(eit)[2] == (1, 2)
+    mes = [me for me in edges(mg)]
+    @test length(mes) == length(eit)
+end
 
 # include("../script/zx_plot.jl")
 
@@ -33,7 +143,7 @@ using LightGraphs
     @test nv(zxd) == 3 && ne(zxd) == 2
 
     @test rem_edge!(zxd, 2, 3)
-    @test outneighbors(zxd, 2) == [1]
+    @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
 
     ZXCalculus.add_spider!(zxd, SpiderType.H, 0//1, [2, 3])
     ZXCalculus.insert_spider!(zxd, 2, 4, SpiderType.H)
@@ -41,6 +151,8 @@ using LightGraphs
 
     zxd3 = ZXDiagram(3)
     ZXCalculus.insert_spider!(zxd3, 1, 2, SpiderType.H)
+    pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
+    push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2) == ZXCalculus.qubit_loc(zxd3, 7)
 end
 
@@ -209,7 +321,12 @@ end
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
+    @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZXCalculus.is_hadamard(zxg1, 2, 4) && !ZXCalculus.is_hadamard(zxg1, 4, 6)
+    @test add_edge!(zxg1, 1, 1)
+    @test !add_edge!(zxg1, 2, 4)
+    @test !add_edge!(zxg1, 7, 8)
+    @test [ZXCalculus.is_hadamard(e) for e in edges(zxg1.mg)] == [mul(e) == 2 for e in edges(zxg1.mg)]
     replace!(Rule{:b}(), zxd)
     zxg2 = ZXGraph(zxd)
     @test !ZXCalculus.is_hadamard(zxg2, 5, 8) && !ZXCalculus.is_hadamard(zxg2, 1, 7)
@@ -249,3 +366,5 @@ end
     cir = circuit_extraction(zxg)
     @test nv(cir) == 31 && ne(cir) == 31
 end
+
+doctest(ZXCalculus)
