@@ -1,5 +1,3 @@
-# include("../script/zx_plot.jl")
-
 export phase_teleportation
 function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     ncir = copy(cir)

@@ -21,15 +21,15 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
 
     layout::ZXLayout{T}
 
-    phase_ids::Dict{T, Vector{Tuple{T, Int}}}
+    phase_ids::Dict{T, Tuple{T, Int}}
 
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T}, phase_ids::Dict{T, Vector{Tuple{T, Int}}} = Dict{T, Vector{Tuple{T, Int}}}()) where {T<:Integer, P}
+        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
                 for v in vertices(mg)
                     if st[v] in [SpiderType.Z, SpiderType.X]
-                        phase_ids[v] = [(v, 1)]
+                        phase_ids[v] = (v, 1)
                     end
                 end
             end
@@ -45,7 +45,7 @@ end
 """
     ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T} = ZXLayout{T}(),
-        phase_ids::Dict{T,Vector{Tuple{T, Int}}} = Dict{T,Vector{Tuple{T,Int}}}()) where {T, P}
+        phase_ids::Dict{T,Tuple{T, Int}} = Dict{T,Tuple{T,Int}}()) where {T, P}
     ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
         layout::ZXLayout{T} = ZXLayout{T}()) where {T, P}
 
@@ -73,7 +73,7 @@ ZX-diagram with 5 vertices and 4 multiple edges:
 """
 ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
     layout::ZXLayout{T} = ZXLayout{T}(),
-    phase_ids::Dict{T,Vector{Tuple{T, Int}}} = Dict{T,Vector{Tuple{T,Int}}}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout, phase_ids)
+    phase_ids::Dict{T,Tuple{T, Int}} = Dict{T,Tuple{T,Int}}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout, phase_ids)
 ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} =
     ZXDiagram(mg, Dict(zip(vertices(mg), st)), Dict(zip(vertices(mg), ps)), layout)
@@ -221,7 +221,7 @@ function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero
     zxd.ps[v] = phase
     zxd.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
-        zxd.phase_ids[v] = [(v, 1)]
+        zxd.phase_ids[v] = (v, 1)
     end
     if connect ⊆ vertices(zxd.mg)
         for c in connect

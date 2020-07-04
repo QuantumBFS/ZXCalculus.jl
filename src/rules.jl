@@ -496,11 +496,11 @@ end
 
 function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v = vs
-    if length(zxg.phase_ids[u]) + length(zxg.phase_ids[v]) > 0
-        print("Deleted by rule p1: ")
-        print(zxg.phase_ids[u])
-        println(zxg.phase_ids[v])
-    end
+    # if length(zxg.phase_ids[u]) + length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p1: ")
+    #     print(zxg.phase_ids[u])
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -590,10 +590,10 @@ end
 function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u = vs[1]
     v = vs[2]
-    if length(zxg.phase_ids[v]) > 0
-        print("Deleted by rule p2: ")
-        println(zxg.phase_ids[v])
-    end
+    # if length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p2: ")
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -605,9 +605,8 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     phase_id_u = zxg.phase_ids[u]
     if (-1)^phase_v < 0
-        for i = 1:length(phase_id_u)
-            phase_id_u[i] = (phase_id_u[i][1], -phase_id_u[i][2])
-        end
+        zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
+        phase_id_u = zxg.phase_ids[u]
     end
     rem_spiders!(zxg, vs)
     for u0 in U, v0 in V
@@ -655,10 +654,10 @@ end
 function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u = vs[1]
     v = vs[2]
-    if length(zxg.phase_ids[v]) > 0
-        print("Deleted by rule p3: ")
-        println(zxg.phase_ids[v])
-    end
+    # if length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p3: ")
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -672,9 +671,8 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     phase_id_u = zxg.phase_ids[u]
     if (-1)^phase_v < 0
-        for i = 1:length(phase_id_u)
-            phase_id_u[i] = (phase_id_u[i][1], -phase_id_u[i][2])
-        end
+        zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
+        phase_id_u = zxg.phase_ids[u]
     end
     phase_id_v = zxg.phase_ids[v]
     rem_edge!(zxg, u, v)
@@ -703,7 +701,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     gad = spiders(zxg)[end]
     zxg.phase_ids[gad] = phase_id_u
     zxg.phase_ids[u] = phase_id_v
-    zxg.phase_ids[v] = []
+    zxg.phase_ids[v] = (v, 1)
     rounding_phases!(zxg)
 
     if is_hadamard(zxg, u, bd_u)
@@ -736,8 +734,8 @@ end
 function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     zxg.ps[v3] += zxg.ps[v1]
-    id1, mul1 = zxg.phase_ids[v1][]
-    id3, mul3 = zxg.phase_ids[v3][]
+    id1, mul1 = zxg.phase_ids[v1]
+    id3, mul3 = zxg.phase_ids[v3]
     zxg.master.ps[id3] = (mul1 * zxg.master.ps[id1] + mul3 * zxg.master.ps[id3]) * mul3
     zxg.master.ps[id1] = 0
     rem_spiders!(zxg, [v1, v2])
@@ -765,8 +763,8 @@ function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
     zxg.ps[v1] += zxg.ps[u1]
 
-    idv, mulv = zxg.phase_ids[v1][]
-    idu, mulu = zxg.phase_ids[u1][]
+    idv, mulv = zxg.phase_ids[v1]
+    idu, mulu = zxg.phase_ids[u1]
     zxg.master.ps[idv] = (mulv * zxg.master.ps[idv] + mulu * zxg.master.ps[idu]) * mulv
     zxg.master.ps[idu] = 0
 
