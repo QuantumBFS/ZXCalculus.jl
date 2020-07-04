@@ -19,7 +19,7 @@ end
 end
 
 @testset "rules.jl" begin
-    include("rule.jl")
+    include("rules.jl")
 end
 
 @testset "zx_graph.jl" begin
