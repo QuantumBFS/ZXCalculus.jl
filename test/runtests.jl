@@ -30,4 +30,8 @@ end
     include("circuit_extraction.jl")
 end
 
+@testset "phase_teleportation.jl" begin
+    include("phase_teleportation.jl")
+end
+
 doctest(ZXCalculus)
