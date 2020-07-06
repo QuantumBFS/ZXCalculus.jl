@@ -3,7 +3,7 @@ import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!, add_edge!
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
-export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!
+export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!, tcount
 
 module SpiderType
     @enum SType Z X H In Out
@@ -388,3 +388,10 @@ function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T)
     insert_spider!(zxd, v1, v2, SpiderType.H)
     return zxd
 end
+
+"""
+    tcount(zxd)
+
+Return the T-count of a ZX-diagram.
+"""
+tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
