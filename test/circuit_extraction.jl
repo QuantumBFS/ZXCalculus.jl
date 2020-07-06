@@ -29,4 +29,5 @@ replace!(Rule{:lc}(), zxg)
 replace!(Rule{:pab}(), zxg)
 
 cir = circuit_extraction(zxg)
-@test nv(cir) == 31 && ne(cir) == 31
+@test nv(cir) == 31
+@test ne(cir) == 31
