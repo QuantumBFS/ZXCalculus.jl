@@ -76,14 +76,8 @@ function gen_cir()
 end
 
 cir = gen_cir()
-plot(cir)
-plot(ZXGraph(cir))
-
-tcount(cir) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
-println(spiders(cir)[[phase(cir, v) % 1//2 != 0 for v in spiders(cir)]])
 tcount(cir)
-
 cir2 = phase_teleportation(cir)
-println(spiders(cir2)[[phase(cir2, v) % 1//2 != 0 for v in spiders(cir2)]])
 tcount(cir2)
+plot(cir)
 plot(cir2)
