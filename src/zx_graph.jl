@@ -19,11 +19,12 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
     layout::ZXLayout{T}
-    phase_ids::Dict{T,Vector{Tuple{T, Int}}}
+    phase_ids::Dict{T,Tuple{T, Int}}
+    master::ZXDiagram{T, P}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
-    copy(zxg.ps), copy(zxg.st), copy(zxg.layout), deepcopy(zxg.phase_ids))
+    copy(zxg.ps), copy(zxg.st), copy(zxg.layout), deepcopy(zxg.phase_ids), zxg.master)
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -50,7 +51,19 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     simplify!(Rule{:i1}(), nzxd)
     simplify!(Rule{:h}(), nzxd)
     simplify!(Rule{:i2}(), nzxd)
-    simplify!(Rule{:f}(), nzxd)
+    match_f = match(Rule{:f}(), nzxd)
+    while length(match_f) > 0
+        for m in match_f
+            vs = m.vertices
+            if check_rule(Rule{:f}(), nzxd, vs)
+                rewrite!(Rule{:f}(), nzxd, vs)
+                v1, v2 = vs
+                zxd.ps[v1] += zxd.ps[v2]
+                zxd.ps[v2] = 0
+            end
+        end
+        match_f = match(Rule{:f}(), nzxd)
+    end
 
     vs = spiders(nzxd)
     vH = T[]
@@ -66,12 +79,14 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
         end
     end
 
-    zxg = copy(nzxd)
-    rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout, zxg.phase_ids)
+    eH = [neighbors(nzxd, v, count_mul = true) for v in vH]
 
-    for v in vH
-        v1, v2 = neighbors(nzxd, v, count_mul = true)
+    zxg = nzxd
+    rem_spiders!(zxg, vH)
+    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout, zxg.phase_ids, zxd)
+
+    for e in eH
+        v1, v2 = e
         add_edge!(zxg, v1, v2)
     end
 
@@ -134,7 +149,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     zxg.ps[v] = phase
     zxg.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
-        zxg.phase_ids[v] = [(v, 1)]
+        zxg.phase_ids[v] = (v, 1)
     end
     if connect ⊆ spiders(zxg)
         for c in connect
