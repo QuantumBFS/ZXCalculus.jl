@@ -771,19 +771,3 @@ function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     rem_spiders!(zxg, [u1, u2])
     return zxg
 end
-
-
-"""
-    replace!(r, zxd)
-Match and replace with the rule `r`.
-"""
-function replace!(r::AbstractRule, zxd::ZXDiagram)
-    matches = match(r, zxd)
-    rewrite!(r, zxd, matches)
-    return zxd
-end
-function replace!(r::AbstractRule, zxg::ZXGraph)
-    matches = match(r, zxg)
-    rewrite!(r, zxg, matches)
-    return zxg
-end
