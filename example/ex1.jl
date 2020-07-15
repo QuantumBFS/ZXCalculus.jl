@@ -1,6 +1,5 @@
 using ZXCalculus, LightGraphs
-
-include("../script/zx_plot.jl")
+using YaoPlots
 
 function generate_example()
     zxd = ZXDiagram(4)
@@ -29,20 +28,20 @@ function generate_example()
     push_gate!(zxd, Val{:Z}(), 4, 1//2)
     push_gate!(zxd, Val{:X}(), 4, 1//1)
 
-    zxd
+    return zxd
 end
 
 zxd = generate_example()
-ZXplot(zxd)
+plot(zxd)
 
 zxg = ZXGraph(zxd)
-ZXplot(zxg)
+plot(zxg; linetype = "curve")
 simplify!(Rule{:lc}(), zxg)
-ZXplot(zxg)
+plot(zxg; linetype = "curve")
 simplify!(Rule{:p1}(), zxg)
-ZXplot(zxg)
+plot(zxg; linetype = "curve")
 replace!(Rule{:pab}(), zxg)
-ZXplot(zxg)
+plot(zxg; linetype = "curve")
 
 cir = circuit_extraction(zxg)
-ZXplot(cir)
+plot(cir)

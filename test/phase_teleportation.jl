@@ -1,5 +1,4 @@
 using ZXCalculus, LightGraphs
-using YaoPlots
 
 function gen_cir()
     cir = ZXDiagram(5)
@@ -76,8 +75,6 @@ function gen_cir()
 end
 
 cir = gen_cir()
-tcount(cir)
+@test tcount(cir) == 28
 cir2 = phase_teleportation(cir)
-tcount(cir2)
-plot(cir)
-plot(cir2)
+@test tcount(cir2) == 8
