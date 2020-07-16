@@ -31,3 +31,7 @@ replace!(Rule{:pab}(), zxg)
 cir = circuit_extraction(zxg)
 @test nv(cir) == 31
 @test ne(cir) == 31
+
+cir2 = clifford_simplification(zxd)
+@test nv(cir) == 31
+@test ne(cir) == 31
