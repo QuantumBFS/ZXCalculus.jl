@@ -1,4 +1,4 @@
-export replace!, simplify!, clifford_simplify
+export replace!, simplify!, clifford_simplification
 
 """
     replace!(r, zxd)
@@ -24,10 +24,10 @@ function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
 end
 
 """
-    clifford_simplify(zxd)
+    clifford_simplification(zxd)
 Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function clifford_simplify(circ::ZXDiagram)
+function clifford_simplification(circ::ZXDiagram)
     zxg = ZXGraph(circ)
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)
