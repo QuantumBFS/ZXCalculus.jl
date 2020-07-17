@@ -1,4 +1,4 @@
-using ZXCalculus, LightGraphs
+using ZXCalculus
 using YaoPlots
 
 function gen_cir()
