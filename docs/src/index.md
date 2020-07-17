@@ -2,10 +2,7 @@
 
 *A implementation of ZX-calculus in Julia.*
 
-ZX-calculus is a graphical language for quantum states. One can represent quantum
-states as ZX-diagrams, and manipulate them with ZX-calculus rules. As an application
-of ZX-calculus, one can simplify quantum circuits with it. For more details about
-ZX-calculus, one can check this [website](http://zxcalculus.com/).
+ZX-calculus is a graphical language for quantum computing. One can represent quantum states and operators as ZX-diagrams, and manipulate them with ZX-calculus rules. As an application of ZX-calculus, one can simplify quantum circuits with it. For more details about ZX-calculus, one can check this [website](http://zxcalculus.com/).
 
 ## GSoC
 
@@ -24,7 +21,7 @@ the Python implementation [`PyZX`](https://github.com/Quantomatic/pyzx).
 
 `ZXCalculus.jl` can be integrated into the quantum compiler
 [`YaoLang.jl`](https://github.com/QuantumBFS/YaoLang.jl). This makes the following features.
-- Reading or outputing quantum circuits in various form (for example, QASM,
+- Reading or outputting quantum circuits in various forms (for example, QASM,
   YaoBlock instructions, and so on).
 - A compiler level circuit simplification engine.
 
