@@ -585,7 +585,7 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     w = spiders(zxg)[end]
     insert_spider!(zxg, w, v_bound, phase_v)
     zxg.ps[v] = 0
-    return rewrite!(Rule{:p1}(), zxg, [u, v])
+    return rewrite!(Rule{:p1}(), zxg, Match{T}([u, v]))
 end
 
 function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
