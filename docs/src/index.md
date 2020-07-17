@@ -9,11 +9,11 @@ ZX-calculus, one can check this [website](http://zxcalculus.com/).
 
 ## GSoC
 
-This package is for *Google Summer of Code 2020*.
+This package is a *Google Summer of Code 2020* project.
 
 ## Package Features
 
-As an implementation of ZX-calculus, these following features are available like
+As an implementation of ZX-calculus, these following features are available similar to
 the Python implementation [`PyZX`](https://github.com/Quantomatic/pyzx).
 - Building up and manipulating ZX-diagrams
 - Simplifying ZX-diagrams with specific rules
@@ -22,7 +22,7 @@ the Python implementation [`PyZX`](https://github.com/Quantomatic/pyzx).
   [phase teleportation](https://arxiv.org/abs/1903.10477).
 - Visualization for ZX-diagrams.
 
-Different from `PyZX`, `ZXCalculus.jl` can be integrated into the quantum compiler
+`ZXCalculus.jl` can be integrated into the quantum compiler
 [`YaoLang.jl`](https://github.com/QuantumBFS/YaoLang.jl). This makes the following features.
 - Reading or outputing quantum circuits in various form (for example, QASM,
   YaoBlock instructions, and so on).
