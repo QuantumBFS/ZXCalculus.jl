@@ -276,8 +276,9 @@ qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
 """
     push_gate!(zxd, ::Val{M}, loc[, phase])
 
-Push a rotation `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`
-and `:H`.
+Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`
+and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+rotation `M` gate with angle `phase * π`.
 """
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     bound_id = zxd.layout.spider_seq[loc][end-1]
@@ -315,7 +316,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {
 end
 
 """
-    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl[, phase])
+    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
 
 Push a ctrl gate to the end of qubits `ctrl` and `loc` where `M` can be `:CNOT`
 and `:CZ`
@@ -337,6 +338,13 @@ function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) wher
     return zxd
 end
 
+"""
+    pushfirst_gate!(zxd, ::Val{M}, loc[, phase])
+
+Push an `M` gate to the beginning of qubit `loc` where `M` can be `:Z`, `:X`
+and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+rotation `M` gate with angle `phase * π`.
+"""
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     in_id = zxd.layout.spider_seq[loc][1]
     bound_id = zxd.layout.spider_seq[loc][2]
@@ -372,6 +380,12 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) wh
     return zxd
 end
 
+"""
+    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
+
+Push a ctrl gate to the beginning of qubits `ctrl` and `loc` where `M` can be `:CNOT`
+and `:CZ`
+"""
 function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:X}(), loc)

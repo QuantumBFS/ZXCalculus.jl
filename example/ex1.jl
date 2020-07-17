@@ -1,4 +1,4 @@
-using ZXCalculus, LightGraphs
+using ZXCalculus
 using YaoPlots
 
 function generate_example()

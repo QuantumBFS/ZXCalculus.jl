@@ -10,13 +10,15 @@ abstract type AbstractRule end
 
 The struct for identifying different rules.
 
-Rule list:
+Rule for `ZXDiagram`s:
 * `Rule{:f}()`: rule f
 * `Rule{:h}()`: rule h
 * `Rule{:i1}()`: rule i1
 * `Rule{:i2}()`: rule i2
 * `Rule{:pi}()`: rule π
 * `Rule{:c}()`: rule c
+
+Rule for `ZXGraph`s:
 * `Rule{:lc}()`: local complementary rule
 * `Rule{:p1}()`: pivoting rule
 * `Rule{:pab}()`: rule for removing Paulis spiders adjancent to boundary spiders
@@ -27,10 +29,21 @@ Rule list:
 """
 struct Rule{L} <: AbstractRule end
 
+"""
+    Match{T<:Integer}
+
+A struct for saving matched vertices.
+"""
 struct Match{T<:Integer}
     vertices::Vector{T}
 end
 
+"""
+    match(r, zxd)
+
+Returns all matched vertices, which will be store in sturct `Match`, for rule `r`
+in a ZX-diagram `zxd`.
+"""
 match(::AbstractRule, zxd::AbstractZXDiagram{T, P}) where {T, P} = Match{T}[]
 
 function match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
@@ -240,6 +253,12 @@ function match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
+"""
+    rewrite!(r, zxd, matches)
+
+Rewrite a ZX-diagram `zxd` with rule `r` for all vertices in `matches`. `matches`
+can be a vector of `Match` or just an instance of `Match`.
+"""
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
     for each in matches
         rewrite!(r, zxd, each)
