@@ -76,8 +76,10 @@ function gen_cir()
 end
 
 cir = gen_cir()
-tcount(cir)
 cir2 = phase_teleportation(cir)
 tcount(cir2)
-plot(cir)
+ex_cir = clifford_simplification(cir2)
+tcount(ex_cir)
+
 plot(cir2)
+plot(ex_cir)
