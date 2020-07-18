@@ -574,17 +574,30 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v = vs[2]
     phase_v = phase(zxg, v)
     nb_v = neighbors(zxg, v)
-    v_bound = T(0)
+    v_bound = zero(T)
     for v0 in nb_v
         if spider_type(zxg, v0) != SpiderType.Z
             v_bound = v0
             break
         end
     end
-    insert_spider!(zxg, v, v_bound)
-    w = spiders(zxg)[end]
-    insert_spider!(zxg, w, v_bound, phase_v)
-    zxg.ps[v] = 0
+    if is_hadamard(zxg, v, v_bound)
+        insert_spider!(zxg, v, v_bound)
+        w = neighbors(zxg, v_bound)[1]
+        insert_spider!(zxg, w, v_bound, phase_v)
+        w = neighbors(zxg, v_bound)[1]
+        zxg.ps[w] = phase(zxg, v)
+        zxg.ps[v] = 0
+    else
+        insert_spider!(zxg, v, v_bound)
+        w = neighbors(zxg, v_bound)[1]
+        insert_spider!(zxg, w, v_bound, phase_v)
+        w = neighbors(zxg, v_bound)[1]
+        zxg.ps[w] = phase(zxg, v)
+        zxg.ps[v] = 0
+        rem_edge!(zxg, w, v_bound)
+        add_edge!(zxg, w, v_bound, 1)
+    end
     return rewrite!(Rule{:p1}(), zxg, Match{T}([u, v]))
 end
 
