@@ -108,4 +108,29 @@ rewrite!(r::ZXCalculus.AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vect
 
 The lowest level for rewriting ZX-diagrams is manipulating the multigraphs directly. This way is not recommended unless one wants to develop new rules in ZX-calculus.
 
+
 ## Integration with `YaoLang.jl`
+
+[`YaoLang.jl`](https://github.com/QuantumBFS/YaoLang.jl) is the next DSL for Yao and quantum programs. And it is now integrated with `ZXCalculus.jl`. The compiler of `YaoLang.jl` will optimize the quantum programs when the optimizors are given.
+
+One can use
+```julia
+@device function circuit()
+    ...
+end
+```
+to build up a generic quantum circuit. To set up a optimizor in addition, one can simply use
+```julia
+@device optimizor = opt function circuit()
+    ...
+end
+```
+Here, `opt` can be a sub-vector of `[:zx_clifford, :zx_teleport]`. That is, if `:zx_clifford` is in `opt`, then [`clifford_simplification`](@ref) will be applied to the circuit, and if `:zx_teleport` is in `opt`, then [`phase_teleportation`](@ref) will be applied to the circuit.
+
+For example, the following code will try to simplify `circ` that defined by `circuit()` with [`clifford_simplification`](@ref) and [`phase_teleportation`](@ref).
+```julia
+@device optimizor = [:zx_clifford, :zx_teleport] function circuit()
+    ...
+end
+circ = circuit()
+```
