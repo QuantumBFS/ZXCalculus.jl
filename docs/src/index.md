@@ -42,7 +42,7 @@ pkg> add YaoPlots
 ## Contents
 
 ```@contents
-Pages = ["tutorials.md", "api.md"]
+Pages = ["tutorials.md", "examples.md", "api.md"]
 Depth = 2
 ```
 

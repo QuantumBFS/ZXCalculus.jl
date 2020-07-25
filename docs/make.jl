@@ -5,6 +5,7 @@ makedocs(;
     format = Documenter.HTML(prettyurls = !("local" in ARGS)),
     pages = ["Home" => "index.md",
         "Tutorials" => "tutorials.md",
+        "Examples" => "examples.md",
         "APIs" => "api.md"
     ],
     repo = "https:/github.com/QuantumBFS/ZXCalculus.jl",
