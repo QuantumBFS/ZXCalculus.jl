@@ -1,4 +1,4 @@
-# Tutorial
+# Tutorials
 
 ZX-diagrams are the basic objects in ZX-calculus. In our implementation, each ZX-diagram consists of a multigraph and vertices information including the type of vertices and the phase of vertices. [`ZXDiagram`](@ref) is the data structure for representing
 ZX-diagrams.
