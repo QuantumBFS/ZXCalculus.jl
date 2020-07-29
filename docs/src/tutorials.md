@@ -111,7 +111,7 @@ The lowest level for rewriting ZX-diagrams is manipulating the multigraphs direc
 
 ## Integration with `YaoLang.jl`
 
-[`YaoLang.jl`](https://github.com/QuantumBFS/YaoLang.jl) is the next DSL for Yao and quantum programs. And it is now integrated with `ZXCalculus.jl`. The compiler of `YaoLang.jl` will optimize the quantum programs when the optimizors are given.
+[`YaoLang.jl`](https://github.com/QuantumBFS/YaoLang.jl) is the next DSL for Yao and quantum programs. And it is now integrated with `ZXCalculus.jl`. The compiler of `YaoLang.jl` will optimize the quantum programs when the optimizers are given.
 
 One can use
 ```julia
@@ -119,9 +119,9 @@ One can use
     ...
 end
 ```
-to build up a generic quantum circuit. To set up a optimizor in addition, one can simply use
+to build up a generic quantum circuit. To set up a optimizer in addition, one can simply use
 ```julia
-@device optimizor = opt function circuit()
+@device optimizer = opt function circuit()
     ...
 end
 ```
@@ -129,7 +129,7 @@ Here, `opt` can be a sub-vector of `[:zx_clifford, :zx_teleport]`. That is, if `
 
 For example, the following code will try to simplify `circ` that defined by `circuit()` with [`clifford_simplification`](@ref) and [`phase_teleportation`](@ref).
 ```julia
-@device optimizor = [:zx_clifford, :zx_teleport] function circuit()
+@device optimizer = [:zx_clifford, :zx_teleport] function circuit()
     ...
 end
 circ = circuit()
