@@ -110,16 +110,35 @@ copy(zxd::ZXDiagram) = ZXDiagram(copy(zxd.mg), copy(zxd.st), copy(zxd.ps),
 """
     spider_type(zxd, v)
 
-Return the spider type of a spider.
+Returns the spider type of a spider.
 """
 spider_type(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.st[v]
 
 """
     phase(zxd, v)
 
-Return the phase of a spider. If the spider is not a Z or X spider, then return 0.
+Returns the phase of a spider. If the spider is not a Z or X spider, then return 0.
 """
 phase(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.ps[v]
+
+
+"""
+    set_phase!(zxd, v, p)
+
+Set the phase of `v` in `zxd` to `p`.
+"""
+function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
+    if v in spiders(zxd)
+        zxd.ps[v] = p
+    end
+end
+
+"""
+    nqubits(zxd)
+
+Returns the qubit number of a ZX-diagram.
+"""
+nqubits(zxd::ZXDiagram) = zxd.layout.nbits
 
 function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
     st_v = spider_type(zxd, v)
@@ -154,14 +173,14 @@ end
 """
     nv(zxd)
 
-Return the number of vertices (spiders) of a ZX-diagram.
+Returns the number of vertices (spiders) of a ZX-diagram.
 """
 nv(zxd::ZXDiagram) = nv(zxd.mg)
 
 """
     ne(zxd; count_mul = false)
 
-Return the number of edges of a ZX-diagram. If `count_mul`, it will return the
+Returns the number of edges of a ZX-diagram. If `count_mul`, it will return the
 sum of multiplicities of all multiple edges. Otherwise, it will return the
 number of multiple edges.
 """
@@ -173,7 +192,7 @@ inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v,
 """
     neighbors(zxd, v; count_mul = false)
 
-Return a vector of vertices connected to `v`. If `count_mul`, there will be
+Returns a vector of vertices connected to `v`. If `count_mul`, there will be
 multiple copy for each vertex. Otherwise, each vertex will only appear once.
 """
 neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
@@ -406,6 +425,6 @@ end
 """
     tcount(zxd)
 
-Return the T-count of a ZX-diagram.
+Returns the T-count of a ZX-diagram.
 """
 tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])

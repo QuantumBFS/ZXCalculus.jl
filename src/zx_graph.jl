@@ -125,6 +125,12 @@ end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
+function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
+    if v in spiders(zxg)
+        zxg.ps[v] = p
+    end
+end
+nqubits(zxg::ZXGraph) = zxg.layout.nbits
 is_hadamard(e::MultipleEdge) = (mul(e) == HADAMARD)
 is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer) = (mul(zxg.mg, v1, v2) == HADAMARD)
 spiders(zxg::ZXGraph) = vertices(zxg.mg)

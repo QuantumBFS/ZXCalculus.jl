@@ -7,7 +7,7 @@ Extract circuit from a graph-like ZX-diagram.
 """
 function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     nzxg = copy(zxg)
-    nbits = nzxg.layout.nbits
+    nbits = nqubits(zxg)
 
     cir = ZXDiagram(nbits)
     if nbits > 0
@@ -46,7 +46,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
-        nzxg.ps[w] = 0
+        set_phase!(nzxg, w, zero(P))
         rem_edge!(nzxg, w, Outs[i])
     end
     for i = 1:nbits
@@ -141,7 +141,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
             pushfirst_gate!(cir, Val{:H}(), qubit_v)
             if spider_type(zxg, w) == SpiderType.Z
                 pushfirst_gate!(cir, Val{:Z}(), qubit_v, phase(zxg, w))
-                zxg.ps[w] = 0
+                set_phase!(zxg, w, zero(P))
             end
             if qubit_v != qubit_w && spider_type(zxg, w) == SpiderType.Z
                 loc_v = findfirst(isequal(v), zxg.layout.spider_seq[qubit_v])

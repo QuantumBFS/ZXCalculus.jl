@@ -297,7 +297,7 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
             add_edge!(zxd, v1, v3)
         end
     end
-    zxd.ps[v1] += zxd.ps[v2]
+    set_phase!(zxd, v1, phase(zxd, v1)+phase(zxd, v2))
     # push!(zxd.phase_ids[v1], (v2, 1))
     rem_spider!(zxd, v2)
     rounding_phases!(zxd)
@@ -385,7 +385,7 @@ end
 function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1 = vs[1]
     v2 = vs[2]
-    zxd.ps[v2] = -zxd.ps[v2]
+    set_phase!(zxd, v2, -phase(zxd, v2))
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
         v3 != v1 && insert_spider!(zxd, v2, v3, SpiderType.X, phase(zxd, v1))
@@ -489,7 +489,7 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         end
     end
     for u in nb
-        zxg.ps[u] -= phase_v
+        set_phase!(zxg, u, phase(zxg, u)-phase_v)
     end
     rounding_phases!(zxg)
     return zxg
@@ -540,13 +540,13 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         add_edge!(zxg, v0, w0)
     end
     for u0 in U
-        zxg.ps[u0] += phase_v
+        set_phase!(zxg, u0, phase(zxg, u0)+phase_v)
     end
     for v0 in V
-        zxg.ps[v0] += phase_u
+        set_phase!(zxg, v0, phase(zxg, v0)+phase_u)
     end
     for w0 in W
-        zxg.ps[w0] += phase_u + phase_v + 1
+        set_phase!(zxg, w0, phase(zxg, w0)+phase_u+phase_v+1)
     end
     rounding_phases!(zxg)
     return zxg
@@ -586,15 +586,15 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         w = neighbors(zxg, v_bound)[1]
         insert_spider!(zxg, w, v_bound, phase_v)
         w = neighbors(zxg, v_bound)[1]
-        zxg.ps[w] = phase(zxg, v)
-        zxg.ps[v] = 0
+        set_phase!(zxg, w, phase(zxg, v))
+        set_phase!(zxg, v, zero(P))
     else
         insert_spider!(zxg, v, v_bound)
         w = neighbors(zxg, v_bound)[1]
         insert_spider!(zxg, w, v_bound, phase_v)
         w = neighbors(zxg, v_bound)[1]
-        zxg.ps[w] = phase(zxg, v)
-        zxg.ps[v] = 0
+        set_phase!(zxg, w, phase(zxg, v))
+        set_phase!(zxg, v, zero(P))
         rem_edge!(zxg, w, v_bound)
         add_edge!(zxg, w, v_bound, 1)
     end
@@ -651,10 +651,10 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         add_edge!(zxg, v0, w0)
     end
     for u0 in U
-        zxg.ps[u0] += phase_v
+        set_phase!(zxg, u0, phase(zxg, u0)+phase_v)
     end
     for w0 in W
-        zxg.ps[w0] += phase_v + 1
+        set_phase!(zxg, w0, phase(zxg, w0)+phase_v+1)
     end
     add_spider!(zxg, SpiderType.Z, zero(P), [V; W])
     add_spider!(zxg, SpiderType.Z, P((-1)^phase_v*phase_u))
@@ -719,16 +719,16 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     end
     for u0 in U
         rem_edge!(zxg, u, u0)
-        zxg.ps[u0] += phase_v
+        set_phase!(zxg, u0, phase(zxg, u0)+phase_v)
     end
     for v0 in V
         add_edge!(zxg, u, v0)
     end
     for w0 in W
-        zxg.ps[w0] += phase_v + 1
+        set_phase!(zxg, w0, phase(zxg, w0)+phase_v+1)
     end
-    zxg.ps[v] = 0
-    zxg.ps[u] = phase_v
+    set_phase!(zxg, v, zero(P))
+    set_phase!(zxg, u, phase_v)
     add_spider!(zxg, SpiderType.Z, P((-1)^phase_v*phase_u), [v])
     gad = spiders(zxg)[end]
     zxg.phase_ids[gad] = phase_id_u
@@ -765,11 +765,11 @@ end
 
 function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
-    zxg.ps[v3] += zxg.ps[v1]
+    set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
     id1, mul1 = zxg.phase_ids[v1]
     id3, mul3 = zxg.phase_ids[v3]
-    zxg.master.ps[id3] = (mul1 * zxg.master.ps[id1] + mul3 * zxg.master.ps[id3]) * mul3
-    zxg.master.ps[id1] = 0
+    set_phase!(zxg.master, id3, (mul1 * phase(zxg.master, id1) + mul3 * phase(zxg.master, id3)) * mul3)
+    set_phase!(zxg.master, id1, zero(P))
     rem_spiders!(zxg, [v1, v2])
     return zxg
 end
@@ -793,12 +793,12 @@ end
 
 function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
-    zxg.ps[v1] += zxg.ps[u1]
+    set_phase!(zxg, v1, phase(zxg, v1)+phase(zxg, u1))
 
     idv, mulv = zxg.phase_ids[v1]
     idu, mulu = zxg.phase_ids[u1]
-    zxg.master.ps[idv] = (mulv * zxg.master.ps[idv] + mulu * zxg.master.ps[idu]) * mulv
-    zxg.master.ps[idu] = 0
+    set_phase!(zxg.master ,idv, (mulv * phase(zxg.master,idv) + mulu * phase(zxg.master,idu)) * mulv)
+    set_phase!(zxg.master, idu, zero(P))
 
     rem_spiders!(zxg, [u1, u2])
     return zxg
