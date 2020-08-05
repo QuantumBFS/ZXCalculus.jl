@@ -10,13 +10,15 @@ abstract type AbstractRule end
 
 The struct for identifying different rules.
 
-Rule list:
+Rule for `ZXDiagram`s:
 * `Rule{:f}()`: rule f
 * `Rule{:h}()`: rule h
 * `Rule{:i1}()`: rule i1
 * `Rule{:i2}()`: rule i2
 * `Rule{:pi}()`: rule π
 * `Rule{:c}()`: rule c
+
+Rule for `ZXGraph`s:
 * `Rule{:lc}()`: local complementary rule
 * `Rule{:p1}()`: pivoting rule
 * `Rule{:pab}()`: rule for removing Paulis spiders adjancent to boundary spiders
@@ -27,10 +29,21 @@ Rule list:
 """
 struct Rule{L} <: AbstractRule end
 
+"""
+    Match{T<:Integer}
+
+A struct for saving matched vertices.
+"""
 struct Match{T<:Integer}
     vertices::Vector{T}
 end
 
+"""
+    match(r, zxd)
+
+Returns all matched vertices, which will be store in sturct `Match`, for rule `r`
+in a ZX-diagram `zxd`.
+"""
 match(::AbstractRule, zxd::AbstractZXDiagram{T, P}) where {T, P} = Match{T}[]
 
 function match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
@@ -172,10 +185,12 @@ function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (phase(zxg, v1) % 1//2 != 0) && length(neighbors(zxg, v1)) > 1
+            length(neighbors(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
+            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
+                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -188,10 +203,12 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-            (phase(zxg, v1) % 1//2 != 0)
+            (phase(zxg, v1) % 1//2 != 0) &&
+            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
+                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -236,6 +253,12 @@ function match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
+"""
+    rewrite!(r, zxd, matches)
+
+Rewrite a ZX-diagram `zxd` with rule `r` for all vertices in `matches`. `matches`
+can be a vector of `Match` or just an instance of `Match`.
+"""
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
     for each in matches
         rewrite!(r, zxd, each)
@@ -275,7 +298,7 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
         end
     end
     zxd.ps[v1] += zxd.ps[v2]
-    push!(zxd.phase_ids[v1], (v2, 1))
+    # push!(zxd.phase_ids[v1], (v2, 1))
     rem_spider!(zxd, v2)
     rounding_phases!(zxd)
     return zxd
@@ -455,6 +478,10 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v = vs[1]
     phase_v = phase(zxg, v)
     nb = neighbors(zxg, v)
+    # if length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule lc: ")
+    #     println(zxg.phase_ids[v])
+    # end
     rem_spider!(zxg, v)
     for u1 in nb, u2 in nb
         if u2 > u1
@@ -487,8 +514,12 @@ function check_rule(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 
 function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
-    u = vs[1]
-    v = vs[2]
+    u, v = vs
+    # if length(zxg.phase_ids[u]) + length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p1: ")
+    #     print(zxg.phase_ids[u])
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -543,28 +574,43 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v = vs[2]
     phase_v = phase(zxg, v)
     nb_v = neighbors(zxg, v)
-    v_bound = T(0)
+    v_bound = zero(T)
     for v0 in nb_v
         if spider_type(zxg, v0) != SpiderType.Z
             v_bound = v0
             break
         end
     end
-    insert_spider!(zxg, v, v_bound)
-    w = spiders(zxg)[end]
-    insert_spider!(zxg, w, v_bound, phase_v)
-    zxg.ps[v] = 0
-    return rewrite!(Rule{:p1}(), zxg, [u, v])
+    if is_hadamard(zxg, v, v_bound)
+        insert_spider!(zxg, v, v_bound)
+        w = neighbors(zxg, v_bound)[1]
+        insert_spider!(zxg, w, v_bound, phase_v)
+        w = neighbors(zxg, v_bound)[1]
+        zxg.ps[w] = phase(zxg, v)
+        zxg.ps[v] = 0
+    else
+        insert_spider!(zxg, v, v_bound)
+        w = neighbors(zxg, v_bound)[1]
+        insert_spider!(zxg, w, v_bound, phase_v)
+        w = neighbors(zxg, v_bound)[1]
+        zxg.ps[w] = phase(zxg, v)
+        zxg.ps[v] = 0
+        rem_edge!(zxg, w, v_bound)
+        add_edge!(zxg, w, v_bound, 1)
+    end
+    return rewrite!(Rule{:p1}(), zxg, Match{T}([u, v]))
 end
 
 function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (phase(zxg, v1) % 1//2 != 0) && length(neighbors(zxg, v1)) > 1
+            length(neighbors(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
+            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
+                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
                     return true
                 end
             end
@@ -576,6 +622,10 @@ end
 function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u = vs[1]
     v = vs[2]
+    # if length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p2: ")
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -587,9 +637,8 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     phase_id_u = zxg.phase_ids[u]
     if (-1)^phase_v < 0
-        for i = 1:length(phase_id_u)
-            phase_id_u[i] = (phase_id_u[i][1], -phase_id_u[i][2])
-        end
+        zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
+        phase_id_u = zxg.phase_ids[u]
     end
     rem_spiders!(zxg, vs)
     for u0 in U, v0 in V
@@ -620,10 +669,12 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-            (phase(zxg, v1) % 1//2 != 0)
+            (phase(zxg, v1) % 1//2 != 0) &&
+            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
+                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
                     return true
                 end
             end
@@ -635,6 +686,10 @@ end
 function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u = vs[1]
     v = vs[2]
+    # if length(zxg.phase_ids[v]) > 0
+    #     print("Deleted by rule p3: ")
+    #     println(zxg.phase_ids[v])
+    # end
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
     nb_u = setdiff(neighbors(zxg, u), [v])
@@ -648,9 +703,8 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     phase_id_u = zxg.phase_ids[u]
     if (-1)^phase_v < 0
-        for i = 1:length(phase_id_u)
-            phase_id_u[i] = (phase_id_u[i][1], -phase_id_u[i][2])
-        end
+        zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
+        phase_id_u = zxg.phase_ids[u]
     end
     phase_id_v = zxg.phase_ids[v]
     rem_edge!(zxg, u, v)
@@ -679,7 +733,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     gad = spiders(zxg)[end]
     zxg.phase_ids[gad] = phase_id_u
     zxg.phase_ids[u] = phase_id_v
-    zxg.phase_ids[v] = []
+    zxg.phase_ids[v] = (v, 1)
     rounding_phases!(zxg)
 
     if is_hadamard(zxg, u, bd_u)
@@ -712,7 +766,10 @@ end
 function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     zxg.ps[v3] += zxg.ps[v1]
-    zxg.phase_ids[v3] = [zxg.phase_ids[v3]; zxg.phase_ids[v1]]
+    id1, mul1 = zxg.phase_ids[v1]
+    id3, mul3 = zxg.phase_ids[v3]
+    zxg.master.ps[id3] = (mul1 * zxg.master.ps[id1] + mul3 * zxg.master.ps[id3]) * mul3
+    zxg.master.ps[id1] = 0
     rem_spiders!(zxg, [v1, v2])
     return zxg
 end
@@ -737,23 +794,12 @@ end
 function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
     zxg.ps[v1] += zxg.ps[u1]
-    zxg.phase_ids[v1] = [zxg.phase_ids[v1]; zxg.phase_ids[u1]]
+
+    idv, mulv = zxg.phase_ids[v1]
+    idu, mulu = zxg.phase_ids[u1]
+    zxg.master.ps[idv] = (mulv * zxg.master.ps[idv] + mulu * zxg.master.ps[idu]) * mulv
+    zxg.master.ps[idu] = 0
+
     rem_spiders!(zxg, [u1, u2])
-    return zxg
-end
-
-
-"""
-    replace!(r, zxd)
-Match and replace with the rule `r`.
-"""
-function replace!(r::AbstractRule, zxd::ZXDiagram)
-    matches = match(r, zxd)
-    rewrite!(r, zxd, matches)
-    return zxd
-end
-function replace!(r::AbstractRule, zxg::ZXGraph)
-    matches = match(r, zxg)
-    rewrite!(r, zxg, matches)
     return zxg
 end
