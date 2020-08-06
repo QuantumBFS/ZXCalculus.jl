@@ -120,23 +120,19 @@ function add_vertices!(mg::Multigraph{T}, n::Integer) where {T<:Integer}
 end
 
 function outneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false)
-    if v in vertices(mg)
-        if count_mul
-            return copy(mg.adjlist[v])
-        else
-            return sort!(collect(Set(mg.adjlist[v])))
-        end
+    v in vertices(mg) || error("Vertex not found!")
+    if count_mul
+        return copy(mg.adjlist[v])
+    else
+        return sort!(collect(Set(mg.adjlist[v])))
     end
 end
 neighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg, v, count_mul = count_mul)
 inneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg, v, count_mul = count_mul)
 
 function mul(mg::Multigraph, s::Integer, d::Integer)
-    if s in vertices(mg) && d in vertices(mg)
-        return length(searchsorted(mg.adjlist[s], d))
-    else
-        # error
-    end
+    (s in vertices(mg) && d in vertices(mg)) || error("Vertices not found!") 
+    return length(searchsorted(mg.adjlist[s], d))
 end
 
 is_directed(mg::Multigraph) = false

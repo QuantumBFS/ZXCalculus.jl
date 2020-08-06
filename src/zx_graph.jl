@@ -79,11 +79,10 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
         end
     end
 
-    eH = [neighbors(nzxd, v, count_mul = true) for v in vH]
+    eH = [(neighbors(nzxd, v, count_mul = true)[1], neighbors(nzxd, v, count_mul = true)[2]) for v in vH]
 
-    zxg = nzxd
-    rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout, zxg.phase_ids, zxd)
+    rem_spiders!(nzxd, vH)
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, nzxd.layout, nzxd.phase_ids, zxd)
 
     for e in eH
         v1, v2 = e

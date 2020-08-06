@@ -22,11 +22,11 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         frontier = [a[end-1] for a in nzxg.layout.spider_seq]
     else
         vs = spiders(nzxg)
-        sts = [st[v] for v in vs]
+        sts = [spider_type(v) for v in vs]
         Outs = vs[sts .== SpiderType.Out]
         Ins = vs[sts .== SpiderType.In]
         if length(Outs) == length(Ins)
-            return
+            return cir
         end
         for v1 in Ins
             v2 = neighbors(nzxg, v1)[1]
@@ -71,11 +71,9 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         if step.op == :swap
             q1 = step.r1
             q2 = step.r2
-            # println("Swap $q1 and $q2!")
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q1, q2)
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
-            # pushfirst_gate!(cir, Val{:SWAP}(), [q1, q2])
         end
     end
 
@@ -92,11 +90,11 @@ For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs
 """
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
     frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && length(neighbors(zxg, f)) > 0 for f in frontier]]
-    N = Set{T}()
+    SetN = Set{T}()
     for f in frontier
-        union!(N, neighbors(zxg, f))
+        union!(SetN, neighbors(zxg, f))
     end
-    N = collect(N)
+    N = collect(SetN)
     sort!(N, by = v -> qubit_loc(zxg.layout, v))
     M = biadjancency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
@@ -128,7 +126,6 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q1, q2)
             pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
-            # pushfirst_gate!(cir, Val{:SWAP}(), [q1, q2])
         end
     end
     old_frontier = copy(frontier)

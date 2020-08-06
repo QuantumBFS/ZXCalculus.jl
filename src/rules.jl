@@ -186,11 +186,11 @@ function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     for v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
             length(neighbors(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
-            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
+            (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
-                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
+                    (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -204,11 +204,11 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     for v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
             (phase(zxg, v1) % 1//2 != 0) &&
-            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
+            (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
-                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
+                    (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -606,11 +606,11 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     if v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
             length(neighbors(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
-            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
+            (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
-                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
+                    (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
                     return true
                 end
             end
@@ -670,11 +670,11 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     if v1 in spiders(zxg)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
             (phase(zxg, v1) % 1//2 != 0) &&
-            (qubit_loc(zxg.layout, v1) != nothing || zxg.layout.nbits == 0)
+            (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
-                    (qubit_loc(zxg.layout, v2) != nothing || zxg.layout.nbits == 0)
+                    (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
                     return true
                 end
             end
