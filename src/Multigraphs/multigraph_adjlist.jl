@@ -105,7 +105,9 @@ function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
     if all(has_vertex(mg, v) for v in vs)
         for v in vs
             delete!(mg.adjlist, v)
-            for l in values(mg.adjlist)
+        end
+        for l in values(mg.adjlist)
+            for v in vs
                 deleteat!(l, searchsorted(l, v))
             end
         end
