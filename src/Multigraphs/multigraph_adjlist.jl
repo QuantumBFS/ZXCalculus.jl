@@ -8,9 +8,10 @@ import LightGraphs: nv, has_edge, add_edge!, rem_edge!, rem_vertex!,
 
 export Multigraph
 
-struct Multigraph{T<:Integer} <: AbstractMultigraph{T}
+mutable struct Multigraph{T<:Integer} <: AbstractMultigraph{T}
     adjlist::Dict{T, Vector{T}}
-    function Multigraph{T}(d::Dict{T, Vector{T}}) where {T<:Integer}
+    _idmax::T
+    function Multigraph{T}(d::Dict{T, Vector{T}}, _idmax::T) where {T<:Integer}
         adjlist = deepcopy(d)
         vs = keys(adjlist)
         for (v, l) in adjlist
@@ -20,11 +21,12 @@ struct Multigraph{T<:Integer} <: AbstractMultigraph{T}
                 error("Some vertices connected to $v is not in the multigraph!")
             end
         end
-        new{T}(adjlist)
+        _idmax
+        new{T}(adjlist, _idmax)
     end
 end
 
-Multigraph(adjlist::Dict{T, Vector{T}}) where {T<:Integer} = Multigraph{T}(adjlist)
+Multigraph(adjlist::Dict{T, Vector{T}}) where {T<:Integer} = Multigraph{T}(adjlist, maximum(keys(adjlist)))
 function Multigraph(adjmx::AbstractMatrix{U}) where {U<:Integer}
     m, n = size(adjmx)
     if m != n
@@ -44,12 +46,12 @@ function Multigraph(adjmx::AbstractMatrix{U}) where {U<:Integer}
             end
         end
     end
-    Multigraph(adjlist)
+    Multigraph{Int}(adjlist, m)
 end
 Multigraph(n::T) where {T<:Integer} = Multigraph(Dict(zip(T(1):n, [T[] for _ = 1:n])))
 Multigraph(g::SimpleGraph{T}) where {T<:Integer} = Multigraph(Dict(zip(T(1):nv(g), LightGraphs.SimpleGraphs.fadj(g))))
 
-copy(mg::Multigraph) = Multigraph(deepcopy(mg.adjlist))
+copy(mg::Multigraph{T}) where {T} = Multigraph{T}(deepcopy(mg.adjlist), mg._idmax)
 
 nv(mg::Multigraph{T}) where {T<:Integer} = T(length(mg.adjlist))
 vertices(mg::Multigraph) = collect(keys(mg.adjlist))
@@ -67,7 +69,7 @@ function adjacency_matrix(mg::Multigraph)
             @inbounds adjmx[v2, v1] += 1
         end
     end
-    adjmx
+    return adjmx
 end
 
 function add_edge!(mg::Multigraph, me::AbstractMultipleEdge)
@@ -100,12 +102,15 @@ function rem_edge!(mg::Multigraph, me::AbstractMultipleEdge)
 end
 
 function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
-    if all([has_vertex(mg, v) for v in vs])
-        @simd for v in vs
+    if all(has_vertex(mg, v) for v in vs)
+        for v in vs
             delete!(mg.adjlist, v)
             for l in values(mg.adjlist)
                 deleteat!(l, searchsorted(l, v))
             end
+        end
+        if mg._idmax in vs
+            mg._idmax = maximum(keys(mg.adjlist))
         end
         return true
     end
@@ -113,7 +118,8 @@ function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
 end
 
 function add_vertices!(mg::Multigraph{T}, n::Integer) where {T<:Integer}
-    idmax = maximum(vertices(mg))
+    idmax = mg._idmax
+    mg._idmax += n
     new_ids = collect((idmax+1):(idmax+n))
     @simd for i in new_ids
         mg.adjlist[i] = T[]
