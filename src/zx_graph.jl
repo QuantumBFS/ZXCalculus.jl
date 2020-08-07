@@ -237,10 +237,13 @@ Return `true` if `v` is a interior spider of `zxg`.
 """
 function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     if has_vertex(zxg.mg, v)
-        nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
-        if !(SpiderType.In in nb_st || SpiderType.Out in nb_st)
-            return true
+        (spider_type(zxg, v) == SpiderType.In || spider_type(zxg, v) == SpiderType.Out) && return false
+        for u in neighbors(zxg, v)
+            if spider_type(zxg, u) == SpiderType.In || spider_type(zxg, u) == SpiderType.Out
+                return false
+            end
         end
+        return true
     end
     return false
 end

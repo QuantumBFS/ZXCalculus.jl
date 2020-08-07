@@ -17,8 +17,13 @@ ZXLayout{T}() where {T} = ZXLayout(T(0), Vector{T}[])
 copy(layout::ZXLayout) = ZXLayout(copy(layout.nbits), deepcopy(layout.spider_seq))
 function rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
     for seq in layout.spider_seq
-        deleteat!(seq, seq .== v)
+        v_ind = findfirst(isequal(v), seq)
+        if v_ind !== nothing
+            deleteat!(seq, v_ind)
+            return true
+        end
     end
+    return false
 end
 
 """
