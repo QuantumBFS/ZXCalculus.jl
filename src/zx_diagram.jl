@@ -129,6 +129,10 @@ Set the phase of `v` in `zxd` to `p`.
 """
 function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
     if has_vertex(zxd.mg, v)
+        while p < 0
+            p += 2
+        end
+        p = rem(p, one(P)+one(P))
         @inbounds zxd.ps[v] = p
         return true
     end
@@ -238,12 +242,12 @@ connected to the vertices `connect`.
 """
 function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
     v = add_vertex!(zxd.mg)[]
-    @inbounds zxd.ps[v] = phase
+    set_phase!(zxd, v, phase)
     @inbounds zxd.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
         zxd.phase_ids[v] = (v, 1)
     end
-    if all([has_vertex(zxd.mg, c) for c in connect])
+    if all(has_vertex(zxd.mg, c) for c in connect)
         @simd for c in connect
             add_edge!(zxd.mg, v, c)
         end
@@ -291,7 +295,7 @@ function rounding_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
         end
         @inbounds ps[v] = rem(ps[v], one(P)+one(P))
     end
-    return 
+    return
 end
 
 spiders(zxd::ZXDiagram) = vertices(zxd.mg)

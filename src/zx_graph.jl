@@ -130,6 +130,10 @@ spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     if has_vertex(zxg.mg, v)
+        while p < 0
+            p += 2
+        end
+        p = rem(p, one(P)+one(P))
         @inbounds zxg.ps[v] = p
         return true
     end
@@ -159,12 +163,12 @@ rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
 function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
     v = add_vertex!(zxg.mg)[]
-    @inbounds zxg.ps[v] = phase
+    set_phase!(zxg, v, phase)
     @inbounds zxg.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
         @inbounds zxg.phase_ids[v] = (v, 1)
     end
-    if all([has_vertex(zxg.mg, c) for c in connect])
+    if all(has_vertex(zxg.mg, c) for c in connect)
         @simd for c in connect
             add_edge!(zxg, v, c)
         end

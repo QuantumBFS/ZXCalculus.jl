@@ -295,7 +295,7 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     end
     set_phase!(zxd, v1, phase(zxd, v1)+phase(zxd, v2))
     rem_spider!(zxd, v2)
-    rounding_phases!(zxd)
+    # rounding_phases!(zxd)
     return zxd
 end
 
@@ -385,7 +385,7 @@ function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
         add_edge!(zxd, neighbors(zxd, v1))
         rem_spider!(zxd, v1)
     end
-    rounding_phases!(zxd)
+    # rounding_phases!(zxd)
     return zxd
 end
 
@@ -473,7 +473,7 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for u in nb
         set_phase!(zxg, u, phase(zxg, u)-phase_v)
     end
-    rounding_phases!(zxg)
+    # rounding_phases!(zxg)
     return zxg
 end
 
@@ -524,7 +524,7 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for w0 in W
         set_phase!(zxg, w0, phase(zxg, w0)+phase_u+phase_v+1)
     end
-    rounding_phases!(zxg)
+    # rounding_phases!(zxg)
     return zxg
 end
 
@@ -629,7 +629,7 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     gad2 = add_spider!(zxg, SpiderType.Z, P((-1)^phase_v*phase_u))
     add_edge!(zxg, gad1, gad2)
     zxg.phase_ids[gad2] = phase_id_u
-    rounding_phases!(zxg)
+    # rounding_phases!(zxg)
     return zxg
 end
 
@@ -696,7 +696,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds zxg.phase_ids[gad] = phase_id_u
     @inbounds zxg.phase_ids[u] = phase_id_v
     @inbounds zxg.phase_ids[v] = (v, 1)
-    rounding_phases!(zxg)
+    # rounding_phases!(zxg)
 
     if is_hadamard(zxg, u, bd_u)
         rem_edge!(zxg, u, bd_u)
@@ -737,7 +737,7 @@ function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 
 function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
-    @inbounds if all([has_vertex(zxg.mg, v) for v in vs])
+    @inbounds if all(has_vertex(zxg.mg, v) for v in vs)
         v1, v2, u1, u2 = vs
         if spider_type(zxg, v1) == SpiderType.Z && length(neighbors(zxg, v1)) == 1 &&
             spider_type(zxg, u1) == SpiderType.Z && length(neighbors(zxg, u1)) == 1
