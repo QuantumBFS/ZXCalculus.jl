@@ -5,8 +5,8 @@ export phase_teleportation
 Reducing T-count of `zxd` with the algorithms in [arXiv:1903.10477](https://arxiv.org/abs/1903.10477).
 """
 function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
-    ncir = copy(cir)
-    zxg = ZXGraph(ncir)
+    zxg = ZXGraph(cir)
+    ncir = zxg.master
 
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)

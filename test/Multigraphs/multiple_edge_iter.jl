@@ -6,6 +6,6 @@ add_edge!(mg, 2, 4, 2)
 
 @test outneighbors(mg, 2) == [4, 5]
 eit = edges(mg)
-@test iterate(eit)[2] == (1, 2)
+@test iterate(eit)[2] == (2, 2)
 mes = [me for me in edges(mg)]
 @test length(mes) == length(eit)

@@ -3,7 +3,8 @@ using LightGraphs, SparseArrays, LinearAlgebra
 import Base: copy
 import LightGraphs: nv, has_edge, add_edge!, rem_edge!, rem_vertex!,
     rem_vertices!, add_vertex!, add_vertices!, outneighbors, inneighbors, neighbors,
-    vertices, adjacency_matrix, ne, is_directed, degree, indegree, outdegree, edges
+    vertices, adjacency_matrix, ne, is_directed, degree, indegree, outdegree, edges,
+    has_vertex
 
 export Multigraph
 
@@ -36,9 +37,9 @@ function Multigraph(adjmx::AbstractMatrix{U}) where {U<:Integer}
         error("All elements in adjacency matrices should be non-negative!")
     end
     adjlist = Dict(zip((1:m), [Int[] for _ = 1:m]))
-    for v1 = 1:m
-        for v2 = 1:m
-            for i = 1:adjmx[v1, v2]
+    @simd for v1 = 1:m
+        @simd for v2 = 1:m
+            @simd for i = 1:adjmx[v1, v2]
                 push!(adjlist[v1], v2)
             end
         end
@@ -51,18 +52,19 @@ Multigraph(g::SimpleGraph{T}) where {T<:Integer} = Multigraph(Dict(zip(T(1):nv(g
 copy(mg::Multigraph) = Multigraph(deepcopy(mg.adjlist))
 
 nv(mg::Multigraph{T}) where {T<:Integer} = T(length(mg.adjlist))
-vertices(mg::Multigraph) = sort!(collect(keys(mg.adjlist)))
+vertices(mg::Multigraph) = collect(keys(mg.adjlist))
+has_vertex(mg::Multigraph, v::Integer) = haskey(mg.adjlist, v)
 
 function adjacency_matrix(mg::Multigraph)
     adjmx = spzeros(Int, nv(mg), nv(mg))
 
-    ids = vertices(mg)
-    for id1 in ids
+    ids = sort!(vertices(mg))
+    @simd for id1 in ids
         v1 = searchsortedfirst(ids, id1)
-        for id2 in mg.adjlist[id1]
+        @simd for id2 in mg.adjlist[id1]
             v2 = searchsortedfirst(ids, id2)
-            adjmx[v1, v2] += 1
-            adjmx[v2, v1] += 1
+            @inbounds adjmx[v1, v2] += 1
+            @inbounds adjmx[v2, v1] += 1
         end
     end
     adjmx
@@ -72,11 +74,10 @@ function add_edge!(mg::Multigraph, me::AbstractMultipleEdge)
     s = src(me)
     d = dst(me)
     m = mul(me)
-    vs = vertices(mg)
-    if s in vs && d in vs
-        for i = 1:m
-            insert!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d), d)
-            insert!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s), s)
+    if has_vertex(mg, s) && has_vertex(mg, d)
+        @simd for i = 1:m
+            @inbounds insert!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d), d)
+            @inbounds insert!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s), s)
         end
         return true
     end
@@ -89,8 +90,8 @@ function rem_edge!(mg::Multigraph, me::AbstractMultipleEdge)
         d = dst(me)
         m = mul(me)
         for i = 1:m
-            deleteat!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d))
-            deleteat!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s))
+            @inbounds deleteat!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d))
+            @inbounds deleteat!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s))
         end
         return true
     else
@@ -99,10 +100,10 @@ function rem_edge!(mg::Multigraph, me::AbstractMultipleEdge)
 end
 
 function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
-    if vs ⊆ vertices(mg)
-        for v in vs
+    if all([has_vertex(mg, v) for v in vs])
+        @simd for v in vs
             delete!(mg.adjlist, v)
-            for (v2, l) in mg.adjlist
+            for l in values(mg.adjlist)
                 deleteat!(l, searchsorted(l, v))
             end
         end
@@ -112,15 +113,16 @@ function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
 end
 
 function add_vertices!(mg::Multigraph{T}, n::Integer) where {T<:Integer}
-    idmax = vertices(mg)[end]
-    for i = (idmax+1):(idmax+n)
+    idmax = maximum(vertices(mg))
+    new_ids = collect((idmax+1):(idmax+n))
+    @simd for i in new_ids
         mg.adjlist[i] = T[]
     end
-    return mg
+    return new_ids
 end
 
 function outneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false)
-    v in vertices(mg) || error("Vertex not found!")
+    has_vertex(mg, v) || error("Vertex not found!")
     if count_mul
         return copy(mg.adjlist[v])
     else
@@ -131,8 +133,8 @@ neighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg
 inneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(mg, v, count_mul = count_mul)
 
 function mul(mg::Multigraph, s::Integer, d::Integer)
-    (s in vertices(mg) && d in vertices(mg)) || error("Vertices not found!") 
-    return length(searchsorted(mg.adjlist[s], d))
+    (has_vertex(mg, s) && has_vertex(mg, d)) || error("Vertices not found!")
+    @inbounds return length(searchsorted(mg.adjlist[s], d))
 end
 
 is_directed(mg::Multigraph) = false

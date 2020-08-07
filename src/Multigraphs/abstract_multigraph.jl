@@ -37,9 +37,8 @@ function has_edge(mg::AbstractMultigraph, e::AbstractMultipleEdge)
     d = dst(e)
     if s in vertices(mg) && d in vertices(mg)
         return mul(mg, s, d) >= mul(e)
-    else
-        return false
     end
+    return false
 end
 
 has_edge(mg::AbstractMultigraph, t) = has_edge(mg, MultipleEdge(t))

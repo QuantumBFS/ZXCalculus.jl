@@ -11,49 +11,51 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
 
     cir = ZXDiagram(nbits)
     if nbits > 0
-        Outs = [a[end] for a in nzxg.layout.spider_seq]
-        Ins = [a[1] for a in nzxg.layout.spider_seq]
-        for v1 in Ins
-            v2 = neighbors(nzxg, v1)[1]
+        @inbounds Outs = [a[end] for a in nzxg.layout.spider_seq]
+        @inbounds Ins = [a[1] for a in nzxg.layout.spider_seq]
+        @simd for v1 in Ins
+            @inbounds v2 = neighbors(nzxg, v1)[1]
             if !is_hadamard(nzxg, v1, v2)
                 insert_spider!(nzxg, v1, v2)
             end
         end
-        frontier = [a[end-1] for a in nzxg.layout.spider_seq]
+        @inbounds frontier = [a[end-1] for a in nzxg.layout.spider_seq]
     else
         vs = spiders(nzxg)
-        sts = [spider_type(v) for v in vs]
+        sts = [spider_type(nzxg, v) for v in vs]
         Outs = vs[sts .== SpiderType.Out]
         Ins = vs[sts .== SpiderType.In]
         if length(Outs) == length(Ins)
             return cir
         end
-        for v1 in Ins
-            v2 = neighbors(nzxg, v1)[1]
+        @simd for v1 in Ins
+            @inbounds v2 = neighbors(nzxg, v1)[1]
             if !is_hadamard(nzxg, v1, v2)
                 insert_spider!(nzxg, v1, v2)
             end
         end
-        frontier = [neighbors(nzxg, v)[1] for v in Outs]
+        @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
         nbits = length(Outs)
     end
 
     extracted = copy(Outs)
 
-    for i = 1:nbits
-        w = neighbors(zxg, Outs[i])[1]
-        if is_hadamard(nzxg, w, Outs[i])
+    @simd for i = 1:nbits
+        @inbounds w = neighbors(zxg, Outs[i])[1]
+        @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
         set_phase!(nzxg, w, zero(P))
-        rem_edge!(nzxg, w, Outs[i])
+        @inbounds rem_edge!(nzxg, w, Outs[i])
     end
     for i = 1:nbits
         for j = i+1:nbits
-            if is_hadamard(nzxg, frontier[i], frontier[j])
-                pushfirst_ctrl_gate!(cir, Val{:CZ}(), i, j)
-                rem_edge!(nzxg, frontier[i], frontier[j])
+            @inbounds if has_edge(nzxg, frontier[i], frontier[j])
+                if is_hadamard(nzxg, frontier[i], frontier[j])
+                    pushfirst_ctrl_gate!(cir, Val{:CZ}(), i, j)
+                    rem_edge!(nzxg, frontier[i], frontier[j])
+                end
             end
         end
     end
@@ -64,7 +66,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         extracted = union!(extracted, frontier)
     end
 
-    frontier = [a[2] for a in nzxg.layout.spider_seq]
+    @inbounds frontier = [a[2] for a in nzxg.layout.spider_seq]
     M = biadjancency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
@@ -91,7 +93,7 @@ For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
     frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && length(neighbors(zxg, f)) > 0 for f in frontier]]
     SetN = Set{T}()
-    for f in frontier
+    @simd for f in frontier
         union!(SetN, neighbors(zxg, f))
     end
     N = collect(SetN)
@@ -99,22 +101,22 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
     M = biadjancency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
     ws = T[]
-    for i = 1:length(frontier)
+    @inbounds for i = 1:length(frontier)
         if sum(M0[i,:]) == 1
             push!(ws, N[findfirst(isone, M0[i,:])])
         end
     end
     M1 = biadjancency(zxg, frontier, ws)
-    for e in findall(M .== 1)
+    @inbounds for e in findall(M .== 1)
         if has_edge(zxg, frontier[e[1]], N[e[2]])
             rem_edge!(zxg, frontier[e[1]], N[e[2]])
         end
     end
-    for e in findall(M0 .== 1)
+    @inbounds for e in findall(M0 .== 1)
         add_edge!(zxg, frontier[e[1]], N[e[2]])
     end
 
-    for step in steps
+    @inbounds for step in steps
         if step.op == :addto
             ctrl = qubit_loc(zxg.layout, frontier[step.r2])
             loc = qubit_loc(zxg.layout, frontier[step.r1])
@@ -129,7 +131,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
         end
     end
     old_frontier = copy(frontier)
-    for w in ws
+    @inbounds for w in ws
         nb_w = neighbors(zxg, w)
         v = intersect(nb_w, old_frontier)[1]
         if length(neighbors(zxg, v)) == 1
@@ -154,7 +156,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
             push!(frontier, w)
         end
     end
-    for i1 = 1:length(ws)
+    @inbounds for i1 = 1:length(ws)
         for i2 = i1+1:length(ws)
             if has_edge(zxg, ws[i1], ws[i2])
                 pushfirst_ctrl_gate!(cir, Val{:CZ}(), qubit_loc(zxg.layout, ws[i1]),

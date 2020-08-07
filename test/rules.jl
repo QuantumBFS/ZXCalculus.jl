@@ -5,7 +5,7 @@ v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:f}(), zxd)
 rewrite!(Rule{:f}(), zxd, matches)
-@test spiders(zxd) == [1, 3]
+@test sort!(spiders(zxd)) == [1, 3]
 @test phase(zxd, 1) == phase(zxd, 3) == 3//4
 
 g = Multigraph(path_graph(5))
