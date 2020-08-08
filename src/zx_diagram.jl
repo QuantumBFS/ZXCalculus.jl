@@ -307,7 +307,6 @@ function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType
             t = min(floor(t1), floor(t2)) + 1
             if t >= max(t1, t2)
                 t = (t1 + t2) / 2
-                println("t = ", t)
             end
             set_loc!(zxd.layout, v, l1, t)
         end
@@ -335,15 +334,17 @@ spiders(zxd::ZXDiagram) = vertices(zxd.mg)
 qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
 function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxd.layout, v)
-    if spider_type(zxd, v) == SpiderType.Out
-        nb = neighbors(zxd, v)[]
-        spider_type(zxd, nb) == SpiderType.In && return 3//1
-        c_loc = floor(column_loc(zxd, nb) + 2)
-    end
-    if spider_type(zxd, v) == SpiderType.In
-        nb = neighbors(zxd, v)[]
-        spider_type(zxd, nb) == SpiderType.Out && return 1//1
-        c_loc = ceil(column_loc(zxd, nb) - 2)
+    if c_loc !== nothing
+        if spider_type(zxd, v) == SpiderType.Out
+            nb = neighbors(zxd, v)[]
+            spider_type(zxd, nb) == SpiderType.In && return 3//1
+            c_loc = floor(column_loc(zxd, nb) + 2)
+        end
+        if spider_type(zxd, v) == SpiderType.In
+            nb = neighbors(zxd, v)[]
+            spider_type(zxd, nb) == SpiderType.Out && return 1//1
+            c_loc = ceil(column_loc(zxd, nb) - 2)
+        end
     end
     return c_loc
 end

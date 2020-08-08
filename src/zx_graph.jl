@@ -144,9 +144,17 @@ nqubits(zxg::ZXGraph) = zxg.layout.nbits
 qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(zxg.layout, v)
 function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxg.layout, v)
-    if c_loc == -1
-        nb = neighbors(zxg, v)[]
-        c_loc = floor(column_loc(zxg, nb) + 2)
+    if c_loc !== nothing
+        if spider_type(zxg, v) == SpiderType.Out
+            nb = neighbors(zxg, v)[]
+            spider_type(zxg, nb) == SpiderType.In && return 3//1
+            c_loc = floor(column_loc(zxg, nb) + 2)
+        end
+        if spider_type(zxg, v) == SpiderType.In
+            nb = neighbors(zxg, v)[]
+            spider_type(zxg, nb) == SpiderType.Out && return 1//1
+            c_loc = ceil(column_loc(zxg, nb) - 2)
+        end
     end
     return c_loc
 end
