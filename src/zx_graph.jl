@@ -26,7 +26,7 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
-    copy(zxg.ps), copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), zxg.master)
+    copy(zxg.ps), copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -140,6 +140,17 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     return false
 end
 nqubits(zxg::ZXGraph) = zxg.layout.nbits
+
+qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(zxg.layout, v)
+function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
+    c_loc = column_loc(zxg.layout, v)
+    if c_loc == -1
+        nb = neighbors(zxg, v)[]
+        c_loc = floor(column_loc(zxg, nb) + 2)
+    end
+    return c_loc
+end
+
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
     src = min(v1, v2)
     dst = max(v1, v2)
@@ -176,15 +187,18 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     return v
 end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
+    l1 = qubit_loc(zxg, v1)
+    l2 = qubit_loc(zxg, v2)
+    t1 = column_loc(zxg, v1)
+    t2 = column_loc(zxg, v1)
     v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
-    l1 = qubit_loc(zxg.layout, v1)
-    l2 = qubit_loc(zxg.layout, v2)
     if l1 == l2 && l1 !== nothing
-        @inbounds t1 = findfirst(isequal(v1), zxg.layout.spider_seq[l1])
-        @inbounds t2 = findfirst(isequal(v2), zxg.layout.spider_seq[l1])
-        t = min(t1, t2) + 1
-        @inbounds insert!(zxg.layout.spider_seq[l1], t, v)
+        t = min(floor(t1), floor(t2)) + 1
+        if t >= max(t1, t2)
+            t = (t1 + t2) / 2
+        end
+        set_loc!(zxg.layout, v, l1, t)
     end
     return v
 end
@@ -246,4 +260,19 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
         return true
     end
     return false
+end
+
+get_outputs(zxg::ZXGraph) = get_outputs(zxg.master)
+get_inputs(zxg::ZXGraph) = get_inputs(zxg.master)
+function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
+    nbits = nqubits(zxg)
+    if nbits > 0
+        vs = spiders(zxg)
+        spider_seq = Vector{Vector{T}}(undef, nbits)
+        for q = 1:nbits
+            spider_seq[q] = vs[[ZXCalculus.qubit_loc(zxg, v) == q for v in vs]]
+            sort!(spider_seq[q], by = (v -> column_loc(zxg, v)))
+        end
+        return spider_seq
+    end
 end

@@ -409,6 +409,7 @@ function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
     set_phase!(zxd, v2, -phase(zxd, v2))
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
+        # TODO
         v3 != v1 && insert_spider!(zxd, v2, v3, SpiderType.X, phase(zxd, v1))
     end
     if neighbors(zxd, v1) != [v2]
@@ -464,6 +465,7 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v3, v4 = nb1[nb1 .!= v2]
     v5, v6 = nb2[nb2 .!= v1]
 
+    # TODO
     a1 = insert_spider!(zxd, v1, v3, SpiderType.Z)[]
     a2 = insert_spider!(zxd, v1, v4, SpiderType.Z)[]
     a3 = insert_spider!(zxd, v2, v5, SpiderType.X)[]
@@ -586,6 +588,7 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         end
     end
     @inbounds if is_hadamard(zxg, v, v_bound)
+        # TODO
         insert_spider!(zxg, v, v_bound)
         w = neighbors(zxg, v_bound)[1]
         insert_spider!(zxg, w, v_bound, phase_v)
@@ -593,6 +596,7 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         set_phase!(zxg, w, phase(zxg, v))
         set_phase!(zxg, v, zero(P))
     else
+        # TODO
         insert_spider!(zxg, v, v_bound)
         w = neighbors(zxg, v_bound)[1]
         insert_spider!(zxg, w, v_bound, phase_v)

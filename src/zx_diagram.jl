@@ -20,11 +20,14 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     ps::Dict{T, P}
 
     layout::ZXLayout{T}
-
     phase_ids::Dict{T, Tuple{T, Int}}
 
+    _inputs::Vector{T}
+    _outputs::Vector{T}
+
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}()) where {T<:Integer, P}
+        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
+        inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
                 @simd for v in vertices(mg)
@@ -33,7 +36,27 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
                     end
                 end
             end
-            zxd = new{T, P}(mg, st, ps, layout, phase_ids)
+            if length(inputs) == 0
+                for v in vertices(mg)
+                    if st[v] == SpiderType.In
+                        push!(inputs, v)
+                    end
+                end
+                if layout.nbits > 0
+                    sort!(inputs, by = (v -> qubit_loc(layout, v)))
+                end
+            end
+            if length(outputs) == 0
+                for v in vertices(mg)
+                    if st[v] == SpiderType.Out
+                        push!(outputs, v)
+                    end
+                end
+                if layout.nbits > 0
+                    sort!(outputs, by = (v -> qubit_loc(layout, v)))
+                end
+            end
+            zxd = new{T, P}(mg, st, ps, layout, phase_ids, inputs, outputs)
             rounding_phases!(zxd)
             return zxd
         else
@@ -96,11 +119,17 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]
     ps = [0//1 for _ = 1:2*nbits]
-    layout = ZXLayout(nbits, [[2*i-1, 2*i] for i = 1:nbits])
+    spider_q = Dict{T, Rational{Int}}()
+    spider_col = Dict{T, Rational{Int}}()
     @simd for i = 1:nbits
         add_edge!(mg, 2*i-1, 2*i)
         @inbounds st[2*i] = SpiderType.Out
+        spider_q[2*i-1] = i
+        spider_col[2*i-1] = 1
+        spider_q[2*i] = i
+        spider_col[2*i] = -1
     end
+    layout = ZXLayout(nbits, spider_q, spider_col)
     return ZXDiagram(mg, st, ps, layout)
 end
 
@@ -266,17 +295,21 @@ vertices `v1` and `v2`. It will insert multiple times if the edge between
 function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType, phase::P = zero(P)) where {T<:Integer, P}
     mt = mul(zxd.mg, v1, v2)
     vs = Vector{T}(undef, mt)
-    @simd for i = 1:mt
+    for i = 1:mt
+        l1 = qubit_loc(zxd, v1)
+        l2 = qubit_loc(zxd, v2)
+        t1 = column_loc(zxd, v1)
+        t2 = column_loc(zxd, v2)
         v = add_spider!(zxd, st, phase, [v1, v2])
         @inbounds vs[i] = v
         rem_edge!(zxd, v1, v2)
-        l1 = qubit_loc(zxd.layout, v1)
-        l2 = qubit_loc(zxd.layout, v2)
         if l1 == l2 && l1 !== nothing
-            t1 = findfirst(isequal(v1), zxd.layout.spider_seq[l1])
-            t2 = findfirst(isequal(v2), zxd.layout.spider_seq[l1])
-            t = min(t1, t2) + 1
-            @inbounds insert!(zxd.layout.spider_seq[l1], t, v)
+            t = min(floor(t1), floor(t2)) + 1
+            if t >= max(t1, t2)
+                t = (t1 + t2) / 2
+                println("t = ", t)
+            end
+            set_loc!(zxd.layout, v, l1, t)
         end
     end
     return vs
@@ -300,6 +333,20 @@ end
 
 spiders(zxd::ZXDiagram) = vertices(zxd.mg)
 qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
+function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
+    c_loc = column_loc(zxd.layout, v)
+    if spider_type(zxd, v) == SpiderType.Out
+        nb = neighbors(zxd, v)[]
+        spider_type(zxd, nb) == SpiderType.In && return 3//1
+        c_loc = floor(column_loc(zxd, nb) + 2)
+    end
+    if spider_type(zxd, v) == SpiderType.In
+        nb = neighbors(zxd, v)[]
+        spider_type(zxd, nb) == SpiderType.Out && return 1//1
+        c_loc = ceil(column_loc(zxd, nb) - 2)
+    end
+    return c_loc
+end
 
 """
     push_gate!(zxd, ::Val{M}, loc[, phase])
@@ -309,22 +356,22 @@ and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
-    @inbounds bound_id = zxd.layout.spider_seq[loc][end-1]
-    @inbounds out_id = zxd.layout.spider_seq[loc][end]
+    @inbounds out_id = get_outputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, out_id)[]
     insert_spider!(zxd, bound_id, out_id, SpiderType.Z, phase)
     return zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
-    @inbounds bound_id = zxd.layout.spider_seq[loc][end-1]
-    @inbounds out_id = zxd.layout.spider_seq[loc][end]
+    @inbounds out_id = get_outputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, out_id)[]
     insert_spider!(zxd, bound_id, out_id, SpiderType.X, phase)
     return zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
-    @inbounds bound_id = zxd.layout.spider_seq[loc][end-1]
-    @inbounds out_id = zxd.layout.spider_seq[loc][end]
+    @inbounds out_id = get_outputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, out_id)[]
     insert_spider!(zxd, bound_id, out_id, SpiderType.H)
     return zxd
 end
@@ -374,22 +421,22 @@ and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
-    @inbounds in_id = zxd.layout.spider_seq[loc][1]
-    @inbounds bound_id = zxd.layout.spider_seq[loc][2]
+    @inbounds in_id = get_inputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, in_id)[]
     insert_spider!(zxd, in_id, bound_id, SpiderType.Z, phase)
     return zxd
 end
 
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
-    @inbounds in_id = zxd.layout.spider_seq[loc][1]
-    @inbounds bound_id = zxd.layout.spider_seq[loc][2]
+    @inbounds in_id = get_inputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, in_id)[]
     insert_spider!(zxd, in_id, bound_id, SpiderType.X, phase)
     return zxd
 end
 
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
-    @inbounds in_id = zxd.layout.spider_seq[loc][1]
-    @inbounds bound_id = zxd.layout.spider_seq[loc][2]
+    @inbounds in_id = get_inputs(zxd)[loc]
+    @inbounds bound_id = neighbors(zxd, in_id)[]
     insert_spider!(zxd, in_id, bound_id, SpiderType.H)
     return zxd
 end
@@ -437,3 +484,30 @@ end
 Returns the T-count of a ZX-diagram.
 """
 tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+
+"""
+    get_inputs(zxd)
+
+Returns a vector of input ids.
+"""
+get_inputs(zxd::ZXDiagram) = zxd._inputs
+
+"""
+    get_outputs(zxd)
+
+Returns a vector of output ids.
+"""
+get_outputs(zxd::ZXDiagram) = zxd._outputs
+
+function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
+    nbits = nqubits(zxd)
+    if nbits > 0
+        vs = spiders(zxd)
+        spider_seq = Vector{Vector{T}}(undef, nbits)
+        for q = 1:nbits
+            spider_seq[q] = vs[[ZXCalculus.qubit_loc(zxd, v) == q for v in vs]]
+            sort!(spider_seq[q], by = (v -> column_loc(zxd, v)))
+        end
+        return spider_seq
+    end
+end
