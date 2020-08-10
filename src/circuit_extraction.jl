@@ -86,7 +86,7 @@ Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
-    frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && length(neighbors(zxg, f)) > 0 for f in frontier]]
+    frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && (degree(zxg, f)) > 0 for f in frontier]]
     SetN = Set{T}()
     @simd for f in frontier
         union!(SetN, neighbors(zxg, f))
@@ -129,7 +129,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
     @inbounds for w in ws
         nb_w = neighbors(zxg, w)
         v = intersect(nb_w, old_frontier)[1]
-        if length(neighbors(zxg, v)) == 1
+        if (degree(zxg, v)) == 1
             qubit_v = qubit_loc(zxg, v)
             qubit_w = qubit_loc(zxg, w)
             pushfirst_gate!(cir, Val{:H}(), qubit_v)

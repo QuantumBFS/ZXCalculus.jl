@@ -1,6 +1,7 @@
 using LightGraphs
 import Base: show, copy
-import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!, add_edge!
+import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+    add_edge!, degree, indegree, outdegree
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
 export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!, tcount
@@ -223,6 +224,10 @@ ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
 
 outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
 inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
+
+degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
+indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
 
 """
     neighbors(zxd, v; count_mul = false)

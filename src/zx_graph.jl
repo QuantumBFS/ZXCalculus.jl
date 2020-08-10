@@ -2,7 +2,7 @@ using LightGraphs
 
 import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
-    add_edge!, has_edge
+    add_edge!, has_edge, degree, indegree, outdegree
 
 export ZXGraph, spider_type, phase
 
@@ -95,6 +95,9 @@ ne(zxg::ZXGraph) = ne(zxg.mg)
 outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
 inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
 neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
+degree(zxg::ZXGraph, v::Integer) = degree(zxg.mg, v)
+indegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
+outdegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
 function rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     if rem_edge!(zxg.mg, v1, v2)
         delete!(zxg.et, (min(v1, v2), max(v1, v2)))
