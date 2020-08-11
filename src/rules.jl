@@ -501,10 +501,6 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
     phase_v = phase(zxg, v)
     nb = neighbors(zxg, v)
-    # if length(zxg.phase_ids[v]) > 0
-    #     print("Deleted by rule lc: ")
-    #     println(zxg.phase_ids[v])
-    # end
     rem_spider!(zxg, v)
     for u1 in nb, u2 in nb
         if u2 > u1
