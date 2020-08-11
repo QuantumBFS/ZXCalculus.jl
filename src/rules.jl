@@ -332,7 +332,6 @@ function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     end
     set_phase!(zxd, v1, phase(zxd, v1)+phase(zxd, v2))
     rem_spider!(zxd, v2)
-    # rounding_phases!(zxd)
     return zxd
 end
 
@@ -423,7 +422,6 @@ function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
         add_edge!(zxd, neighbors(zxd, v1))
         rem_spider!(zxd, v1)
     end
-    # rounding_phases!(zxd)
     return zxd
 end
 
@@ -512,7 +510,6 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for u in nb
         set_phase!(zxg, u, phase(zxg, u)-phase_v)
     end
-    # rounding_phases!(zxg)
     return zxg
 end
 
@@ -563,7 +560,6 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for w0 in W
         set_phase!(zxg, w0, phase(zxg, w0)+phase_u+phase_v+1)
     end
-    # rounding_phases!(zxg)
     return zxg
 end
 
@@ -742,7 +738,6 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     rem_vertex!(zxg.layout, v)
 
-    # println(neighbors(zxg, bd_u))
     if is_hadamard(zxg, u, bd_u)
         rem_edge!(zxg, u, bd_u)
         add_edge!(zxg, u, bd_u, EdgeType.SIM)
