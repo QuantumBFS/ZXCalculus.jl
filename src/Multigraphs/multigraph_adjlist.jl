@@ -104,12 +104,11 @@ end
 function rem_vertices!(mg::Multigraph{T}, vs::Vector{T}) where {T<:Integer}
     if all(has_vertex(mg, v) for v in vs)
         for v in vs
-            delete!(mg.adjlist, v)
-        end
-        for l in values(mg.adjlist)
-            for v in vs
+            for u in neighbors(mg, v)
+                l = mg.adjlist[u]
                 deleteat!(l, searchsorted(l, v))
             end
+            delete!(mg.adjlist, v)
         end
         if mg._idmax in vs
             mg._idmax = maximum(keys(mg.adjlist))
