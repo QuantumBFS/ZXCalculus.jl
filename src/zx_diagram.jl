@@ -517,3 +517,10 @@ function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
         return spider_seq
     end
 end
+
+"""
+    tcount(zxd)
+
+Return the T-count of a ZX-diagram.
+"""
+tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
