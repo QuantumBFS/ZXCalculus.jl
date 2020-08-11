@@ -22,6 +22,10 @@ ZXCalculus is a &nbsp;
 pkg> add ZXCalculus
 ```
 
+## Acknowledgement
+
+This project is highly inpsired by [PyZX](https://github.com/Quantomatic/pyzx)
+
 ## License
 
 Apache License 2.0
