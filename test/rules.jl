@@ -134,8 +134,9 @@ zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
     add_edge!(zxg, e[1], e[2])
 end
+match(Rule{:p2}(), zxg)
 replace!(Rule{:p2}(), zxg)
-@test zxg.phase_ids[16] == (2, -1)
+@test zxg.phase_ids[15] == (2, -1)
 
 g = Multigraph(15)
 for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14],[2,15]]
