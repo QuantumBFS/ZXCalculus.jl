@@ -71,7 +71,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     vs = spiders(nzxd)
     vH = vs[[spider_type(nzxd, v) == SpiderType.H for v in vs]]
     vZ = vs[[spider_type(nzxd, v) == SpiderType.Z for v in vs]]
-    vB = vs[[(spider_type(nzxd, v) in [SpiderType.In, SpiderType.Out]) for v in vs]]
+    vB = vs[[(spider_type(nzxd, v) in (SpiderType.In, SpiderType.Out)) for v in vs]]
     eH = [(neighbors(nzxd, v, count_mul = true)[1], neighbors(nzxd, v, count_mul = true)[2]) for v in vH]
 
     rem_spiders!(nzxd, vH)
@@ -187,7 +187,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     v = add_vertex!(zxg.mg)[1]
     set_phase!(zxg, v, phase)
     zxg.st[v] = st
-    if st in [SpiderType.Z, SpiderType.X]
+    if st in (SpiderType.Z, SpiderType.X)
         zxg.phase_ids[v] = (v, 1)
     end
     if all(has_vertex(zxg.mg, c) for c in connect)

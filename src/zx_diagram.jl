@@ -32,7 +32,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
                 for v in vertices(mg)
-                    if st[v] in [SpiderType.Z, SpiderType.X]
+                    if st[v] in (SpiderType.Z, SpiderType.X)
                         phase_ids[v] = (v, 1)
                     end
                 end
@@ -278,7 +278,7 @@ function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero
     v = add_vertex!(zxd.mg)[1]
     set_phase!(zxd, v, phase)
     zxd.st[v] = st
-    if st in [SpiderType.Z, SpiderType.X]
+    if st in (SpiderType.Z, SpiderType.X)
         zxd.phase_ids[v] = (v, 1)
     end
     if all(has_vertex(zxd.mg, c) for c in connect)
