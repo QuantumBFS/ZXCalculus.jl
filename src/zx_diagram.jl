@@ -31,8 +31,8 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
         inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
-                @simd for v in vertices(mg)
-                    @inbounds if st[v] in [SpiderType.Z, SpiderType.X]
+                for v in vertices(mg)
+                    if st[v] in [SpiderType.Z, SpiderType.X]
                         phase_ids[v] = (v, 1)
                     end
                 end
@@ -58,7 +58,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
                 end
             end
             zxd = new{T, P}(mg, st, ps, layout, phase_ids, inputs, outputs)
-            rounding_phases!(zxd)
+            round_phases!(zxd)
             return zxd
         else
             error("There should be a phase and a type for each spider!")
@@ -122,7 +122,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     ps = [0//1 for _ = 1:2*nbits]
     spider_q = Dict{T, Rational{Int}}()
     spider_col = Dict{T, Rational{Int}}()
-    @simd for i = 1:nbits
+    for i = 1:nbits
         add_edge!(mg, 2*i-1, 2*i)
         @inbounds st[2*i] = SpiderType.Out
         spider_q[2*i-1] = i
@@ -163,7 +163,7 @@ function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
             p += 2
         end
         p = rem(p, one(P)+one(P))
-        @inbounds zxd.ps[v] = p
+        zxd.ps[v] = p
         return true
     end
     return false
@@ -250,7 +250,7 @@ Remove spiders indexed by `vs`.
 """
 function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
     if rem_vertices!(zxd.mg, vs)
-        @simd for v in vs
+        for v in vs
             delete!(zxd.ps, v)
             delete!(zxd.st, v)
             delete!(zxd.phase_ids, v)
@@ -275,14 +275,14 @@ Add a new spider which is of the type `spider_type` with phase `phase` and
 connected to the vertices `connect`.
 """
 function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
-    v = add_vertex!(zxd.mg)[]
+    v = add_vertex!(zxd.mg)[1]
     set_phase!(zxd, v, phase)
-    @inbounds zxd.st[v] = st
+    zxd.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
         zxd.phase_ids[v] = (v, 1)
     end
     if all(has_vertex(zxd.mg, c) for c in connect)
-        @simd for c in connect
+        for c in connect
             add_edge!(zxd.mg, v, c)
         end
     end
@@ -320,17 +320,17 @@ function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType
 end
 
 """
-    rounding_phases!(zxd)
+    round_phases!(zxd)
 
 Round phases between [0, 2π).
 """
-function rounding_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
+function round_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     ps = zxd.ps
     for v in keys(ps)
-        @inbounds while ps[v] < 0
+        while ps[v] < 0
             ps[v] += 2
         end
-        @inbounds ps[v] = rem(ps[v], one(P)+one(P))
+        ps[v] = rem(ps[v], one(P)+one(P))
     end
     return
 end
@@ -341,12 +341,12 @@ function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxd.layout, v)
     if c_loc !== nothing
         if spider_type(zxd, v) == SpiderType.Out
-            nb = neighbors(zxd, v)[]
+            nb = neighbors(zxd, v)[1]
             spider_type(zxd, nb) == SpiderType.In && return 3//1
             c_loc = floor(column_loc(zxd, nb) + 2)
         end
         if spider_type(zxd, v) == SpiderType.In
-            nb = neighbors(zxd, v)[]
+            nb = neighbors(zxd, v)[1]
             spider_type(zxd, nb) == SpiderType.Out && return 1//1
             c_loc = ceil(column_loc(zxd, nb) - 2)
         end
@@ -363,21 +363,21 @@ rotation `M` gate with angle `phase * π`.
 """
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, out_id)[]
+    @inbounds bound_id = neighbors(zxd, out_id)[1]
     insert_spider!(zxd, bound_id, out_id, SpiderType.Z, phase)
     return zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, out_id)[]
+    @inbounds bound_id = neighbors(zxd, out_id)[1]
     insert_spider!(zxd, bound_id, out_id, SpiderType.X, phase)
     return zxd
 end
 
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, out_id)[]
+    @inbounds bound_id = neighbors(zxd, out_id)[1]
     insert_spider!(zxd, bound_id, out_id, SpiderType.H)
     return zxd
 end
@@ -428,21 +428,21 @@ rotation `M` gate with angle `phase * π`.
 """
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
     @inbounds in_id = get_inputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, in_id)[]
+    @inbounds bound_id = neighbors(zxd, in_id)[1]
     insert_spider!(zxd, in_id, bound_id, SpiderType.Z, phase)
     return zxd
 end
 
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
     @inbounds in_id = get_inputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, in_id)[]
+    @inbounds bound_id = neighbors(zxd, in_id)[1]
     insert_spider!(zxd, in_id, bound_id, SpiderType.X, phase)
     return zxd
 end
 
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:H}, loc::T) where {T, P}
     @inbounds in_id = get_inputs(zxd)[loc]
-    @inbounds bound_id = neighbors(zxd, in_id)[]
+    @inbounds bound_id = neighbors(zxd, in_id)[1]
     insert_spider!(zxd, in_id, bound_id, SpiderType.H)
     return zxd
 end

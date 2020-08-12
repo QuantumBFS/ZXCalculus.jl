@@ -18,18 +18,18 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     if nbits == 0
         nbits = length(Outs)
     end
-    @simd for v1 in Ins
-        @inbounds v2 = neighbors(nzxg, v1)[]
+    for v1 in Ins
+        @inbounds v2 = neighbors(nzxg, v1)[1]
         if !is_hadamard(nzxg, v1, v2)
             insert_spider!(nzxg, v1, v2)
         end
     end
-    @inbounds frontier = [neighbors(nzxg, v)[] for v in Outs]
+    @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
 
     extracted = copy(Outs)
 
-    @simd for i = 1:nbits
-        @inbounds w = neighbors(zxg, Outs[i])[]
+    for i = 1:nbits
+        @inbounds w = neighbors(zxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
@@ -88,7 +88,7 @@ For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs
 function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
     frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && (degree(zxg, f)) > 0 for f in frontier]]
     SetN = Set{T}()
-    @simd for f in frontier
+    for f in frontier
         union!(SetN, neighbors(zxg, f))
     end
     N = collect(SetN)

@@ -21,7 +21,7 @@ mutable struct Multigraph{T<:Integer} <: AbstractMultigraph{T}
                 error("Some vertices connected to $v is not in the multigraph!")
             end
         end
-        _idmax
+        _idmax = maximum(vs)
         new{T}(adjlist, _idmax)
     end
 end
@@ -39,9 +39,9 @@ function Multigraph(adjmx::AbstractMatrix{U}) where {U<:Integer}
         error("All elements in adjacency matrices should be non-negative!")
     end
     adjlist = Dict(zip((1:m), [Int[] for _ = 1:m]))
-    @simd for v1 = 1:m
-        @simd for v2 = 1:m
-            @simd for i = 1:adjmx[v1, v2]
+    for v1 = 1:m
+        for v2 = 1:m
+            for i = 1:adjmx[v1, v2]
                 push!(adjlist[v1], v2)
             end
         end
@@ -61,9 +61,9 @@ function adjacency_matrix(mg::Multigraph)
     adjmx = spzeros(Int, nv(mg), nv(mg))
 
     ids = sort!(vertices(mg))
-    @simd for id1 in ids
+    for id1 in ids
         v1 = searchsortedfirst(ids, id1)
-        @simd for id2 in mg.adjlist[id1]
+        for id2 in mg.adjlist[id1]
             v2 = searchsortedfirst(ids, id2)
             @inbounds adjmx[v1, v2] += 1
             @inbounds adjmx[v2, v1] += 1
@@ -77,7 +77,7 @@ function add_edge!(mg::Multigraph, me::AbstractMultipleEdge)
     d = dst(me)
     m = mul(me)
     if has_vertex(mg, s) && has_vertex(mg, d)
-        @simd for i = 1:m
+        for i = 1:m
             @inbounds insert!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d), d)
             @inbounds insert!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s), s)
         end
@@ -122,7 +122,7 @@ function add_vertices!(mg::Multigraph{T}, n::Integer) where {T<:Integer}
     idmax = mg._idmax
     mg._idmax += n
     new_ids = collect((idmax+1):(idmax+n))
-    @simd for i in new_ids
+    for i in new_ids
         mg.adjlist[i] = T[]
     end
     return new_ids

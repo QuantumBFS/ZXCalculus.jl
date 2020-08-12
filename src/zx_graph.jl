@@ -61,8 +61,8 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
             if check_rule(Rule{:f}(), nzxd, vs)
                 rewrite!(Rule{:f}(), nzxd, vs)
                 v1, v2 = vs
-                @inbounds zxd.ps[v1] += zxd.ps[v2]
-                @inbounds zxd.ps[v2] = 0
+                set_phase!(zxd, v1, phase(zxd, v1) + phase(zxd, v2))
+                set_phase!(zxd, v2, zero(P))
             end
         end
         match_f = match(Rule{:f}(), nzxd)
@@ -77,7 +77,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     rem_spiders!(nzxd, vH)
     et = Dict{Tuple{T, T}, EdgeType.EType}()
     for e in edges(nzxd.mg)
-        @inbounds et[(src(e), dst(e))] = EdgeType.SIM
+        et[(src(e), dst(e))] = EdgeType.SIM
     end
     zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, zxd)
 
@@ -121,7 +121,7 @@ end
                     return false
                 end
             elseif add_edge!(zxg.mg, v1, v2)
-                @inbounds zxg.et[(min(v1, v2), max(v1, v2))] = edge_type
+                zxg.et[(min(v1, v2), max(v1, v2))] = edge_type
                 return true
             end
         end
@@ -137,7 +137,7 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
             p += 2
         end
         p = rem(p, one(P)+one(P))
-        @inbounds zxg.ps[v] = p
+        zxg.ps[v] = p
         return true
     end
     return false
@@ -149,12 +149,12 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxg.layout, v)
     if c_loc !== nothing
         if spider_type(zxg, v) == SpiderType.Out
-            nb = neighbors(zxg, v)[]
+            nb = neighbors(zxg, v)[1]
             spider_type(zxg, nb) == SpiderType.In && return 3//1
             c_loc = floor(column_loc(zxg, nb) + 2)
         end
         if spider_type(zxg, v) == SpiderType.In
-            nb = neighbors(zxg, v)[]
+            nb = neighbors(zxg, v)[1]
             spider_type(zxg, nb) == SpiderType.Out && return 1//1
             c_loc = ceil(column_loc(zxg, nb) - 2)
         end
@@ -165,13 +165,13 @@ end
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
     src = min(v1, v2)
     dst = max(v1, v2)
-    @inbounds return zxg.et[(src, dst)] == EdgeType.HAD
+    return zxg.et[(src, dst)] == EdgeType.HAD
 end
 spiders(zxg::ZXGraph) = vertices(zxg.mg)
 
 function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     if rem_vertices!(zxg.mg, vs)
-        @simd for v in vs
+        for v in vs
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
             delete!(zxg.phase_ids, v)
@@ -184,14 +184,14 @@ end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
 function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
-    v = add_vertex!(zxg.mg)[]
+    v = add_vertex!(zxg.mg)[1]
     set_phase!(zxg, v, phase)
-    @inbounds zxg.st[v] = st
+    zxg.st[v] = st
     if st in [SpiderType.Z, SpiderType.X]
-        @inbounds zxg.phase_ids[v] = (v, 1)
+        zxg.phase_ids[v] = (v, 1)
     end
     if all(has_vertex(zxg.mg, c) for c in connect)
-        @simd for c in connect
+        for c in connect
             add_edge!(zxg, v, c)
         end
     end
@@ -245,13 +245,13 @@ function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     end
 end
 
-function rounding_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
+function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
     ps = zxg.ps
     for v in keys(ps)
-        @inbounds while ps[v] < 0
+        while ps[v] < 0
             ps[v] += 2
         end
-        @inbounds ps[v] = rem(ps[v], one(P)+one(P))
+        ps[v] = rem(ps[v], one(P)+one(P))
     end
 end
 
@@ -281,7 +281,12 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
         vs = spiders(zxg)
         spider_seq = Vector{Vector{T}}(undef, nbits)
         for q = 1:nbits
-            spider_seq[q] = vs[[ZXCalculus.qubit_loc(zxg, v) == q for v in vs]]
+            spider_seq[q] = Vector{T}()
+        end
+        for v in vs
+            push!(spider_seq[qubit_loc(zxg, v)], v)
+        end
+        for q = 1:nbits
             sort!(spider_seq[q], by = (v -> column_loc(zxg, v)))
         end
         return spider_seq
