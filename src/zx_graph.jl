@@ -163,9 +163,12 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
 end
 
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
-    src = min(v1, v2)
-    dst = max(v1, v2)
-    return zxg.et[(src, dst)] == EdgeType.HAD
+    if has_edge(zxg, v1, v2)
+        src = min(v1, v2)
+        dst = max(v1, v2)
+        return zxg.et[(src, dst)] == EdgeType.HAD
+    end
+    return false
 end
 spiders(zxg::ZXGraph) = vertices(zxg.mg)
 

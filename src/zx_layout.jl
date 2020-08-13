@@ -27,24 +27,14 @@ end
 
 Return the qubit number corresponding to the spider `v`.
 """
-function qubit_loc(layout::ZXLayout{T}, v::T) where T
-    if haskey(layout.spider_q, v)
-        return T(layout.spider_q[v])
-    end
-    return
-end
+qubit_loc(layout::ZXLayout{T}, v::T) where T = get(layout.spider_q, v, nothing)
 
 """
     column_loc(layout, v)
 
 Return the column number corresponding to the spider `v`.
 """
-function column_loc(layout::ZXLayout{T}, v::T) where T
-    if haskey(layout.spider_col, v)
-        return layout.spider_col[v]
-    end
-    return
-end
+column_loc(layout::ZXLayout{T}, v::T) where T = get(layout.spider_col, v, nothing)
 
 """
     set_qubit!(layout, v, q)

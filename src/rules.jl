@@ -228,12 +228,12 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
     for i = 1:length(vB)
-        if length(neighbors(zxg, vB[i])) == 1
-            push!(vB, neighbors(zxg, vB[i])[1])
-        else
-            println(vB[i])
-            println(neighbors(zxg, vB[i]))
-        end
+        # if length(neighbors(zxg, vB[i])) == 1
+        push!(vB, neighbors(zxg, vB[i])[1])
+        # else
+            # println(vB[i])
+            # println(neighbors(zxg, vB[i]))
+        # end
     end
     sort!(vB)
     for v1 in vB

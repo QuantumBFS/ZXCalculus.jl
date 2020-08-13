@@ -78,8 +78,8 @@ function add_edge!(mg::Multigraph, me::AbstractMultipleEdge)
     m = mul(me)
     if has_vertex(mg, s) && has_vertex(mg, d)
         for i = 1:m
-            @inbounds insert!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d), d)
-            @inbounds insert!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s), s)
+            insert!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d), d)
+            insert!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s), s)
         end
         return true
     end
@@ -92,8 +92,8 @@ function rem_edge!(mg::Multigraph, me::AbstractMultipleEdge)
         d = dst(me)
         m = mul(me)
         for i = 1:m
-            @inbounds deleteat!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d))
-            @inbounds deleteat!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s))
+            deleteat!(mg.adjlist[s], searchsortedfirst(mg.adjlist[s], d))
+            deleteat!(mg.adjlist[d], searchsortedfirst(mg.adjlist[d], s))
         end
         return true
     else
@@ -141,7 +141,7 @@ inneighbors(mg::Multigraph, v::Integer; count_mul::Bool = false) = outneighbors(
 
 function mul(mg::Multigraph, s::Integer, d::Integer)
     (has_vertex(mg, s) && has_vertex(mg, d)) || error("Vertices not found!")
-    @inbounds return length(searchsorted(mg.adjlist[s], d))
+    return length(searchsorted(mg.adjlist[s], d))
 end
 
 is_directed(mg::Multigraph) = false
