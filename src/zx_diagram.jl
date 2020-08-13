@@ -120,7 +120,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]
     ps = [0//1 for _ = 1:2*nbits]
-    spider_q = Dict{T, Rational{Int}}()
+    spider_q = Dict{T, Int}()
     spider_col = Dict{T, Rational{Int}}()
     for i = 1:nbits
         add_edge!(mg, 2*i-1, 2*i)
