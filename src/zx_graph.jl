@@ -69,9 +69,18 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     end
 
     vs = spiders(nzxd)
-    vH = vs[[spider_type(nzxd, v) == SpiderType.H for v in vs]]
-    vZ = vs[[spider_type(nzxd, v) == SpiderType.Z for v in vs]]
-    vB = vs[[(spider_type(nzxd, v) in (SpiderType.In, SpiderType.Out)) for v in vs]]
+    vH = T[]
+    vZ = T[]
+    vB = T[]
+    for v in vs
+        if spider_type(nzxd, v) == SpiderType.H
+            push!(vH, v)
+        elseif spider_type(nzxd, v) == SpiderType.Z
+            push!(vZ, v)
+        else
+            push!(vB, v)
+        end
+    end
     eH = [(neighbors(nzxd, v, count_mul = true)[1], neighbors(nzxd, v, count_mul = true)[2]) for v in vH]
 
     rem_spiders!(nzxd, vH)
