@@ -35,11 +35,10 @@ function adjacency_matrix(mg::AbstractMultigraph) end
 function has_edge(mg::AbstractMultigraph, e::AbstractMultipleEdge)
     s = src(e)
     d = dst(e)
-    if s in vertices(mg) && d in vertices(mg)
+    if has_vertex(mg, s) && has_vertex(mg, d)
         return mul(mg, s, d) >= mul(e)
-    else
-        return false
     end
+    return false
 end
 
 has_edge(mg::AbstractMultigraph, t) = has_edge(mg, MultipleEdge(t))

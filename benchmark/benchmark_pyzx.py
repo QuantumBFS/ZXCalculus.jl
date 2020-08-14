@@ -15,10 +15,9 @@ def run_benchmark():
         g = zx.simplify.teleport_reduce(g)
         t1 = time.time()
         t = t1 - t0
-        tc = zx.tcount(g)
-        print(circ_name + '\t time = ', t, '\t tcount = ', tc)
-        # print(circ_name + '\t time = ', t, '\t gates = ', len(c.gates))
+        # tc = zx.tcount(g)
+        print(circ_name + '\t time = ', t)
         bms[circ_name] = t
     return bms
-
+        
 bms = run_benchmark()

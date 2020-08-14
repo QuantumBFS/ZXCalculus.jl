@@ -5,7 +5,7 @@ v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:f}(), zxd)
 rewrite!(Rule{:f}(), zxd, matches)
-@test spiders(zxd) == [1, 3]
+@test sort!(spiders(zxd)) == [1, 3]
 @test phase(zxd, 1) == phase(zxd, 3) == 3//4
 
 g = Multigraph(path_graph(5))
@@ -70,11 +70,11 @@ add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
 ps = [0//1 for i = 1:6]
 v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
-layout = ZXCalculus.ZXLayout(2, [[1,3,5],[2,4,6]])
+layout = ZXCalculus.ZXLayout(2, Dict(zip(1:6, [1, 2, 1, 2, 1, 2])), Dict(zip(1:6, [1//1, 1, 2, 2, 3, 3])))
 zxd = ZXDiagram(g, v_t, ps, layout)
 matches = match(Rule{:b}(), zxd)
 rewrite!(Rule{:b}(), zxd, matches)
-@test zxd.layout.spider_seq == [[1, 7, 8, 5], [2, 9, 10, 6]]
+@test ZXCalculus.spider_sequence(zxd) == [[1, 7, 8, 5], [2, 9, 10, 6]]
 @test nv(zxd) == 8 && ne(zxd) == 8
 
 g = Multigraph(9)
@@ -134,8 +134,9 @@ zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
     add_edge!(zxg, e[1], e[2])
 end
+match(Rule{:p2}(), zxg)
 replace!(Rule{:p2}(), zxg)
-@test zxg.phase_ids[16] == (2, -1)
+@test zxg.phase_ids[15] == (2, -1)
 
 g = Multigraph(15)
 for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14],[2,15]]

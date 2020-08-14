@@ -18,18 +18,8 @@ function run_benchmark()
         b = @benchmark phase_teleportation($zxd)
         println(circ_name, "\t time = ", (mean(b).time / 1e9))
         push!(bms, b)
-        # t0 = time()
-        # circ = phase_teleportation(zxd)
-        # t1 = time()
-        # println(circ_name, "\t time = ", t1 - t0, "\t tcount = ", tcount(circ))
-        # push!(bms, t1 - t0)
     end
     return Dict(zip(filenames, bms))
 end
 
 bms = run_benchmark()
-
-# zxd = zx_load_qasm("gf2^64_mult.qasm")
-# @profiler phase_teleportation(zxd)
-# circ = phase_teleportation(zxd)
-# tcount(circ)

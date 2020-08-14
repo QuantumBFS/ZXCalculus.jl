@@ -2,12 +2,13 @@ using LightGraphs
 
 import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
-    add_edge!, has_edge
+    add_edge!, has_edge, degree, indegree, outdegree
 
 export ZXGraph, spider_type, phase
 
-const NON_HADAMARD = 1
-const HADAMARD = 2
+module EdgeType
+    @enum EType SIM HAD
+end
 
 """
     ZXGraph{T, P}
@@ -18,13 +19,14 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
+    et::Dict{Tuple{T, T}, EdgeType.EType}
     layout::ZXLayout{T}
     phase_ids::Dict{T,Tuple{T, Int}}
     master::ZXDiagram{T, P}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
-    copy(zxg.ps), copy(zxg.st), copy(zxg.layout), deepcopy(zxg.phase_ids), zxg.master)
+    copy(zxg.ps), copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -46,6 +48,7 @@ ZX-graph with 6 vertices and 5 edges:
 ```
 """
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
+    zxd = copy(zxd)
     nzxd = copy(zxd)
 
     simplify!(Rule{:i1}(), nzxd)
@@ -58,8 +61,8 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
             if check_rule(Rule{:f}(), nzxd, vs)
                 rewrite!(Rule{:f}(), nzxd, vs)
                 v1, v2 = vs
-                zxd.ps[v1] += zxd.ps[v2]
-                zxd.ps[v2] = 0
+                set_phase!(zxd, v1, phase(zxd, v1) + phase(zxd, v2))
+                set_phase!(zxd, v2, zero(P))
             end
         end
         match_f = match(Rule{:f}(), nzxd)
@@ -78,12 +81,14 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
             push!(vB, v)
         end
     end
+    eH = [(neighbors(nzxd, v, count_mul = true)[1], neighbors(nzxd, v, count_mul = true)[2]) for v in vH]
 
-    eH = [neighbors(nzxd, v, count_mul = true) for v in vH]
-
-    zxg = nzxd
-    rem_spiders!(zxg, vH)
-    zxg = ZXGraph{T, P}(zxg.mg, zxg.ps, zxg.st, zxg.layout, zxg.phase_ids, zxd)
+    rem_spiders!(nzxd, vH)
+    et = Dict{Tuple{T, T}, EdgeType.EType}()
+    for e in edges(nzxd.mg)
+        et[(src(e), dst(e))] = EdgeType.SIM
+    end
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, zxd)
 
     for e in eH
         v1, v2 = e
@@ -99,12 +104,22 @@ ne(zxg::ZXGraph) = ne(zxg.mg)
 outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
 inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
 neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
-rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer) = rem_edge!(zxg.mg, v1, v2, mul(zxg.mg, v1, v2))
-function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Int = HADAMARD)
-    if v1 in vertices(zxg.mg) && v2 in vertices(zxg.mg)
+degree(zxg::ZXGraph, v::Integer) = degree(zxg.mg, v)
+indegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
+outdegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
+function rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
+    if rem_edge!(zxg.mg, v1, v2)
+        delete!(zxg.et, (min(v1, v2), max(v1, v2)))
+        return true
+    end
+    return false
+end
+
+ function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
+    if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
-            if edge_type == HADAMARD
-                zxg.ps[v1] += 1
+            if edge_type == EdgeType.HAD
+                set_phase!(zxg, v1, phase(zxg, v1)+1)
             end
             return true
         else
@@ -114,19 +129,56 @@ function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Int = HADA
                 else
                     return false
                 end
-            else
-                return add_edge!(zxg.mg, v1, v2, edge_type)
+            elseif add_edge!(zxg.mg, v1, v2)
+                zxg.et[(min(v1, v2), max(v1, v2))] = edge_type
+                return true
             end
         end
-    else
-        return false
     end
+    return false
 end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
-is_hadamard(e::MultipleEdge) = (mul(e) == HADAMARD)
-is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer) = (mul(zxg.mg, v1, v2) == HADAMARD)
+function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
+    if has_vertex(zxg.mg, v)
+        while p < 0
+            p += 2
+        end
+        p = rem(p, one(P)+one(P))
+        zxg.ps[v] = p
+        return true
+    end
+    return false
+end
+nqubits(zxg::ZXGraph) = zxg.layout.nbits
+
+qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(zxg.layout, v)
+function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
+    c_loc = column_loc(zxg.layout, v)
+    if c_loc !== nothing
+        if spider_type(zxg, v) == SpiderType.Out
+            nb = neighbors(zxg, v)[1]
+            spider_type(zxg, nb) == SpiderType.In && return 3//1
+            c_loc = floor(column_loc(zxg, nb) + 2)
+        end
+        if spider_type(zxg, v) == SpiderType.In
+            nb = neighbors(zxg, v)[1]
+            spider_type(zxg, nb) == SpiderType.Out && return 1//1
+            c_loc = ceil(column_loc(zxg, nb) - 2)
+        end
+    end
+    return c_loc
+end
+
+function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
+    if has_edge(zxg, v1, v2)
+        src = min(v1, v2)
+        dst = max(v1, v2)
+        return zxg.et[(src, dst)] == EdgeType.HAD
+    end
+    return false
+end
 spiders(zxg::ZXGraph) = vertices(zxg.mg)
 
 function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
@@ -144,31 +196,34 @@ end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
 function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
-    add_vertex!(zxg.mg)
-    v = vertices(zxg.mg)[end]
-    zxg.ps[v] = phase
+    v = add_vertex!(zxg.mg)[1]
+    set_phase!(zxg, v, phase)
     zxg.st[v] = st
-    if st in [SpiderType.Z, SpiderType.X]
+    if st in (SpiderType.Z, SpiderType.X)
         zxg.phase_ids[v] = (v, 1)
     end
-    if connect ⊆ spiders(zxg)
+    if all(has_vertex(zxg.mg, c) for c in connect)
         for c in connect
             add_edge!(zxg, v, c)
         end
     end
-    return zxg
+    return v
 end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
-    add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
+    l1 = qubit_loc(zxg, v1)
+    l2 = qubit_loc(zxg, v2)
+    t1 = column_loc(zxg, v1)
+    t2 = column_loc(zxg, v1)
+    v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
-    l1 = qubit_loc(zxg.layout, v1)
-    l2 = qubit_loc(zxg.layout, v2)
-    if l1 == l2 && l1 != nothing
-        t1 = findfirst(isequal(v1), zxg.layout.spider_seq[l1])
-        t2 = findfirst(isequal(v2), zxg.layout.spider_seq[l1])
-        t = min(t1, t2) + 1
-        insert!(zxg.layout.spider_seq[l1], t, spiders(zxg)[end])
+    if l1 == l2 && l1 !== nothing
+        t = min(floor(t1), floor(t2)) + 1
+        if t >= max(t1, t2)
+            t = (t1 + t2) / 2
+        end
+        set_loc!(zxg.layout, v, l1, t)
     end
+    return v
 end
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
@@ -184,20 +239,25 @@ end
 
 function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     println(io, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges:")
-    for e in edges(zxg.mg)
-        print(io, "(")
-        print_spider(io, zxg, src(e))
-        if is_hadamard(e)
-            printstyled(io, " <-> "; color = :blue)
-        else
-            print(io, " <-> ")
+    vs = sort!(spiders(zxg))
+    for i = 1:length(vs)
+        for j = i+1:length(vs)
+            if has_edge(zxg, vs[i], vs[j])
+                print(io, "(")
+                print_spider(io, zxg, vs[i])
+                if is_hadamard(zxg, vs[i], vs[j])
+                    printstyled(io, " <-> "; color = :blue)
+                else
+                    print(io, " <-> ")
+                end
+                print_spider(io, zxg, vs[j])
+                print(io, ")\n")
+            end
         end
-        print_spider(io, zxg, dst(e))
-        print(io, ")\n")
     end
 end
 
-function rounding_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
+function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
     ps = zxg.ps
     for v in keys(ps)
         while ps[v] < 0
@@ -213,11 +273,34 @@ end
 Return `true` if `v` is a interior spider of `zxg`.
 """
 function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
-    if v in spiders(zxg)
-        nb_st = [spider_type(zxg, u) for u in neighbors(zxg, v)]
-        if !(SpiderType.In in nb_st || SpiderType.Out in nb_st)
-            return true
+    if has_vertex(zxg.mg, v)
+        (spider_type(zxg, v) == SpiderType.In || spider_type(zxg, v) == SpiderType.Out) && return false
+        for u in neighbors(zxg, v)
+            if spider_type(zxg, u) == SpiderType.In || spider_type(zxg, u) == SpiderType.Out
+                return false
+            end
         end
+        return true
     end
     return false
+end
+
+get_outputs(zxg::ZXGraph) = get_outputs(zxg.master)
+get_inputs(zxg::ZXGraph) = get_inputs(zxg.master)
+function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
+    nbits = nqubits(zxg)
+    if nbits > 0
+        vs = spiders(zxg)
+        spider_seq = Vector{Vector{T}}(undef, nbits)
+        for q = 1:nbits
+            spider_seq[q] = Vector{T}()
+        end
+        for v in vs
+            push!(spider_seq[qubit_loc(zxg, v)], v)
+        end
+        for q = 1:nbits
+            sort!(spider_seq[q], by = (v -> column_loc(zxg, v)))
+        end
+        return spider_seq
+    end
 end

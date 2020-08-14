@@ -32,7 +32,6 @@ m[4,3] += 1
 m[4,3] = 0
 g = Multigraph(m)
 g = Multigraph(Matrix(m))
-
 g0 = Multigraph(2)
 @test !add_edge!(g0, 2, 3) && !rem_edge!(g0, 1, 2)
 g1 = Multigraph(path_graph(3))
