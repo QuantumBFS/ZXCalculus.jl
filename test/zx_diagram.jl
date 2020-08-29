@@ -22,3 +22,14 @@ ZXCalculus.insert_spider!(zxd3, 1, 2, SpiderType.H)
 pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
 push_gate!(zxd3, Val{:SWAP}(), [2, 3])
 @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2) == ZXCalculus.qubit_loc(zxd3, 7)
+
+@testset "float to rational" begin
+    @test ZXCalculus.continued_fraction(2.41; prec=1e-5) === 241//100
+    @test ZXCalculus.continued_fraction(1.3; prec=1e-5) === 13//10
+    @test ZXCalculus.continued_fraction(0; prec=1e-5) === 0//1
+    zxd = ZXDiagram(4)
+    push_gate!(zxd, Val(:X), 3, 0.5)
+    @test zxd.ps[9] === 1//2
+    push_gate!(zxd, Val(:Z), 3, 0)
+    @test zxd.ps[10] === 0//1
+end

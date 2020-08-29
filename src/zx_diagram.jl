@@ -361,17 +361,17 @@ Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`
 and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P)) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, phase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, safe_convert(P, phase))
     return zxd
 end
 
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::Real = zero(P)) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.X, phase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.X, safe_convert(P, phase))
     return zxd
 end
 
@@ -517,3 +517,20 @@ function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
         return spider_seq
     end
 end
+
+"""
+    continued_fraction(ϕ, niter::Int) -> Rational
+
+obtain `s` and `r` from `ϕ` that satisfies `|s/r - ϕ| ≦ 1/2r²`
+"""
+function continued_fraction(fl; prec)
+    if abs(mod(fl, 1)) < prec
+        Rational(floor(Int, fl), 1)
+    else
+        floor(Int, fl) + 1//continued_fraction(1/mod(fl, 1); prec=prec)
+    end
+end
+
+safe_convert(::Type{T}, x) where T = convert(T, x)
+safe_convert(::Type{T}, x::T) where T<:Rational = x
+safe_convert(::Type{T}, x::Real) where T<:Rational = continued_fraction(x; prec=1e-8)
