@@ -28,4 +28,4 @@ This project is highly inpsired by [PyZX](https://github.com/Quantomatic/pyzx)
 
 ## License
 
-Apache License 2.0
+MIT License
