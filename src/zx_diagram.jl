@@ -355,23 +355,26 @@ function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
 end
 
 """
-    push_gate!(zxd, ::Val{M}, locs...[, phase])
+    push_gate!(zxd, ::Val{M}, locs...[, phase]; autoconvert=true)
 
 Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`, `:H`, `:SWAP`, `:CNOT` and `:CZ`.
 If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
+If `autoconvert` is `false`, the input `phase` should be a rational numbers.
 """
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, safe_convert(P, phase))
+    rphase = autoconvert ? safe_convert(P, phase) : phase
+    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, rphase)
     return zxd
 end
 
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::Real = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.X, safe_convert(P, phase))
+    rphase = autoconvert ? safe_convert(P, phase) : phase
+    insert_spider!(zxd, bound_id, out_id, SpiderType.X, rphase)
     return zxd
 end
 
@@ -507,18 +510,26 @@ function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
 end
 
 """
-    continued_fraction(ϕ, niter::Int) -> Rational
+    continued_fraction(ϕ, n::Int) -> Rational
 
-obtain `s` and `r` from `ϕ` that satisfies `|s/r - ϕ| ≦ 1/2r²`
+Obtain `s` and `r` from `ϕ` that satisfies `|s//r - ϕ| ≦ 1/2r²`
 """
-function continued_fraction(fl; prec)
-    if abs(mod(fl, 1)) < prec
+function continued_fraction(fl, n::Int)
+    if n == 1 || abs(mod(fl, 1)) < 1e-10
         Rational(floor(Int, fl), 1)
     else
-        floor(Int, fl) + 1//continued_fraction(1/mod(fl, 1); prec=prec)
+        floor(Int, fl) + 1//continued_fraction(1/mod(fl, 1), n-1)
     end
 end
 
 safe_convert(::Type{T}, x) where T = convert(T, x)
 safe_convert(::Type{T}, x::T) where T<:Rational = x
-safe_convert(::Type{T}, x::Real) where T<:Rational = continued_fraction(x; prec=1e-8)
+function safe_convert(::Type{T}, x::Real) where T<:Rational
+    local fr
+    for n=1:16 # at most 20 steps, otherwise the number may overflow.
+        fr = continued_fraction(x, n)
+        abs(fr - x) < 1e-12 && return fr
+    end
+    @warn "converting phase to rational, but with rounding error $(abs(fr-x))."
+    return fr
+end
