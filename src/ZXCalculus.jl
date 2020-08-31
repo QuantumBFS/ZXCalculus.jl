@@ -16,4 +16,6 @@ include("simplify.jl")
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")
 
+include("deprecations.jl")
+
 end # module

@@ -41,7 +41,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         for j = i+1:nbits
             @inbounds if has_edge(nzxg, frontier[i], frontier[j])
                 if is_hadamard(nzxg, frontier[i], frontier[j])
-                    pushfirst_ctrl_gate!(cir, Val{:CZ}(), i, j)
+                    pushfirst_gate!(cir, Val{:CZ}(), i, j)
                     rem_edge!(nzxg, frontier[i], frontier[j])
                 end
             end
@@ -68,9 +68,9 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         if step.op == :swap
             q1 = step.r1
             q2 = step.r2
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
 
@@ -115,14 +115,14 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
         if step.op == :addto
             ctrl = qubit_loc(zxg, frontier[step.r2])
             loc = qubit_loc(zxg, frontier[step.r1])
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), loc, ctrl)
+            pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
         else
             q1 = qubit_loc(zxg, frontier[step.r1])
             q2 = qubit_loc(zxg, frontier[step.r2])
 
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_ctrl_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
     old_frontier = copy(frontier)
@@ -156,7 +156,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
     @inbounds for i1 = 1:length(ws)
         for i2 = i1+1:length(ws)
             if has_edge(zxg, ws[i1], ws[i2])
-                pushfirst_ctrl_gate!(cir, Val{:CZ}(), qubit_loc(zxg, ws[i1]),
+                pushfirst_gate!(cir, Val{:CZ}(), qubit_loc(zxg, ws[i1]),
                     qubit_loc(zxg, ws[i2]))
                 rem_edge!(zxg, ws[i1], ws[i2])
             end
