@@ -1,7 +1,8 @@
-using ZXCalculus
+using YaoLang
 using YaoPlots
+using ZXCalculus
 
-function generate_example()
+function generate_example_1()
     zxd = ZXDiagram(4)
     push_gate!(zxd, Val{:Z}(), 1, 3//2)
     push_gate!(zxd, Val{:H}(), 1)
@@ -17,7 +18,6 @@ function generate_example()
     push_gate!(zxd, Val{:H}(), 1)
     push_gate!(zxd, Val{:Z}(), 4, 1//2)
     push_gate!(zxd, Val{:X}(), 4, 1//1)
-
     push_gate!(zxd, Val{:Z}(), 2, 1//2)
     push_gate!(zxd, Val{:CNOT}(), 3, 2)
     push_gate!(zxd, Val{:H}(), 2)
@@ -31,9 +31,6 @@ function generate_example()
 
     return zxd
 end
+ex1 = generate_example_1()
 
-zxd = generate_example()
-ex_zxd = clifford_simplification(zxd)
-
-plot(zxd)
-plot(ex_zxd)
+plot(ex1)

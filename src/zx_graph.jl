@@ -35,7 +35,7 @@ Convert a ZX-diagram to graph-like ZX-diagram.
 ```jldoctest
 julia> using ZXCalculus
 
-julia> zxd = ZXDiagram(2); push_ctrl_gate!(zxd, Val{:CNOT}(), 2, 1);
+julia> zxd = ZXDiagram(2); push_gate!(zxd, Val{:CNOT}(), 2, 1);
 
 julia> zxg = ZXGraph(zxd)
 ZX-graph with 6 vertices and 5 edges:

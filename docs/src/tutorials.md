@@ -13,10 +13,10 @@ As we usually focus on quantum circuits, the recommended way to construct `ZXDia
 ```@docs
 ZXDiagram(nbit::T) where T<:Integer
 ```
-Then one can use `push_gate!`, `push_ctrl_gate!` to push quantum gates at the end of a quantum circuit, or use `pushfirst_gate!`, `pushfirst_ctrl_gate!` to push gates at the beginning of a quantum circuit.
+Then one can use `push_gate!` to push quantum gates at the end of a quantum circuit, or use `pushfirst_gate!` to push gates at the beginning of a quantum circuit.
 ```@docs
 push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
-push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
 pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
 pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
 ```
@@ -31,11 +31,11 @@ function generate_example()
     push_gate!(zxd, Val{:Z}(), 1, 1//2)
     push_gate!(zxd, Val{:Z}(), 2, 1//2)
     push_gate!(zxd, Val{:H}(), 4)
-    push_ctrl_gate!(zxd, Val{:CNOT}(), 3, 2)
-    push_ctrl_gate!(zxd, Val{:CZ}(), 4, 1)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
+    push_gate!(zxd, Val{:CZ}(), 4, 1)
     push_gate!(zxd, Val{:H}(), 2)
-    push_ctrl_gate!(zxd, Val{:CNOT}(), 3, 2)
-    push_ctrl_gate!(zxd, Val{:CNOT}(), 1, 4)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
+    push_gate!(zxd, Val{:CNOT}(), 1, 4)
     push_gate!(zxd, Val{:H}(), 1)
     push_gate!(zxd, Val{:Z}(), 2, 1//4)
     push_gate!(zxd, Val{:Z}(), 3, 1//2)
@@ -46,7 +46,7 @@ function generate_example()
     push_gate!(zxd, Val{:Z}(), 4, 3//2)
     push_gate!(zxd, Val{:Z}(), 3, 1//2)
     push_gate!(zxd, Val{:X}(), 4, 1//1)
-    push_ctrl_gate!(zxd, Val{:CNOT}(), 3, 2)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
     push_gate!(zxd, Val{:H}(), 1)
     push_gate!(zxd, Val{:Z}(), 4, 1//2)
     push_gate!(zxd, Val{:X}(), 4, 1//1)
