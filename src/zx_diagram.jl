@@ -4,7 +4,7 @@ import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, degree, indegree, outdegree
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
-export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!, tcount
+export push_gate!, push_gate!, pushfirst_gate!, tcount
 
 module SpiderType
     @enum SType Z X H In Out
@@ -355,10 +355,10 @@ function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
 end
 
 """
-    push_gate!(zxd, ::Val{M}, loc[, phase])
+    push_gate!(zxd, ::Val{M}, locs...[, phase])
 
-Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`
-and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`, `:H`, `:SWAP`, `:CNOT` and `:CZ`.
+If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
 function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P)) where {T, P}
@@ -396,13 +396,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {
     return zxd
 end
 
-"""
-    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
-
-Push a ctrl gate to the end of qubits `ctrl` and `loc` where `M` can be `:CNOT`
-and `:CZ`
-"""
-function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     push_gate!(zxd, Val{:Z}(), ctrl)
     push_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -410,7 +404,7 @@ function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) wh
     return zxd
 end
 
-function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
     push_gate!(zxd, Val{:Z}(), ctrl)
     push_gate!(zxd, Val{:Z}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -422,8 +416,8 @@ end
 """
     pushfirst_gate!(zxd, ::Val{M}, loc[, phase])
 
-Push an `M` gate to the beginning of qubit `loc` where `M` can be `:Z`, `:X`
-and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+Push an `M` gate to the beginning of qubit `loc` where `M` can be `:Z`, `:X`, `:H`, `:SWAP`, `:CNOT` and `:CZ`.
+If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
@@ -461,13 +455,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) wh
     return zxd
 end
 
-"""
-    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
-
-Push a ctrl gate to the beginning of qubits `ctrl` and `loc` where `M` can be `:CNOT`
-and `:CZ`
-"""
-function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -475,7 +463,7 @@ function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::
     return zxd
 end
 
-function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
+function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:Z}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
