@@ -1,9 +1,12 @@
 # ZXCalculus
 
-ZX-Calculus for circuit simplification in Julia (GSoC 2020).
-
 [![Build Status](https://travis-ci.com/QuantumBFS/ZXCalculus.jl.svg?branch=master)](https://travis-ci.com/QuantumBFS/ZXCalculus.jl)
 [![Codecov](https://codecov.io/gh/QuantumBFS/ZXCalculus.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/QuantumBFS/ZXCalculus.jl)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://yaoquantum.org/ZXCalculus.jl/dev/)
+
+A full-featured Julia package for ZX-calculus, and a circuit simplification engine for the Julia quantum compiler, [YaoLang](https://github.com/QuantumBFS/YaoLang.jl). (GSoC 2020).
+
+For a brief introduction to ZXCalculus, please check [this blog post](https://chenzhao44.github.io/2020/08/27/ZXCalculus.jl/).
 
 ## Installation
 
