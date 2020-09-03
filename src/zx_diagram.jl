@@ -4,7 +4,7 @@ import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, degree, indegree, outdegree
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
-export push_gate!, push_ctrl_gate!, pushfirst_gate!, pushfirst_ctrl_gate!, tcount
+export push_gate!, push_gate!, pushfirst_gate!, tcount
 
 module SpiderType
     @enum SType Z X H In Out
@@ -120,7 +120,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]
     ps = [0//1 for _ = 1:2*nbits]
-    spider_q = Dict{T, Rational{Int}}()
+    spider_q = Dict{T, Int}()
     spider_col = Dict{T, Rational{Int}}()
     for i = 1:nbits
         add_edge!(mg, 2*i-1, 2*i)
@@ -355,23 +355,26 @@ function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
 end
 
 """
-    push_gate!(zxd, ::Val{M}, loc[, phase])
+    push_gate!(zxd, ::Val{M}, locs...[, phase]; autoconvert=true)
 
-Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`
-and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+Push an `M` gate to the end of qubit `loc` where `M` can be `:Z`, `:X`, `:H`, `:SWAP`, `:CNOT` and `:CZ`.
+If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
+If `autoconvert` is `false`, the input `phase` should be a rational numbers.
 """
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, phase)
+    rphase = autoconvert ? safe_convert(P, phase) : phase
+    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, rphase)
     return zxd
 end
 
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::P = zero(P)) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
-    insert_spider!(zxd, bound_id, out_id, SpiderType.X, phase)
+    rphase = autoconvert ? safe_convert(P, phase) : phase
+    insert_spider!(zxd, bound_id, out_id, SpiderType.X, rphase)
     return zxd
 end
 
@@ -396,13 +399,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) where {
     return zxd
 end
 
-"""
-    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
-
-Push a ctrl gate to the end of qubits `ctrl` and `loc` where `M` can be `:CNOT`
-and `:CZ`
-"""
-function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     push_gate!(zxd, Val{:Z}(), ctrl)
     push_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -410,7 +407,7 @@ function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) wh
     return zxd
 end
 
-function push_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
     push_gate!(zxd, Val{:Z}(), ctrl)
     push_gate!(zxd, Val{:Z}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -422,8 +419,8 @@ end
 """
     pushfirst_gate!(zxd, ::Val{M}, loc[, phase])
 
-Push an `M` gate to the beginning of qubit `loc` where `M` can be `:Z`, `:X`
-and `:H`. If `M` is `:Z` or `:X`, `phase` will be available and it will push a
+Push an `M` gate to the beginning of qubit `loc` where `M` can be `:Z`, `:X`, `:H`, `:SWAP`, `:CNOT` and `:CZ`.
+If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 """
 function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
@@ -461,13 +458,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:SWAP}, locs::Vector{T}) wh
     return zxd
 end
 
-"""
-    push_ctrl_gate!(zxd, ::Val{M}, loc, ctrl)
-
-Push a ctrl gate to the beginning of qubits `ctrl` and `loc` where `M` can be `:CNOT`
-and `:CZ`
-"""
-function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -475,7 +466,7 @@ function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::
     return zxd
 end
 
-function pushfirst_ctrl_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
+function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T, P}
     pushfirst_gate!(zxd, Val{:Z}(), ctrl)
     pushfirst_gate!(zxd, Val{:Z}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
@@ -516,4 +507,29 @@ function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
         end
         return spider_seq
     end
+end
+
+"""
+    continued_fraction(ϕ, n::Int) -> Rational
+
+Obtain `s` and `r` from `ϕ` that satisfies `|s//r - ϕ| ≦ 1/2r²`
+"""
+function continued_fraction(fl, n::Int)
+    if n == 1 || abs(mod(fl, 1)) < 1e-10
+        Rational(floor(Int, fl), 1)
+    else
+        floor(Int, fl) + 1//continued_fraction(1/mod(fl, 1), n-1)
+    end
+end
+
+safe_convert(::Type{T}, x) where T = convert(T, x)
+safe_convert(::Type{T}, x::T) where T<:Rational = x
+function safe_convert(::Type{T}, x::Real) where T<:Rational
+    local fr
+    for n=1:16 # at most 20 steps, otherwise the number may overflow.
+        fr = continued_fraction(x, n)
+        abs(fr - x) < 1e-12 && return fr
+    end
+    @warn "converting phase to rational, but with rounding error $(abs(fr-x))."
+    return fr
 end

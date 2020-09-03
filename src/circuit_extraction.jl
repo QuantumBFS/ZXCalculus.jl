@@ -9,11 +9,11 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     nzxg = copy(zxg)
     nbits = nqubits(zxg)
 
-    qcir = QCircuit(nbits)
+    cir = ZXDiagram(nbits)
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
     if length(Outs) != length(Ins)
-        return qcir
+        return cir
     end
     if nbits == 0
         nbits = length(Outs)
@@ -31,9 +31,9 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     for i = 1:nbits
         @inbounds w = neighbors(zxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
-            pushfirst_gate!(qcir, Val{:H}(), i)
+            pushfirst_gate!(cir, Val{:H}(), i)
         end
-        pushfirst_gate!(qcir, Val{:shift}(), i, phase(nzxg, w) * π)
+        pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
         set_phase!(nzxg, w, zero(P))
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
@@ -41,7 +41,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         for j = i+1:nbits
             @inbounds if has_edge(nzxg, frontier[i], frontier[j])
                 if is_hadamard(nzxg, frontier[i], frontier[j])
-                    pushfirst_ctrl_gate!(qcir, Val{:CZ}(), i, j)
+                    pushfirst_gate!(cir, Val{:CZ}(), i, j)
                     rem_edge!(nzxg, frontier[i], frontier[j])
                 end
             end
@@ -61,16 +61,16 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             push!(frontier, nb[])
         end
     end
-    sort!(frontier, by = (v -> qubit_loc(nzxg, v)))
+    sort!(frontier, by = (v->qubit_loc(nzxg, v)))
     M = biadjancency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
         if step.op == :swap
             q1 = step.r1
             q2 = step.r2
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q2, q1)
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q1, q2)
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
 
@@ -83,7 +83,7 @@ end
 Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, qcir) where {T, P}
+function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
     frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && (degree(zxg, f)) > 0 for f in frontier]]
     SetN = Set{T}()
     for f in frontier
@@ -113,26 +113,26 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, qcir) where {
         if step.op == :addto
             ctrl = qubit_loc(zxg, frontier[step.r2])
             loc = qubit_loc(zxg, frontier[step.r1])
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), loc, ctrl)
+            pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
         else
             q1 = qubit_loc(zxg, frontier[step.r1])
             q2 = qubit_loc(zxg, frontier[step.r2])
 
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q2, q1)
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q1, q2)
-            pushfirst_ctrl_gate!(qcir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
+            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
     old_frontier = copy(frontier)
     @inbounds for w in ws
         nb_w = neighbors(zxg, w)
         v = intersect(nb_w, old_frontier)[1]
-        if degree(zxg, v) == 1
+        if (degree(zxg, v)) == 1
             qubit_v = qubit_loc(zxg, v)
             qubit_w = qubit_loc(zxg, w)
-            pushfirst_gate!(qcir, Val{:H}(), qubit_v)
-            if spider_type(zxg, w) == SpiderType.Z && phase(zxg, w) != 0
-                pushfirst_gate!(qcir, Val{:shift}(), qubit_v, phase(zxg, w)*π)
+            pushfirst_gate!(cir, Val{:H}(), qubit_v)
+            if spider_type(zxg, w) == SpiderType.Z
+                pushfirst_gate!(cir, Val{:Z}(), qubit_v, phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
             if qubit_v != qubit_w && spider_type(zxg, w) == SpiderType.Z
@@ -140,6 +140,8 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, qcir) where {
                 loc_w = column_loc(zxg, w)
                 set_loc!(zxg.layout, w, qubit_v, loc_v)
                 set_column!(zxg.layout, v, loc_v+1//2)
+                # deleteat!(zxg.layout.spider_seq[qubit_w], loc_w)
+                # insert!(zxg.layout.spider_seq[qubit_v], loc_v, w)
             end
             rem_edge!(zxg, v, w)
             if spider_type(zxg, w) == SpiderType.In
@@ -152,7 +154,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, qcir) where {
     @inbounds for i1 = 1:length(ws)
         for i2 = i1+1:length(ws)
             if has_edge(zxg, ws[i1], ws[i2])
-                pushfirst_ctrl_gate!(qcir, Val{:CZ}(), qubit_loc(zxg, ws[i1]),
+                pushfirst_gate!(cir, Val{:CZ}(), qubit_loc(zxg, ws[i1]),
                     qubit_loc(zxg, ws[i2]))
                 rem_edge!(zxg, ws[i1], ws[i2])
             end

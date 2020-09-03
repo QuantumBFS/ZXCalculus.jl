@@ -30,9 +30,7 @@ ZXCalculus.rem_spider!
 ## Pushing gates
 ```@docs
 ZXCalculus.push_gate!
-ZXCalculus.push_ctrl_gate!
 ZXCalculus.pushfirst_gate!
-ZXCalculus.pushfirst_ctrl_gate!
 ```
 
 ## Simplification

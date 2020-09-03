@@ -70,7 +70,7 @@ add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
 ps = [0//1 for i = 1:6]
 v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
-layout = ZXCalculus.ZXLayout(2, Dict(zip(1:6, [1//1, 2, 1, 2, 1, 2])), Dict(zip(1:6, [1//1, 1, 2, 2, 3, 3])))
+layout = ZXCalculus.ZXLayout(2, Dict(zip(1:6, [1, 2, 1, 2, 1, 2])), Dict(zip(1:6, [1//1, 1, 2, 2, 3, 3])))
 zxd = ZXDiagram(g, v_t, ps, layout)
 matches = match(Rule{:b}(), zxd)
 rewrite!(Rule{:b}(), zxd, matches)

@@ -258,13 +258,15 @@ function match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
         nb1 = neighbors(zxg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && length(nb1) == 1
             v2 = nb1[1]
-            nb2 = neighbors(zxg, v2)
-            if length(nb2) == 2
-                v3 = nb2[1]
-                if v3 == v1
-                    v3 = nb2[2]
+            if phase(zxg, v2) in (zero(P), one(P))
+                nb2 = neighbors(zxg, v2)
+                if length(nb2) == 2
+                    v3 = nb2[1]
+                    if v3 == v1
+                        v3 = nb2[2]
+                    end
+                    push!(matches, Match{T}([v1, v2, v3]))
                 end
-                push!(matches, Match{T}([v1, v2, v3]))
             end
         end
     end
@@ -281,7 +283,7 @@ function match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
         v1, v2, gad_v = gads[i]
         for j in (i+1):length(gads)
             u1, u2, gad_u = gads[j]
-            if gad_u == gad_v
+            if gad_u == gad_v && phase(zxg, v2) in (zero(P), one(P)) && phase(zxg, u2) in (zero(P), one(P))
                 push!(matches, Match{T}([v1, v2, u1, u2]))
             end
         end
@@ -504,7 +506,7 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     rem_spider!(zxg, v)
     for u1 in nb, u2 in nb
         if u2 > u1
-            add_edge!(zxg, u1, u2)
+            add_edge!(zxg, u1, u2, EdgeType.HAD)
         end
     end
     for u in nb
@@ -755,7 +757,7 @@ function check_rule(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         if spider_type(zxg, v1) == SpiderType.Z && length(nb1) == 1
             v2 = nb1[1]
             nb2 = neighbors(zxg, v2)
-            if length(nb2) == 2
+            if length(nb2) == 2 && phase(zxg, v2) in (zero(P), one(P))
                 if v3 == setdiff(nb2, [v1])[1]
                     return true
                 end
@@ -767,10 +769,15 @@ end
 
 function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
+    if phase(zxg, v2) == 1
+        set_phase!(zxg, v2, zero(P))
+        set_phase!(zxg, v1, -phase(zxg, v1))
+        zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
+    end
     set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
     id1, mul1 = zxg.phase_ids[v1]
     id3, mul3 = zxg.phase_ids[v3]
-    set_phase!(zxg.master, id3, (mul1 * phase(zxg.master, id1) + mul3 * phase(zxg.master, id3)) * mul3)
+    set_phase!(zxg.master, id3, (mul3 * phase(zxg.master, id3) + mul1 * phase(zxg.master, id1)) * mul3)
     set_phase!(zxg.master, id1, zero(P))
     rem_spiders!(zxg, [v1, v2])
     return zxg
@@ -784,7 +791,7 @@ function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             if v2 == neighbors(zxg, v1)[1] && u2 == neighbors(zxg, u1)[1]
                 gad_v = setdiff(neighbors(zxg, v2), [v1])
                 gad_u = setdiff(neighbors(zxg, u2), [u1])
-                if gad_u == gad_v
+                if gad_u == gad_v && phase(zxg, v2) in (zero(P), one(P)) && phase(zxg, u2) in (zero(P), one(P))
                     return true
                 end
             end
@@ -795,11 +802,22 @@ end
 
 function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
+    if phase(zxg, v2) == 1
+        set_phase!(zxg, v2, zero(P))
+        set_phase!(zxg, v1, -phase(zxg, v1))
+        zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
+    end
+    if phase(zxg, u2) == 1
+        set_phase!(zxg, u2, zero(P))
+        set_phase!(zxg, u1, -phase(zxg, u1))
+        zxg.phase_ids[u1] = (zxg.phase_ids[u1][1], -zxg.phase_ids[u1][2])
+    end
+
     set_phase!(zxg, v1, phase(zxg, v1)+phase(zxg, u1))
 
     idv, mulv = zxg.phase_ids[v1]
     idu, mulu = zxg.phase_ids[u1]
-    set_phase!(zxg.master ,idv, (mulv * phase(zxg.master,idv) + mulu * phase(zxg.master,idu)) * mulv)
+    set_phase!(zxg.master, idv, (mulv * phase(zxg.master,idv) + mulu * phase(zxg.master,idu)) * mulv)
     set_phase!(zxg.master, idu, zero(P))
 
     rem_spiders!(zxg, [u1, u2])
