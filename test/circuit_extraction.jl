@@ -28,10 +28,10 @@ zxg = ZXGraph(zxd)
 replace!(Rule{:lc}(), zxg)
 replace!(Rule{:pab}(), zxg)
 
-cir = ZXDiagram(circuit_extraction(zxg))
+cir = circuit_extraction(zxg)
 @test nv(cir) == 32
 @test ne(cir) == 32
 
-cir2 = ZXDiagram(clifford_simplification(zxd))
+cir2 = circuit_extraction(clifford_simplification(zxd))
 @test nv(cir2) == nv(cir)
 @test ne(cir2) == ne(cir)

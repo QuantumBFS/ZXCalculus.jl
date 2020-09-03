@@ -50,7 +50,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     extracted = [extracted; frontier]
 
     while !isempty(setdiff(spiders(nzxg), extracted))
-        frontier = update_frontier!(nzxg, frontier, qcir)
+        frontier = update_frontier!(nzxg, frontier, cir)
         extracted = union!(extracted, frontier)
     end
 
@@ -74,7 +74,9 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    return qcir
+    simplify!(Rule{:i1}(), cir)
+    simplify!(Rule{:i2}(), cir)
+    return cir
 end
 
 """
@@ -145,7 +147,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
             end
             rem_edge!(zxg, v, w)
             if spider_type(zxg, w) == SpiderType.In
-                add_edge!(zxg, w, v, EdgeType.SIM)
+                add_edge!(zxg, w, v, 1)
             end
             deleteat!(frontier, frontier .== v)
             push!(frontier, w)
@@ -209,7 +211,7 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
         end
         while current_col <= nc
             r0 = findfirst(!iszero, M[i:nr, current_col])
-            if r0 !== nothing
+            if r0 != nothing
                 r0 += i - 1
                 r0 == i && break
                 r_temp = M[i,:]
