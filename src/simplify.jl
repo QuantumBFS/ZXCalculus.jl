@@ -33,6 +33,5 @@ function clifford_simplification(circ::ZXDiagram)
     simplify!(Rule{:p1}(), zxg)
     replace!(Rule{:pab}(), zxg)
 
-    ex_circ = circuit_extraction(zxg)
-    return ex_circ
+    return zxg
 end
