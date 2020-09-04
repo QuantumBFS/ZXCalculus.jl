@@ -6,7 +6,7 @@ circ = ZXDiagram(qc)
 pt_circ = phase_teleportation(circ)
 @test tcount(pt_circ) <= tcount(circ)
 pt_qc = QCircuit(pt_circ)
-@test count_gates(pt_qc) <= count_gates(qc)
+@test gate_count(pt_qc) <= gate_count(qc)
 
 zxg = clifford_simplification(circ)
 ex_circ = circuit_extraction(zxg)

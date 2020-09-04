@@ -1,4 +1,4 @@
-export QCircuit, QGate, random_circuit, gates, count_gates, global_phase, set_global_phase!
+export QCircuit, QGate, random_circuit, gates, gate_count, global_phase, set_global_phase!
 
 struct QGate
     name::Symbol
@@ -31,7 +31,7 @@ end
 
 nqubits(qc::QCircuit) = qc.nbits
 gates(qc::QCircuit) = qc.gates
-count_gates(qc::QCircuit) = length(qc.gates)
+gate_count(qc::QCircuit) = length(qc.gates)
 global_phase(qc::QCircuit) = qc.global_phase
 function set_global_phase!(qc::QCircuit, gp)
     qc.global_phase = gp
