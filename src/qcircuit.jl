@@ -99,9 +99,9 @@ function ZXDiagram(qc::QCircuit)
             push_gate!(circ, Val(:X), loc, theta/π)
             # set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :CNOT
-            push_ctrl_gate!(circ, Val(:CNOT), loc, gate.ctrl)
+            push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
         elseif name == :CZ
-            push_ctrl_gate!(circ, Val(:CZ), loc, gate.ctrl)
+            push_gate!(circ, Val(:CZ), loc, gate.ctrl)
         end
     end
     return circ
@@ -192,11 +192,11 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                         end
 
                         if spider_type(circ, v) == spider_type(circ, v1) == ZXCalculus.SpiderType.Z
-                            push_ctrl_gate!(qc, Val(:CZ), qubit_loc(circ, v), qubit_loc(circ, v1))
+                            push_gate!(qc, Val(:CZ), qubit_loc(circ, v), qubit_loc(circ, v1))
                         elseif spider_type(circ, v) == ZXCalculus.SpiderType.Z
-                            push_ctrl_gate!(qc, Val(:CNOT), qubit_loc(circ, v1), qubit_loc(circ, v))
+                            push_gate!(qc, Val(:CNOT), qubit_loc(circ, v1), qubit_loc(circ, v))
                         elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
-                            push_ctrl_gate!(qc, Val(:CNOT), qubit_loc(circ, v), qubit_loc(circ, v1))
+                            push_gate!(qc, Val(:CNOT), qubit_loc(circ, v), qubit_loc(circ, v1))
                         end
                         for u in [v, v1]
                             frontier_v[qubit_loc(circ, u)] += 1
