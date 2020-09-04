@@ -1,4 +1,4 @@
-export QCircuit, QGate, random_circuit, count_gates, global_phase, set_global_phase!
+export QCircuit, QGate, random_circuit, gates, count_gates, global_phase, set_global_phase!
 
 struct QGate
     name::Symbol
@@ -94,10 +94,10 @@ function ZXDiagram(qc::QCircuit)
             push_gate!(circ, Val(:Z), loc, theta/π)
         elseif name == :Rz
             push_gate!(circ, Val(:Z), loc, theta/π)
-            # set_global_phase!(circ, global_phase(circ) - theta/2)
+            set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :Rx
             push_gate!(circ, Val(:X), loc, theta/π)
-            # set_global_phase!(circ, global_phase(circ) - theta/2)
+            set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :CNOT
             push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
         elseif name == :CZ
@@ -113,6 +113,7 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
     locs = Dict()
     nqubit = nqubits(circ)
     qc = QCircuit(nqubit)
+    set_global_phase!(qc, global_phase(circ))
     frontier_v = ones(T, nqubit)
 
     while sum([frontier_v[i] <= length(spider_seq[i]) for i = 1:nqubit]) > 0

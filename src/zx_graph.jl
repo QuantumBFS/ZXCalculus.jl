@@ -22,11 +22,12 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     et::Dict{Tuple{T, T}, EdgeType.EType}
     layout::ZXLayout{T}
     phase_ids::Dict{T,Tuple{T, Int}}
+    global_phase::Float64
     master::ZXDiagram{T, P}
 end
 
-copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg),
-    copy(zxg.ps), copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
+copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps), 
+    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), zxg.global_phase, copy(zxg.master))
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -88,7 +89,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, zxd)
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.global_phase, zxd)
 
     for e in eH
         v1, v2 = e
@@ -98,6 +99,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
+global_phase(zxg::ZXGraph) = zxg.global_phase
 has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 nv(zxg::ZXGraph) = nv(zxg.mg)
 ne(zxg::ZXGraph) = ne(zxg.mg)
@@ -115,7 +117,7 @@ function rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     return false
 end
 
- function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
+function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
             if edge_type == EdgeType.HAD
