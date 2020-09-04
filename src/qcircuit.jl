@@ -1,198 +1,117 @@
-export QCircuit, QGate
+export QCircuit, QGate, random_circuit, count_gates, global_phase, set_global_phase!
 
 struct QGate
     name::Symbol
-    locs::NTuple{N, Int} where N
-    params::NTuple{M, Any} where M
-    function QGate(name::Symbol, locs::NTuple{N, Int}, params::NTuple{M, Any} = ()) where {N, M}
-        return new(name, locs, params)
-    end
+    loc::Int
+    ctrl::Int
+    param
 end
-QGate(name::Symbol, loc::Integer, params::NTuple{M, Any} = ()) where {M} = QGate(name, (Int(loc),), params)
+QGate(name::Symbol, loc::Integer; ctrl::Int = 0, param = nothing) = QGate(name, loc, ctrl, param)
+QGate(::Val{:X}, loc) = QGate(:X, loc)
+QGate(::Val{:Z}, loc) = QGate(:Z, loc)
+QGate(::Val{:H}, loc) = QGate(:H, loc)
+QGate(::Val{:S}, loc) = QGate(:S, loc)
+QGate(::Val{:T}, loc) = QGate(:T, loc)
+QGate(::Val{:shift}, loc, theta) = QGate(:shift, loc; param = theta)
+QGate(::Val{:Rz}, loc, theta) = QGate(:Rz, loc; param = theta)
+QGate(::Val{:Rx}, loc, theta) = QGate(:Rx, loc; param = theta)
+QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
+QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
 
-struct QCircuit
+mutable struct QCircuit
     nbits::Int
+    global_phase::Float64
     gates::Vector{QGate}
 end
 function QCircuit(n::Integer)
     nbits = Int(n)
     gates = QGate[]
-    return QCircuit(nbits, gates)
+    return QCircuit(nbits, 0, gates)
 end
 
 nqubits(qc::QCircuit) = qc.nbits
 gates(qc::QCircuit) = qc.gates
-gates_count(qc::QCircuit) = length(qc.gates)
-
-function push_gate!(qc::QCircuit, ::Val{:H}, loc::Integer)
-    gate = QGate(:H, loc)
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:X}, loc::Integer)
-    gate = QGate(:X, loc)
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:Z}, loc::Integer)
-    gate = QGate(:Z, loc)
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:T}, loc::Integer)
-    gate = QGate(:T, loc)
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:S}, loc::Integer)
-    gate = QGate(:S, loc)
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:shift}, loc::Integer, theta)
-    gate = QGate(:shift, loc, (theta, ))
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:Rx}, loc::Integer, theta)
-    gate = QGate(:Rx, loc, (theta, ))
-    push!(qc.gates, gate)
-    return qc
-end
-function push_gate!(qc::QCircuit, ::Val{:Rz}, loc::Integer, theta)
-    gate = QGate(:Rz, loc, (theta, ))
-    push!(qc.gates, gate)
+count_gates(qc::QCircuit) = length(qc.gates)
+global_phase(qc::QCircuit) = qc.global_phase
+function set_global_phase!(qc::QCircuit, gp)
+    qc.global_phase = gp
     return qc
 end
 
-function push_ctrl_gate!(qc::QCircuit, ::Val{:CNOT}, loc::Integer, ctrl::Integer)
-    gate = QGate(:CNOT, (loc, ctrl))
+function push_gate!(qc::QCircuit, gate::QGate)
     push!(qc.gates, gate)
     return qc
 end
-function push_ctrl_gate!(qc::QCircuit, ::Val{:CZ}, loc::Integer, ctrl::Integer)
-    gate = QGate(:CZ, (loc, ctrl))
-    push!(qc.gates, gate)
-    return qc
-end
-function push_ctrl_gate!(qc::QCircuit, ::Val{:TOF}, loc::Integer, ctrl1::Integer, ctrl2::Integer)
-    gate = QGate(:TOF, (loc, ctrl1, ctrl2))
-    push!(qc.gates, gate)
-    return qc
-end
+push_gate!(qc::QCircuit, gargs...) = push_gate!(qc, QGate(gargs...))
 
-function pushfirst_gate!(qc::QCircuit, ::Val{:H}, loc::Integer)
-    gate = QGate(:H, loc)
-    pushfirst!(qc.gates, gate)
+function push_first_gate!(qc::QCircuit, gate::QGate)
+    push_first!(qc.gates, gate)
     return qc
 end
-function pushfirst_gate!(qc::QCircuit, ::Val{:X}, loc::Integer)
-    gate = QGate(:X, loc)
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:Z}, loc::Integer)
-    gate = QGate(:Z, loc)
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:T}, loc::Integer)
-    gate = QGate(:T, loc)
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:S}, loc::Integer)
-    gate = QGate(:S, loc)
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:shift}, loc::Integer, theta)
-    gate = QGate(:shift, loc, (theta, ))
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:Rx}, loc::Integer, theta)
-    gate = QGate(:Rx, loc, (theta, ))
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_gate!(qc::QCircuit, ::Val{:Rz}, loc::Integer, theta)
-    gate = QGate(:Rz, loc, (theta, ))
-    pushfirst!(qc.gates, gate)
-    return qc
-end
+push_first_gate!(qc::QCircuit, gargs...) = push_first_gate!(qc, QGate(gargs...))
 
-function pushfirst_ctrl_gate!(qc::QCircuit, ::Val{:CNOT}, loc::Integer, ctrl::Integer)
-    gate = QGate(:CNOT, (loc, ctrl))
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_ctrl_gate!(qc::QCircuit, ::Val{:CZ}, loc::Integer, ctrl::Integer)
-    gate = QGate(:CZ, (loc, ctrl))
-    pushfirst!(qc.gates, gate)
-    return qc
-end
-function pushfirst_ctrl_gate!(qc::QCircuit, ::Val{:TOF}, loc::Integer, ctrl1::Integer, ctrl2::Integer)
-    gate = QGate(:TOF, (loc, ctrl1, ctrl2))
-    pushfirst!(qc.gates, gate)
+function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
+    qc = QCircuit(nbits)
+    for _ = 1:ngates
+        r = rand()
+        if r < 1 - (cnot_per + t_per)
+            name = rand([:X, :Z, :H, :S])
+            push_gate!(qc, Val(name), rand(1:nbits))
+        elseif r < 1 - t_per
+            name = rand([:CNOT, :CZ])
+            loc = rand(1:nbits)
+            ctrl = rand(1:nbits)
+            while ctrl == loc
+                ctrl = rand(1:nbits)
+            end
+            push_gate!(qc, Val(name), loc, ctrl)
+        else
+            push_gate!(qc, Val(:T), rand(1:nbits))
+        end
+    end
     return qc
 end
 
 function ZXDiagram(qc::QCircuit)
     circ = ZXDiagram(nqubits(qc))
+    # set_global_phase!(circ, global_phase(qc))
     gates = qc.gates
     for gate in gates
         name = gate.name
-        locs = gate.locs
-        params = gate.params
+        loc = gate.loc
+        theta = gate.param
         if name == :Z
-            push_gate!(circ, Val{:Z}(), locs[1], 1//1)
+            push_gate!(circ, Val(:Z), loc, 1//1)
         elseif name == :X
-            push_gate!(circ, Val{:X}(), locs[1], 1//1)
+            push_gate!(circ, Val(:X), loc, 1//1)
         elseif name == :H
-            push_gate!(circ, Val{:H}(), locs[1])
+            push_gate!(circ, Val(:H), loc)
         elseif name == :S
-            push_gate!(circ, Val{:Z}(), locs[1], 1//2)
+            push_gate!(circ, Val(:Z), loc, 1//2)
         elseif name == :T
-            push_gate!(circ, Val{:T}(), locs[1], 1//4)
-        elseif name == :shift || name == :Rz
-            push_gate!(circ, Val{:Z}(), locs[1], Rational(params[1] / π))
+            push_gate!(circ, Val(:Z), loc, 1//4)
+        elseif name == :shift
+            push_gate!(circ, Val(:Z), loc, theta/π)
+        elseif name == :Rz
+            push_gate!(circ, Val(:Z), loc, theta/π)
+            # set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :Rx
-            push_gate!(circ, Val{:X}(), locs[1], Rational(params[1] / π))
+            push_gate!(circ, Val(:X), loc, theta/π)
+            # set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :CNOT
-            push_ctrl_gate!(circ, Val{:CNOT}(), locs...)
+            push_ctrl_gate!(circ, Val(:CNOT), loc, gate.ctrl)
         elseif name == :CZ
-            push_ctrl_gate!(circ, Val{:CZ}(), locs...)
-        elseif name == :TOF
-            a, b, c = locs
-            push_gate!(circ, Val{:H}(), a)
-            push_ctrl_gate!(circ, Val{:CNOT}(), a, c)
-            push_gate!(circ, Val{:Z}(), a, 7//4)
-            push_ctrl_gate!(circ, Val{:CNOT}(), a, b)
-            push_gate!(circ, Val{:Z}(), a, 1//4)
-            push_ctrl_gate!(circ, Val{:CNOT}(), a, c)
-            push_gate!(circ, Val{:Z}(), a, 7//4)
-            push_ctrl_gate!(circ, Val{:CNOT}(), a, b)
-            push_gate!(circ, Val{:Z}(), c, 1//4)
-            push_gate!(circ, Val{:Z}(), a, 1//4)
-            push_gate!(circ, Val{:H}(), a)
-            push_ctrl_gate!(circ, Val{:CNOT}(), c, b)
-            push_gate!(circ, Val{:Z}(), b, 1//4)
-            push_gate!(circ, Val{:Z}(), c, 7//4)
-            push_ctrl_gate!(circ, Val{:CNOT}(), c, b)
+            push_ctrl_gate!(circ, Val(:CZ), loc, gate.ctrl)
         end
     end
     return circ
 end
 
-
-
 function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
-    lo = circ.layout
     spider_seq = ZXCalculus.spider_sequence(circ)
     vs = spiders(circ)
     locs = Dict()
-    nqubit = lo.nbits
+    nqubit = nqubits(circ)
     qc = QCircuit(nqubit)
     frontier_v = ones(T, nqubit)
 
@@ -204,46 +123,87 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                 if length(nb) <= 2
                     θ = phase(circ, v) * π
                     if spider_type(circ, v) == ZXCalculus.SpiderType.Z
-                        push_gate!(qc, Val{:shift}(), q, θ)
+                        if phase(circ, v) == 1
+                            push_gate!(qc, Val(:Z), q)
+                        elseif phase(circ, v) == 1//2
+                            push_gate!(qc, Val(:S), q)
+                        elseif phase(circ, v) == 1//4
+                            push_gate!(qc, Val(:T), q)
+                        else
+                            push_gate!(qc, Val(:shift), q, θ)
+                        end
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
-                        push_gate!(qc, Val{:Rx}(), q, θ)
+                        if phase(circ, v) == 1
+                            push_gate!(qc, Val(:X), q)
+                        else
+                            push_gate!(qc, Val(:Rx), q, θ)
+                            set_global_phase!(qc, global_phase(qc) + θ/2)
+                        end    
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.H
-                        push_gate!(qc, Val{:H}(), q)
+                        push_gate!(qc, Val(:H), q)
                     end
 
                     frontier_v[q] += 1
                 elseif length(nb) == 3
-                    v1 = nb[[qubit_loc(lo, u) != q for u in nb]][1]
+                    v1 = nb[[qubit_loc(circ, u) != q for u in nb]][1]
                     if spider_type(circ, v1) == SpiderType.H
                         v1 = setdiff(ZXCalculus.neighbors(circ, v1), [v])[1]
                     end
-                    if sum([findfirst(isequal(u), spider_seq[qubit_loc(lo, u)]) != frontier_v[qubit_loc(lo, u)] for u in [v, v1]]) == 0
+                    if sum([findfirst(isequal(u), spider_seq[qubit_loc(circ, u)]) != frontier_v[qubit_loc(circ, u)] for u in [v, v1]]) == 0
                         if phase(circ, v) != 0
                             if spider_type(circ, v) == ZXCalculus.SpiderType.Z
-                                push_gate!(qc, Val{:shift}(), qubit_loc(circ, v), phase(circ, v)*π)
+                                if phase(circ, v) == 1
+                                    push_gate!(qc, Val(:Z), qubit_loc(circ, v))
+                                elseif phase(circ, v) == 1//2
+                                    push_gate!(qc, Val(:S), qubit_loc(circ, v))
+                                elseif phase(circ, v) == 1//4
+                                    push_gate!(qc, Val(:T), qubit_loc(circ, v))
+                                else        
+                                    push_gate!(qc, Val(:shift), qubit_loc(circ, v), phase(circ, v)*π)
+                                end
                             else
-                                push_gate!(qc, Val{:Rx}(), qubit_loc(circ, v), phase(circ, v)*π)
+                                if phase(circ, v) == 1
+                                    push_gate!(qc, Val(:X), qubit_loc(circ, v))
+                                else
+                                    push_gate!(qc, Val(:Rx), qubit_loc(circ, v), phase(circ, v)*π)
+                                    set_global_phase!(qc, global_phase(qc) + phase(circ, v)*π/2)
+                                end
                             end
                         end
                         if phase(circ, v1) != 0
                             if spider_type(circ, v1) == ZXCalculus.SpiderType.Z
-                                push_gate!(qc, Val{:shift}(), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                if phase(circ, v1) == 1
+                                    push_gate!(qc, Val(:Z), qubit_loc(circ, v1))
+                                elseif phase(circ, v1) == 1//2
+                                    push_gate!(qc, Val(:S), qubit_loc(circ, v1))
+                                elseif phase(circ, v1) == 1//4
+                                    push_gate!(qc, Val(:T), qubit_loc(circ, v1))
+                                else        
+                                    push_gate!(qc, Val(:shift), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                end
                             else
-                                push_gate!(qc, Val{:Rx}(), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                if phase(circ, v1) == 1
+                                    push_gate!(qc, Val(:X), qubit_loc(circ, v1))
+                                else
+                                    push_gate!(qc, Val(:Rx), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                    set_global_phase!(qc, global_phase(qc) + phase(circ, v1)*π/2)
+                                end
                             end
                         end
 
                         if spider_type(circ, v) == spider_type(circ, v1) == ZXCalculus.SpiderType.Z
-                            push_ctrl_gate!(qc, Val{:CZ}(), qubit_loc(lo, v), qubit_loc(lo, v1))
+                            push_ctrl_gate!(qc, Val(:CZ), qubit_loc(circ, v), qubit_loc(circ, v1))
                         elseif spider_type(circ, v) == ZXCalculus.SpiderType.Z
-                            push_ctrl_gate!(qc, Val{:CNOT}(), qubit_loc(lo, v1), qubit_loc(lo, v))
+                            push_ctrl_gate!(qc, Val(:CNOT), qubit_loc(circ, v1), qubit_loc(circ, v))
                         elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
-                            push_ctrl_gate!(qc, Val{:CNOT}(), qubit_loc(lo, v), qubit_loc(lo, v1))
+                            push_ctrl_gate!(qc, Val(:CNOT), qubit_loc(circ, v), qubit_loc(circ, v1))
                         end
                         for u in [v, v1]
-                            frontier_v[qubit_loc(lo, u)] += 1
+                            frontier_v[qubit_loc(circ, u)] += 1
                         end
                     end
+                else
+                    error("ZX-diagram without a circuit structure is not supported!")
                 end
             end
         end

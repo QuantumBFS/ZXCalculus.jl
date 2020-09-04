@@ -34,4 +34,8 @@ end
     include("phase_teleportation.jl")
 end
 
+@testset "qcircuit.jl" begin
+    include("qcircuit.jl")
+end
+
 doctest(ZXCalculus)
