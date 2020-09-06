@@ -1,3 +1,4 @@
+import Base: show
 export QCircuit, QGate, random_circuit, gates, gate_count, global_phase, set_global_phase!
 
 struct QGate
@@ -11,12 +12,26 @@ QGate(::Val{:X}, loc) = QGate(:X, loc)
 QGate(::Val{:Z}, loc) = QGate(:Z, loc)
 QGate(::Val{:H}, loc) = QGate(:H, loc)
 QGate(::Val{:S}, loc) = QGate(:S, loc)
+QGate(::Val{:Sdag}, loc) = QGate(:Sdag, loc)
 QGate(::Val{:T}, loc) = QGate(:T, loc)
+QGate(::Val{:Tdag}, loc) = QGate(:Tdag, loc)
 QGate(::Val{:shift}, loc, theta) = QGate(:shift, loc; param = theta)
 QGate(::Val{:Rz}, loc, theta) = QGate(:Rz, loc; param = theta)
 QGate(::Val{:Rx}, loc, theta) = QGate(:Rx, loc; param = theta)
 QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
 QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
+
+function show(io::IO, g::QGate)
+    if g.ctrl == 0
+        if g.param === nothing
+            print(io, g.name, " on ($(g.loc))")
+        else
+            print(io, g.name, "($(g.param)) on ($(g.loc))")
+        end
+    else
+        print(io, g.name, " on ($(g.loc)) with control on ($(g.ctrl))")
+    end
+end
 
 mutable struct QCircuit
     nbits::Int
@@ -29,9 +44,30 @@ function QCircuit(n::Integer)
     return QCircuit(nbits, 0, gates)
 end
 
+function show(io::IO, qc::QCircuit)
+    println(io, "Quantum circuit of $(nqubits(qc)) qubits with $(gate_count(qc)) gates:")
+    for g in gates(qc)
+        println(io, "  ", g)
+    end
+end
+
 nqubits(qc::QCircuit) = qc.nbits
 gates(qc::QCircuit) = qc.gates
 gate_count(qc::QCircuit) = length(qc.gates)
+function tcount(qc::QCircuit)
+    tc = 0
+    for g in gates(qc)
+        if g.name ∈ (:T, :Tdag)
+            tc += 1
+        elseif g.name ∈ (:shift, :Rx)
+            if rem(Rational(g.param/π), 1//2) != 0
+                tc += 1
+            end
+        end
+    end
+    return tc
+end
+
 global_phase(qc::QCircuit) = qc.global_phase
 function set_global_phase!(qc::QCircuit, gp)
     qc.global_phase = gp
@@ -56,6 +92,9 @@ function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
         r = rand()
         if r < 1 - (cnot_per + t_per)
             name = rand([:X, :Z, :H, :S])
+            if name == :S
+                name = rand([:S, :Sdag])
+            end
             push_gate!(qc, Val(name), rand(1:nbits))
         elseif r < 1 - t_per
             name = rand([:CNOT, :CZ])
@@ -66,7 +105,8 @@ function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
             end
             push_gate!(qc, Val(name), loc, ctrl)
         else
-            push_gate!(qc, Val(:T), rand(1:nbits))
+            name = rand([:T, :Tdag])
+            push_gate!(qc, Val(name), rand(1:nbits))
         end
     end
     return qc
@@ -74,7 +114,7 @@ end
 
 function ZXDiagram(qc::QCircuit)
     circ = ZXDiagram(nqubits(qc))
-    # set_global_phase!(circ, global_phase(qc))
+    set_global_phase!(circ, global_phase(qc))
     gates = qc.gates
     for gate in gates
         name = gate.name
@@ -88,8 +128,12 @@ function ZXDiagram(qc::QCircuit)
             push_gate!(circ, Val(:H), loc)
         elseif name == :S
             push_gate!(circ, Val(:Z), loc, 1//2)
+        elseif name == :Sdag
+            push_gate!(circ, Val(:Z), loc, 3//2)
         elseif name == :T
             push_gate!(circ, Val(:Z), loc, 1//4)
+        elseif name == :Tdag
+            push_gate!(circ, Val(:Z), loc, 7//4)
         elseif name == :shift
             push_gate!(circ, Val(:Z), loc, theta/π)
         elseif name == :Rz
@@ -128,8 +172,12 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                             push_gate!(qc, Val(:Z), q)
                         elseif phase(circ, v) == 1//2
                             push_gate!(qc, Val(:S), q)
+                        elseif phase(circ, v) == 3//2
+                            push_gate!(qc, Val(:Sdag), q)
                         elseif phase(circ, v) == 1//4
                             push_gate!(qc, Val(:T), q)
+                        elseif phase(circ, v) == 7//4
+                            push_gate!(qc, Val(:Tdag), q)
                         else
                             push_gate!(qc, Val(:shift), q, θ)
                         end
@@ -157,8 +205,12 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:Z), qubit_loc(circ, v))
                                 elseif phase(circ, v) == 1//2
                                     push_gate!(qc, Val(:S), qubit_loc(circ, v))
+                                elseif phase(circ, v) == 3//2
+                                    push_gate!(qc, Val(:Sdag), qubit_loc(circ, v))
                                 elseif phase(circ, v) == 1//4
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v))
+                                elseif phase(circ, v) == 7//4
+                                    push_gate!(qc, Val(:Tdag), qubit_loc(circ, v))
                                 else        
                                     push_gate!(qc, Val(:shift), qubit_loc(circ, v), phase(circ, v)*π)
                                 end
@@ -177,8 +229,12 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:Z), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//2
                                     push_gate!(qc, Val(:S), qubit_loc(circ, v1))
+                                elseif phase(circ, v) == 3//2
+                                    push_gate!(qc, Val(:Sdag), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//4
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v1))
+                                elseif phase(circ, v) == 7//4
+                                    push_gate!(qc, Val(:Tdag), qubit_loc(circ, v1))
                                 else        
                                     push_gate!(qc, Val(:shift), qubit_loc(circ, v1), phase(circ, v1)*π)
                                 end
