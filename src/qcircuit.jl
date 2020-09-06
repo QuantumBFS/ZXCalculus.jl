@@ -39,6 +39,7 @@ mutable struct QCircuit
     gates::Vector{QGate}
 end
 function QCircuit(n::Integer)
+    n <= 0 && error("The number of qubits should be positive")
     nbits = Int(n)
     gates = QGate[]
     return QCircuit(nbits, 0, gates)
@@ -90,13 +91,19 @@ function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
     qc = QCircuit(nbits)
     for _ = 1:ngates
         r = rand()
+        if nbits <= 1
+            r *= (1 - cnot_per)
+        end
         if r < 1 - (cnot_per + t_per)
             name = rand([:X, :Z, :H, :S])
             if name == :S
                 name = rand([:S, :Sdag])
             end
             push_gate!(qc, Val(name), rand(1:nbits))
-        elseif r < 1 - t_per
+        elseif r < 1 - cnot_per
+            name = rand([:T, :Tdag])
+            push_gate!(qc, Val(name), rand(1:nbits))
+        else
             name = rand([:CNOT, :CZ])
             loc = rand(1:nbits)
             ctrl = rand(1:nbits)
@@ -104,9 +111,6 @@ function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
                 ctrl = rand(1:nbits)
             end
             push_gate!(qc, Val(name), loc, ctrl)
-        else
-            name = rand([:T, :Tdag])
-            push_gate!(qc, Val(name), rand(1:nbits))
         end
     end
     return qc

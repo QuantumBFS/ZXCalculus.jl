@@ -1,5 +1,7 @@
 using ZXCalculus
 
+qc = random_circuit(4, 100)
+@test gate_count(qc) == 100
 qc = QCircuit(4)
 push_gate!(qc, Val{:Sdag}(), 1)
 push_gate!(qc, Val{:H}(), 1)
