@@ -298,7 +298,9 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
             spider_seq[q] = Vector{T}()
         end
         for v in vs
-            push!(spider_seq[qubit_loc(zxg, v)], v)
+            if qubit_loc(zxg, v) !== nothing
+                push!(spider_seq[qubit_loc(zxg, v)], v)
+            end
         end
         for q = 1:nbits
             sort!(spider_seq[q], by = (v -> column_loc(zxg, v)))
