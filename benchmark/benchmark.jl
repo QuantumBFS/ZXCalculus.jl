@@ -6,7 +6,7 @@ function zx_load_qasm(filename::String)
     srcs = readlines("benchmark/circuits/$(filename)")
     src = prod([srcs[1]; srcs[3:end]])
     m = @__MODULE__
-    ir = YaoIR(m, src, gensym())
+    ir = YaoIR(m, src, :qasm_circ)
     ir.pure_quantum = is_pure_quantum(ir)
     return zxd = ZXDiagram(ir)
 end
