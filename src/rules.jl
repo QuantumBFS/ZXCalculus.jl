@@ -209,7 +209,7 @@ function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     sort!(vB)
     for v1 in vs
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-            (degree(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
+            (degree(zxg, v1)) > 1 && (phase(zxg, v1) ∉ (0, 1)) &&
             (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
@@ -238,7 +238,7 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     sort!(vB)
     for v1 in vB
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) > 0 &&
-            (phase(zxg, v1) % 1//2 != 0) &&
+            (phase(zxg, v1) ∉ (0, 1)) &&
             (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
@@ -599,7 +599,9 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         insert_spider!(zxg, w, v_bound, phase_v)
         w = neighbors(zxg, v_bound)[1]
         set_phase!(zxg, w, phase(zxg, v))
+        zxg.phase_ids[w] = zxg.phase_ids[v]
         set_phase!(zxg, v, zero(P))
+        zxg.phase_ids[v] = (v, 1)
     else
         # TODO
         insert_spider!(zxg, v, v_bound)
@@ -607,7 +609,9 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         insert_spider!(zxg, w, v_bound, phase_v)
         w = neighbors(zxg, v_bound)[1]
         set_phase!(zxg, w, phase(zxg, v))
+        zxg.phase_ids[w] = zxg.phase_ids[v]
         set_phase!(zxg, v, zero(P))
+        zxg.phase_ids[v] = (v, 1)
         rem_edge!(zxg, w, v_bound)
         add_edge!(zxg, w, v_bound, EdgeType.SIM)
     end
@@ -618,12 +622,13 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (degree(zxg, v1)) > 1 && (phase(zxg, v1) % 1//2 != 0) &&
+            (degree(zxg, v1)) > 1 && (phase(zxg, v1) ∉ (0, 1)) &&
             (qubit_loc(zxg, v1) !== nothing || nqubits(zxg) == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) &&
                     (qubit_loc(zxg, v2) !== nothing || nqubits(zxg) == 0)
+                    # println("Rule p2 on: ", vs)
                     return true
                 end
             end
@@ -677,7 +682,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-            (phase(zxg, v1) % 1//2 != 0) &&
+            (phase(zxg, v1) ∉ (0, 1)) &&
             (qubit_loc(zxg, v1) !== nothing || nqubits(zxg) == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
