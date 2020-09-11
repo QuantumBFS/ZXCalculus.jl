@@ -1,4 +1,4 @@
-import Base: show
+import Base: show, vcat, hcat, adjoint
 export QCircuit, QGate, random_circuit, gates, gate_count, global_phase, set_global_phase!
 
 struct QGate
@@ -20,6 +20,15 @@ QGate(::Val{:Rz}, loc, theta) = QGate(:Rz, loc; param = theta)
 QGate(::Val{:Rx}, loc, theta) = QGate(:Rx, loc; param = theta)
 QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
 QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
+
+function adjoint(g::QGate)
+    g.name in (:X, :Z, :H, :CNOT, :CZ) && return g
+    g.name === :S && return QGate(Val(:Sdag), g.loc)
+    g.name === :Sdag && return QGate(Val(:S), g.loc)
+    g.name === :T && return QGate(Val(:Tdag), g.loc)
+    g.name === :Tdag && return QGate(Val(:T), g.loc)
+    g.name in (:shift, :Rz, :Rx) && return QGate(g.name, g.loc; param = -g.param)
+end
 
 function show(io::IO, g::QGate)
     if g.ctrl == 0
@@ -50,6 +59,27 @@ function show(io::IO, qc::QCircuit)
     for g in gates(qc)
         println(io, "  ", g)
     end
+end
+
+function vcat(qcs::QCircuit...)
+    n = nqubits(qcs[1])
+    nqc = QCircuit(n)
+    for qc in qcs
+        n == nqubits(qc) || error("Can not catenate quantum circuits with different qubit numbers")
+        set_global_phase!(nqc, global_phase(nqc) + global_phase(qc))
+        nqc.gates = [gates(nqc); gates(qc)]
+    end
+    return nqc
+end
+hcat(qcs::QCircuit...) = vcat(qcs...)
+
+function adjoint(qc::QCircuit)
+    adj_qc = QCircuit(nqubits(qc))
+    set_global_phase!(adj_qc, -global_phase(qc))
+    for i = gate_count(qc):-1:1
+        push_gate!(adj_qc, qc.gates[i]')
+    end
+    return adj_qc
 end
 
 nqubits(qc::QCircuit) = qc.nbits
