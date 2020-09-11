@@ -323,24 +323,10 @@ function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector
     return zxd
 end
 
-const rule_passed = Dict()
-const rule_failed = Dict()
-const rule_time = Dict()
-for r in (:f, :h, :i1, :i2, :pi, :c, :lc, :p1, :p2, :p3, :id, :gf)
-    rule_failed[Rule{r}()] = 0
-    rule_passed[Rule{r}()] = 0
-    rule_time[Rule{r}()] = 0.0
-end
-
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matched::Match{T}) where {T, P}
     vs = matched.vertices
     if check_rule(r, zxd, vs)
-        rule_passed[r] += 1
-        t0 = time()
         rewrite!(r, zxd, vs)
-        rule_time[r] += time() - t0
-    else
-        rule_failed[r] += 1
     end
     return zxd
 end
