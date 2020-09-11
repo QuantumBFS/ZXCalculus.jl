@@ -15,15 +15,17 @@ end
 Simplify `zxd` with the rule `r`.
 """
 function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
-    max_iter = 50
+    max_iter = 20
     i = 1
     matches = match(r, zxd)
-    while length(matches) > 0 && i <= max_iter
+    while length(matches) > 0 && (i <= max_iter || r ∉ (Rule{:p2}(), Rule{:p3}()))
         rewrite!(r, zxd, matches)
         matches = match(r, zxd)
         i += 1
     end
-    i > max_iter && println("Warning for rule: $r")
+    if i > max_iter && r in (Rule{:p2}(), Rule{:p3}())
+        @warn "Try to simplify this ZX-diagram with rule $r more than $max_iter iterarions"
+    end
     return zxd
 end
 
