@@ -207,21 +207,32 @@ function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
+    gadgets = T[]
+    for v in vs
+        if spider_type(zxg, v) == SpiderType.Z && length(neighbors(zxg, v)) == 1
+            push!(gadgets, v, neighbors(zxg, v)[1])
+        end
+    end
+    sort!(gadgets)
+
     for v1 in vs
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
             (degree(zxg, v1)) > 1 && (phase(zxg, v1) ∉ (0, 1)) &&
-            # (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             length(neighbors(zxg, v1)) > 1
+            # (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
-                if spider_type(zxg, v2) == SpiderType.Z && 
+                if spider_type(zxg, v2) == SpiderType.Z &&
                     length(searchsorted(vB, v2)) == 0 &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) 
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
                     # (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
-                    push!(matches, Match{T}([v1, v2]))
+                    if length(searchsorted(gadgets, v2)) == 0
+                        push!(matches, Match{T}([v1, v2]))
+                    end
                 end
             end
         end
     end
+    # println(matches)
     return matches
 end
 
@@ -238,14 +249,14 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
         # end
     end
     sort!(vB)
+
     for v1 in vB
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) > 0 &&
-            (phase(zxg, v1) ∉ (0, 1)) &&
-            length(neighbors(zxg, v1)) > 1
+            (phase(zxg, v1) ∉ (0, 1)) && length(neighbors(zxg, v1)) > 1
             # (qubit_loc(zxg.layout, v1) !== nothing || zxg.layout.nbits == 0)
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) 
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
                     # (qubit_loc(zxg.layout, v2) !== nothing || zxg.layout.nbits == 0)
                     push!(matches, Match{T}([v1, v2]))
                 end
@@ -633,7 +644,9 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
                     (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
                     # (qubit_loc(zxg, v2) !== nothing || nqubits(zxg) == 0)
                     # println("Rule p2 on: ", vs)
-                    return true
+                    if all([length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2)])
+                        return true
+                    end
                 end
             end
         end
@@ -678,7 +691,10 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     set_phase!(zxg, v, zero(P))
     zxg.phase_ids[gad] = phase_id_u
     zxg.phase_ids[v] = (v, 1)
+
     rem_vertex!(zxg.layout, v)
+    # set_loc!(zxg.layout, gad, nqubits(zxg) + 2, column_loc(zxg, v))
+    # set_loc!(zxg.layout, v, nqubits(zxg) + 1, column_loc(zxg, v))
     return zxg
 end
 
@@ -686,12 +702,11 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-            (phase(zxg, v1) ∉ (0, 1)) &&
-            length(neighbors(zxg, v1)) > 1
+            (phase(zxg, v1) ∉ (0, 1)) && length(neighbors(zxg, v1)) > 1
             # (qubit_loc(zxg, v1) !== nothing || nqubits(zxg) == 0)
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1) 
+                    (phase(zxg, v2) == 0 || phase(zxg, v2) == 1)
                     # (qubit_loc(zxg, v2) !== nothing || nqubits(zxg) == 0)
                     return true
                 end
@@ -748,6 +763,8 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     zxg.phase_ids[u] = phase_id_v
     zxg.phase_ids[v] = (v, 1)
 
+    # set_loc!(zxg.layout, gad, nqubits(zxg) + 2, column_loc(zxg, v))
+    # set_loc!(zxg.layout, v, nqubits(zxg) + 1, column_loc(zxg, v))
     rem_vertex!(zxg.layout, v)
 
     if is_hadamard(zxg, u, bd_u)
