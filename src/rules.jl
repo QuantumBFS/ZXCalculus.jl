@@ -647,7 +647,7 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) in (0, 1))
-                    if all([length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2)])
+                    if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
                 end
@@ -707,7 +707,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) in (0, 1))
-                    if all([length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2)])
+                    if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
                 end
