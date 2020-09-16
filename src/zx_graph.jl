@@ -215,7 +215,7 @@ function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) wh
     l1 = qubit_loc(zxg, v1)
     l2 = qubit_loc(zxg, v2)
     t1 = column_loc(zxg, v1)
-    t2 = column_loc(zxg, v1)
+    t2 = column_loc(zxg, v2)
     v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
     if l1 == l2 && l1 !== nothing
