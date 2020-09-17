@@ -1,5 +1,4 @@
-using LightGraphs
-
+using LightGraphs, Multigraphs
 import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
