@@ -78,7 +78,7 @@ end
 Construct a ZXDiagram with all information.
 
 ```jldoctest
-julia> using LightGraphs, ZXCalculus;
+julia> using LightGraphs, Multigraphs, ZXCalculus;
 
 julia> using ZXCalculus.SpiderType: In, Out, H, Z, X;
 

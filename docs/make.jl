@@ -1,4 +1,5 @@
 using Documenter, ZXCalculus
+using Multigraphs
 
 makedocs(;
     modules = [ZXCalculus],

@@ -20,7 +20,6 @@ LightGraphs.nv(zxd::ZXDiagram)
 LightGraphs.ne(::ZXDiagram)
 LightGraphs.neighbors(::ZXDiagram, v)
 ZXCalculus.is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
-ZXCalculus.rounding_phases!
 ZXCalculus.add_spider!
 ZXCalculus.insert_spider!
 ZXCalculus.rem_spiders!
