@@ -54,15 +54,3 @@ ZXCalculus.gaussian_elimination
 ZXCalculus.reverse_gaussian_elimination
 ZXCalculus.biadjancency
 ```
-
-## Multigraphs
-```@docs
-ZXCalculus.AbstractMultigraph
-ZXCalculus.AbstractMultipleEdge
-ZXCalculus.MultipleEdge
-LightGraphs.edges(mg::AbstractMultigraph)
-ZXCalculus.mul(me::MultipleEdge)
-ZXCalculus.has_edge
-ZXCalculus.rem_edge!
-ZXCalculus.add_edge!
-```

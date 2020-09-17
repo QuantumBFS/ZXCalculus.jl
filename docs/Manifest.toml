@@ -87,6 +87,12 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
+[[Multigraphs]]
+deps = ["LightGraphs", "LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "e9cb3357c51d6383c7c8211522262ecfef5c87c7"
+uuid = "7ebac608-6c66-46e6-9856-b5f43e107bac"
+version = "0.1.0"
+
 [[OrderedCollections]]
 git-tree-sha1 = "293b70ac1780f9584c89268a6e2a560d938a7065"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
@@ -159,7 +165,5 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[ZXCalculus]]
-deps = ["LightGraphs", "LinearAlgebra", "SparseArrays"]
-path = "/Users/roger/.julia/dev/ZXCalculus"
+deps = ["LightGraphs", "LinearAlgebra", "Multigraphs", "SparseArrays"]
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
-version = "0.1.1"
