@@ -89,7 +89,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Multigraphs]]
 deps = ["LightGraphs", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "e9cb3357c51d6383c7c8211522262ecfef5c87c7"
+git-tree-sha1 = "1ea0ce111e123a699081e39cd9094e1594970a3e"
+repo-rev = "master"
+repo-url = "https://github.com/QuantumBFS/Multigraphs.jl.git"
 uuid = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 version = "0.1.0"
 
@@ -165,5 +167,7 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[ZXCalculus]]
-deps = ["LightGraphs", "LinearAlgebra", "Multigraphs", "SparseArrays"]
+deps = ["LightGraphs", "LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "da4867c3550db21f933283d5f5bee2f9f45f0aca"
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
+version = "0.2.2"
