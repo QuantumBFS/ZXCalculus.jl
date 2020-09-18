@@ -89,11 +89,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[Multigraphs]]
 deps = ["LightGraphs", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "1ea0ce111e123a699081e39cd9094e1594970a3e"
-repo-rev = "master"
-repo-url = "https://github.com/QuantumBFS/Multigraphs.jl.git"
+git-tree-sha1 = "2c2f502f5389879411e3399763388bfc848e9ef4"
 uuid = "7ebac608-6c66-46e6-9856-b5f43e107bac"
-version = "0.1.0"
+version = "0.2.0"
 
 [[OrderedCollections]]
 git-tree-sha1 = "293b70ac1780f9584c89268a6e2a560d938a7065"
