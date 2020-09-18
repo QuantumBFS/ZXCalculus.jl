@@ -14,7 +14,7 @@ end  # module SpiderType
     ZXDiagram{T, P}
 This is the type for representing ZX-diagrams.
 """
-mutable struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
+struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
     st::Dict{T, SpiderType.SType}
@@ -26,11 +26,9 @@ mutable struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     _inputs::Vector{T}
     _outputs::Vector{T}
 
-    global_phase::Float64
-
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
-        inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}(), global_phase::Float64 = 0.0) where {T<:Integer, P}
+        inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
                 for v in vertices(mg)
@@ -59,7 +57,7 @@ mutable struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
                     sort!(outputs, by = (v -> qubit_loc(layout, v)))
                 end
             end
-            zxd = new{T, P}(mg, st, ps, layout, phase_ids, inputs, outputs, global_phase)
+            zxd = new{T, P}(mg, st, ps, layout, phase_ids, inputs, outputs)
             round_phases!(zxd)
             return zxd
         else
@@ -137,7 +135,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
 end
 
 copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout), 
-    deepcopy(zxd.phase_ids), copy(zxd._inputs), copy(zxd._outputs), zxd.global_phase)
+    deepcopy(zxd.phase_ids), copy(zxd._inputs), copy(zxd._outputs))
 
 """
     spider_type(zxd, v)
@@ -169,24 +167,6 @@ function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
         return true
     end
     return false
-end
-
-
-"""
-    global_phase(zxd)
-
-Returns the global phase of a ZX-diagram.
-"""
-global_phase(zxd::ZXDiagram) = zxd.global_phase
-
-"""
-    set_global_phase!(zxd, gp)
-
-Set the global phase of a ZX-diagram to `gp`.
-"""
-function set_global_phase!(zxd::ZXDiagram, gp::Float64)
-    zxd.global_phase = rem2pi(gp, RoundDown)
-    return zxd
 end
 
 
