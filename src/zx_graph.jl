@@ -1,5 +1,4 @@
-using LightGraphs
-
+using LightGraphs, Multigraphs
 import Base: show, copy
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
@@ -22,12 +21,11 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     et::Dict{Tuple{T, T}, EdgeType.EType}
     layout::ZXLayout{T}
     phase_ids::Dict{T,Tuple{T, Int}}
-    global_phase::Float64
     master::ZXDiagram{T, P}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps), 
-    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), zxg.global_phase, copy(zxg.master))
+    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -89,7 +87,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.global_phase, zxd)
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, zxd)
 
     for e in eH
         v1, v2 = e
@@ -99,7 +97,6 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
-global_phase(zxg::ZXGraph) = zxg.global_phase
 has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 nv(zxg::ZXGraph) = nv(zxg.mg)
 ne(zxg::ZXGraph) = ne(zxg.mg)

@@ -20,7 +20,6 @@ LightGraphs.nv(zxd::ZXDiagram)
 LightGraphs.ne(::ZXDiagram)
 LightGraphs.neighbors(::ZXDiagram, v)
 ZXCalculus.is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
-ZXCalculus.rounding_phases!
 ZXCalculus.add_spider!
 ZXCalculus.insert_spider!
 ZXCalculus.rem_spiders!
@@ -53,16 +52,4 @@ ZXCalculus.GEStep
 ZXCalculus.gaussian_elimination
 ZXCalculus.reverse_gaussian_elimination
 ZXCalculus.biadjancency
-```
-
-## Multigraphs
-```@docs
-ZXCalculus.AbstractMultigraph
-ZXCalculus.AbstractMultipleEdge
-ZXCalculus.MultipleEdge
-LightGraphs.edges(mg::AbstractMultigraph)
-ZXCalculus.mul(me::MultipleEdge)
-ZXCalculus.has_edge
-ZXCalculus.rem_edge!
-ZXCalculus.add_edge!
 ```

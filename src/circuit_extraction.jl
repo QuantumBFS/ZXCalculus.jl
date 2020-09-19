@@ -10,7 +10,6 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     nbits = nqubits(zxg)
 
     cir = ZXDiagram(nbits)
-    set_global_phase!(cir, global_phase(zxg))
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
     if length(Outs) != length(Ins)
