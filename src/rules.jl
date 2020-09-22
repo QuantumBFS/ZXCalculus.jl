@@ -187,11 +187,11 @@ function match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
-    for v1 in vs
-        if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-            (phase(zxg, v1) in (0, 1))
-            for v2 in neighbors(zxg, v1)
-                if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) > 0
+    for v2 in vB
+        if spider_type(zxg, v2) == SpiderType.Z && length(neighbors(zxg, v2)) > 2
+            for v1 in neighbors(zxg, v2)
+                if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
+                    (phase(zxg, v1) in (0, 1))
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -592,7 +592,8 @@ function check_rule(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
             (phase(zxg, v1) in (0, 1))
             if v2 in neighbors(zxg, v1)
-                if spider_type(zxg, v2) == SpiderType.Z && !is_interior(zxg, v2)
+                if spider_type(zxg, v2) == SpiderType.Z && !is_interior(zxg, v2) &&
+                    length(neighbors(zxg, v2)) > 2
                     return true
                 end
             end
@@ -647,7 +648,7 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) in (0, 1))
-                    if all([length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2)])
+                    if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
                 end
@@ -707,7 +708,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                     (phase(zxg, v2) in (0, 1))
-                    if all([length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2)])
+                    if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
                 end

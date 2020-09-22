@@ -1,3 +1,4 @@
+using Multigraphs
 import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge
 

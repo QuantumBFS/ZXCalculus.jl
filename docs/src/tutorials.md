@@ -15,10 +15,8 @@ ZXDiagram(nbit::T) where T<:Integer
 ```
 Then one can use `push_gate!` to push quantum gates at the end of a quantum circuit, or use `pushfirst_gate!` to push gates at the beginning of a quantum circuit.
 ```@docs
-push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
-push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
-pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
-pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T, P}
+push_gate!
+pushfirst_gate!
 ```
 
 For example, in `example\ex1.jl`, one can generate the demo circuit by the function
@@ -26,30 +24,30 @@ For example, in `example\ex1.jl`, one can generate the demo circuit by the funct
 using ZXCalculus
 function generate_example()
     zxd = ZXDiagram(4)
-    push_gate!(zxd, Val{:Z}(), 1, 3//2)
-    push_gate!(zxd, Val{:H}(), 1)
-    push_gate!(zxd, Val{:Z}(), 1, 1//2)
-    push_gate!(zxd, Val{:Z}(), 2, 1//2)
-    push_gate!(zxd, Val{:H}(), 4)
-    push_gate!(zxd, Val{:CNOT}(), 3, 2)
-    push_gate!(zxd, Val{:CZ}(), 4, 1)
-    push_gate!(zxd, Val{:H}(), 2)
-    push_gate!(zxd, Val{:CNOT}(), 3, 2)
-    push_gate!(zxd, Val{:CNOT}(), 1, 4)
-    push_gate!(zxd, Val{:H}(), 1)
-    push_gate!(zxd, Val{:Z}(), 2, 1//4)
-    push_gate!(zxd, Val{:Z}(), 3, 1//2)
-    push_gate!(zxd, Val{:H}(), 4)
-    push_gate!(zxd, Val{:Z}(), 1, 1//4)
-    push_gate!(zxd, Val{:H}(), 2)
-    push_gate!(zxd, Val{:H}(), 3)
-    push_gate!(zxd, Val{:Z}(), 4, 3//2)
-    push_gate!(zxd, Val{:Z}(), 3, 1//2)
-    push_gate!(zxd, Val{:X}(), 4, 1//1)
-    push_gate!(zxd, Val{:CNOT}(), 3, 2)
-    push_gate!(zxd, Val{:H}(), 1)
-    push_gate!(zxd, Val{:Z}(), 4, 1//2)
-    push_gate!(zxd, Val{:X}(), 4, 1//1)
+    push_gate!(zxd, Val(:Z), 1, 3//2)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:Z), 1, 1//2)
+    push_gate!(zxd, Val(:Z), 2, 1//2)
+    push_gate!(zxd, Val(:H), 4)
+    push_gate!(zxd, Val(:CNOT), 3, 2)
+    push_gate!(zxd, Val(:CZ), 4, 1)
+    push_gate!(zxd, Val(:H), 2)
+    push_gate!(zxd, Val(:CNOT), 3, 2)
+    push_gate!(zxd, Val(:CNOT), 1, 4)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:Z), 2, 1//4)
+    push_gate!(zxd, Val(:Z), 3, 1//2)
+    push_gate!(zxd, Val(:H), 4)
+    push_gate!(zxd, Val(:Z), 1, 1//4)
+    push_gate!(zxd, Val(:H), 2)
+    push_gate!(zxd, Val(:H), 3)
+    push_gate!(zxd, Val(:Z), 4, 3//2)
+    push_gate!(zxd, Val(:Z), 3, 1//2)
+    push_gate!(zxd, Val(:X), 4, 1//1)
+    push_gate!(zxd, Val(:CNOT), 3, 2)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:Z), 4, 1//2)
+    push_gate!(zxd, Val(:X), 4, 1//1)
 
     return zxd
 end

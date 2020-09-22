@@ -32,7 +32,6 @@ push_gate!(qc, Val{:X}(), 4)
 
 circ = ZXDiagram(qc)
 @test tcount(qc) == tcount(circ)
-@test global_phase(circ) == 0
 pt_circ = phase_teleportation(circ)
 @test tcount(pt_circ) <= tcount(circ)
 pt_qc = QCircuit(pt_circ)

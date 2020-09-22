@@ -1,5 +1,7 @@
 export replace!, simplify!, clifford_simplification
 
+const MAX_ITERATION = Ref{Int}(1000)
+
 """
     replace!(r, zxd)
 Match and replace with the rule `r`.
@@ -15,16 +17,16 @@ end
 Simplify `zxd` with the rule `r`.
 """
 function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
-    max_iter = 20
     i = 1
     matches = match(r, zxd)
     while length(matches) > 0 && (i <= max_iter || r ∉ (Rule{:p2}(), Rule{:p3}()))
         rewrite!(r, zxd, matches)
         matches = match(r, zxd)
         i += 1
-    end
-    if i > max_iter && r in (Rule{:p2}(), Rule{:p3}())
-        @warn "Try to simplify this ZX-diagram with rule $r more than $max_iter iterarions"
+        if i > MAX_ITERATION.x && r in (Rule{:p2}(), Rule{:p3}(), Rule{:pab}())
+            @warn "Try to simplify this ZX-diagram with rule $r more than $(MAX_ITERATION.x) iterarions"
+            break
+        end
     end
     return zxd
 end

@@ -44,14 +44,13 @@ end
 
 mutable struct QCircuit
     nbits::Int
-    global_phase::Float64
     gates::Vector{QGate}
 end
 function QCircuit(n::Integer)
     n <= 0 && error("The number of qubits should be positive")
     nbits = Int(n)
     gates = QGate[]
-    return QCircuit(nbits, 0, gates)
+    return QCircuit(nbits, gates)
 end
 
 function show(io::IO, qc::QCircuit)
@@ -99,12 +98,6 @@ function tcount(qc::QCircuit)
     return tc
 end
 
-global_phase(qc::QCircuit) = qc.global_phase
-function set_global_phase!(qc::QCircuit, gp)
-    qc.global_phase = gp
-    return qc
-end
-
 function push_gate!(qc::QCircuit, gate::QGate)
     push!(qc.gates, gate)
     return qc
@@ -148,7 +141,6 @@ end
 
 function ZXDiagram(qc::QCircuit)
     circ = ZXDiagram(nqubits(qc))
-    set_global_phase!(circ, global_phase(qc))
     gates = qc.gates
     for gate in gates
         name = gate.name
@@ -172,10 +164,8 @@ function ZXDiagram(qc::QCircuit)
             push_gate!(circ, Val(:Z), loc, theta/π)
         elseif name == :Rz
             push_gate!(circ, Val(:Z), loc, theta/π)
-            set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :Rx
             push_gate!(circ, Val(:X), loc, theta/π)
-            set_global_phase!(circ, global_phase(circ) - theta/2)
         elseif name == :CNOT
             push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
         elseif name == :CZ
@@ -191,7 +181,6 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
     locs = Dict()
     nqubit = nqubits(circ)
     qc = QCircuit(nqubit)
-    set_global_phase!(qc, global_phase(circ))
     frontier_v = ones(T, nqubit)
 
     while sum([frontier_v[i] <= length(spider_seq[i]) for i = 1:nqubit]) > 0
@@ -220,7 +209,6 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                             push_gate!(qc, Val(:X), q)
                         else
                             push_gate!(qc, Val(:Rx), q, θ)
-                            set_global_phase!(qc, global_phase(qc) + θ/2)
                         end    
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.H
                         push_gate!(qc, Val(:H), q)
@@ -253,7 +241,6 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:X), qubit_loc(circ, v))
                                 else
                                     push_gate!(qc, Val(:Rx), qubit_loc(circ, v), phase(circ, v)*π)
-                                    set_global_phase!(qc, global_phase(qc) + phase(circ, v)*π/2)
                                 end
                             end
                         end
@@ -277,7 +264,6 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:X), qubit_loc(circ, v1))
                                 else
                                     push_gate!(qc, Val(:Rx), qubit_loc(circ, v1), phase(circ, v1)*π)
-                                    set_global_phase!(qc, global_phase(qc) + phase(circ, v1)*π/2)
                                 end
                             end
                         end
