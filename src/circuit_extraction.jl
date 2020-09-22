@@ -29,7 +29,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     extracted = copy(Outs)
 
     for i = 1:nbits
-        @inbounds w = neighbors(zxg, Outs[i])[1]
+        @inbounds w = neighbors(nzxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
