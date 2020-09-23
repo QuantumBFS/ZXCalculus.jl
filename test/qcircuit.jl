@@ -1,4 +1,4 @@
-using ZXCalculus
+using ZXCalculus, Test
 
 qc = random_circuit(4, 100)
 @test gate_count(qc) == 100
@@ -41,3 +41,11 @@ pt_qc = QCircuit(pt_circ)
 ex_circ = clifford_simplification(circ)
 ex_qc = QCircuit(ex_circ)
 @test tcount(ex_circ) == tcount(ex_qc)
+
+qc_id = [qc qc']
+zxd_id = ZXDiagram(qc_id)
+zxd_id = phase_teleportation(zxd_id)
+for _ = 1:5
+    global zxd_id = clifford_simplification(zxd_id)
+end
+@test ZXCalculus.nv(zxd_id) == 8
