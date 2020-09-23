@@ -1,4 +1,4 @@
-import Base: show
+import Base: show, vcat, hcat, adjoint, getindex
 export QCircuit, QGate, random_circuit, gates, gate_count
 
 struct QGate
@@ -20,6 +20,15 @@ QGate(::Val{:Rz}, loc, theta) = QGate(:Rz, loc; param = theta)
 QGate(::Val{:Rx}, loc, theta) = QGate(:Rx, loc; param = theta)
 QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
 QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
+
+function adjoint(g::QGate)
+    g.name in (:X, :Z, :H, :CNOT, :CZ) && return g
+    g.name === :S && return QGate(Val(:Sdag), g.loc)
+    g.name === :Sdag && return QGate(Val(:S), g.loc)
+    g.name === :T && return QGate(Val(:Tdag), g.loc)
+    g.name === :Tdag && return QGate(Val(:T), g.loc)
+    g.name in (:shift, :Rz, :Rx) && return QGate(g.name, g.loc; param = -g.param)
+end
 
 function show(io::IO, g::QGate)
     if g.ctrl == 0
@@ -49,6 +58,30 @@ function show(io::IO, qc::QCircuit)
     for g in gates(qc)
         println(io, "  ", g)
     end
+end
+
+function vcat(qcs::QCircuit...)
+    n = nqubits(qcs[1])
+    nqc = QCircuit(n)
+    for qc in qcs
+        n == nqubits(qc) || error("Can not catenate quantum circuits with different qubit numbers")
+        nqc.gates = [gates(nqc); gates(qc)]
+    end
+    return nqc
+end
+hcat(qcs::QCircuit...) = vcat(qcs...)
+
+function adjoint(qc::QCircuit)
+    adj_qc = QCircuit(nqubits(qc))
+    for i = gate_count(qc):-1:1
+        push_gate!(adj_qc, qc.gates[i]')
+    end
+    return adj_qc
+end
+
+function getindex(qc::QCircuit, i...)
+    n = nqubits(qc)
+    return QCircuit(n, gates(qc)[i...])
 end
 
 nqubits(qc::QCircuit) = qc.nbits
@@ -171,13 +204,13 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                             push_gate!(qc, Val(:T), q)
                         elseif phase(circ, v) == 7//4
                             push_gate!(qc, Val(:Tdag), q)
-                        else
+                        elseif phase(circ, v) != 0
                             push_gate!(qc, Val(:shift), q, θ)
                         end
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
                         if phase(circ, v) == 1
                             push_gate!(qc, Val(:X), q)
-                        else
+                        else phase(circ, v) != 0
                             push_gate!(qc, Val(:Rx), q, θ)
                         end    
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.H
@@ -220,11 +253,11 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:Z), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//2
                                     push_gate!(qc, Val(:S), qubit_loc(circ, v1))
-                                elseif phase(circ, v) == 3//2
+                                elseif phase(circ, v1) == 3//2
                                     push_gate!(qc, Val(:Sdag), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//4
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v1))
-                                elseif phase(circ, v) == 7//4
+                                elseif phase(circ, v1) == 7//4
                                     push_gate!(qc, Val(:Tdag), qubit_loc(circ, v1))
                                 else        
                                     push_gate!(qc, Val(:shift), qubit_loc(circ, v1), phase(circ, v1)*π)
