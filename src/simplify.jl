@@ -19,7 +19,7 @@ Simplify `zxd` with the rule `r`.
 function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
     i = 1
     matches = match(r, zxd)
-    while length(matches) > 0 && (i <= max_iter || r ∉ (Rule{:p2}(), Rule{:p3}()))
+    while length(matches) > 0
         rewrite!(r, zxd, matches)
         matches = match(r, zxd)
         i += 1
