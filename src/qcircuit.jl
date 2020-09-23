@@ -1,5 +1,5 @@
-import Base: show, vcat, hcat, adjoint
-export QCircuit, QGate, random_circuit, gates, gate_count, global_phase, set_global_phase!
+import Base: show, vcat, hcat, adjoint, getindex
+export QCircuit, QGate, random_circuit, gates, gate_count
 
 struct QGate
     name::Symbol
@@ -65,7 +65,6 @@ function vcat(qcs::QCircuit...)
     nqc = QCircuit(n)
     for qc in qcs
         n == nqubits(qc) || error("Can not catenate quantum circuits with different qubit numbers")
-        set_global_phase!(nqc, global_phase(nqc) + global_phase(qc))
         nqc.gates = [gates(nqc); gates(qc)]
     end
     return nqc
@@ -74,11 +73,15 @@ hcat(qcs::QCircuit...) = vcat(qcs...)
 
 function adjoint(qc::QCircuit)
     adj_qc = QCircuit(nqubits(qc))
-    set_global_phase!(adj_qc, -global_phase(qc))
     for i = gate_count(qc):-1:1
         push_gate!(adj_qc, qc.gates[i]')
     end
     return adj_qc
+end
+
+function getindex(qc::QCircuit, i...)
+    n = nqubits(qc)
+    return QCircuit(n, gates(qc)[i...])
 end
 
 nqubits(qc::QCircuit) = qc.nbits
@@ -201,13 +204,13 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                             push_gate!(qc, Val(:T), q)
                         elseif phase(circ, v) == 7//4
                             push_gate!(qc, Val(:Tdag), q)
-                        else
+                        elseif phase(circ, v) != 0
                             push_gate!(qc, Val(:shift), q, θ)
                         end
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
                         if phase(circ, v) == 1
                             push_gate!(qc, Val(:X), q)
-                        else
+                        else phase(circ, v) != 0
                             push_gate!(qc, Val(:Rx), q, θ)
                         end    
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.H
@@ -250,11 +253,11 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:Z), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//2
                                     push_gate!(qc, Val(:S), qubit_loc(circ, v1))
-                                elseif phase(circ, v) == 3//2
+                                elseif phase(circ, v1) == 3//2
                                     push_gate!(qc, Val(:Sdag), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 1//4
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v1))
-                                elseif phase(circ, v) == 7//4
+                                elseif phase(circ, v1) == 7//4
                                     push_gate!(qc, Val(:Tdag), qubit_loc(circ, v1))
                                 else        
                                     push_gate!(qc, Val(:shift), qubit_loc(circ, v1), phase(circ, v1)*π)
