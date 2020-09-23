@@ -29,7 +29,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     extracted = copy(Outs)
 
     for i = 1:nbits
-        @inbounds w = neighbors(zxg, Outs[i])[1]
+        @inbounds w = neighbors(nzxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
@@ -65,7 +65,11 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     M = biadjancency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
-        if step.op == :swap
+        if step.op == :addto
+            ctrl = step.r2
+            loc = step.r1
+            pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
+        elseif step.op == :swap
             q1 = step.r1
             q2 = step.r2
             pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
@@ -147,7 +151,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
             end
             rem_edge!(zxg, v, w)
             if spider_type(zxg, w) == SpiderType.In
-                add_edge!(zxg, w, v, 1)
+                add_edge!(zxg, w, v, EdgeType.SIM)
             end
             deleteat!(frontier, frontier .== v)
             push!(frontier, w)
@@ -211,13 +215,11 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
         end
         while current_col <= nc
             r0 = findfirst(!iszero, M[i:nr, current_col])
-            if r0 != nothing
+            if r0 !== nothing
                 r0 += i - 1
                 r0 == i && break
-                r_temp = M[i,:]
-                M[i,:] = M[r0,:]
-                M[r0,:] = r_temp
-                step = GEStep(:swap, i, r0)
+                M[i,:] = M[i,:] .⊻ M[r0,:]
+                step = GEStep(:addto, r0, i)
                 push!(steps, step)
                 break
             else
