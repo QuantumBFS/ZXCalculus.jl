@@ -6,7 +6,7 @@
 
 A full-featured Julia package for ZX-calculus, and a circuit simplification engine for the Julia quantum compiler, [YaoLang](https://github.com/QuantumBFS/YaoLang.jl). (GSoC 2020).
 
-For a brief introduction to ZXCalculus, please check [this blog post](https://chenzhao44.github.io/2020/08/27/ZXCalculus.jl/).
+For a brief introduction to ZXCalculus, please check [this notebook](https://github.com/ChenZhao44/ZXCalculusTutorials) or [this blog post](https://chenzhao44.github.io/2020/08/27/ZXCalculus.jl/).
 
 ## Installation
 
