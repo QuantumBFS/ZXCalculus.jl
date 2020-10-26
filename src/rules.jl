@@ -777,6 +777,47 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return zxg
 end
 
+function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    u, gadget_u, v = vs
+    phase_u = phase(zxg, u)
+    phase_v = phase(zxg, v)
+    nb_u = setdiff(neighbors(zxg, u), [v, gadget_u])
+    nb_v = setdiff(neighbors(zxg, v), [u])
+
+    U = setdiff(nb_u, nb_v)
+    V = setdiff(nb_v, nb_u)
+    W = intersect(nb_u, nb_v)
+
+    phase_id_gadget_u = zxg.phase_ids[gadget_u]
+    phase_gadget_u = phase(zxg, gadget_u)
+    if (-1)^phase_u < 0
+        zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
+        phase_id_gadget_u = zxg.phase_ids[gadget_u]
+        phase_gadget_u = -phase(zxg, gadget_u)
+    end
+
+    for u0 in U, v0 in V
+        add_edge!(zxg, u0, v0)
+    end
+    for u0 in U, w0 in W
+        add_edge!(zxg, u0, w0)
+    end
+    for v0 in V, w0 in W
+        add_edge!(zxg, v0, w0)
+    end
+    
+    for w0 in W
+        set_phase!(zxg, w0, phase(zxg, w0)+1)
+    end
+    
+    set_phase!(zxg, v, phase_gadget_u)
+    zxg.phase_ids[v] = phase_id_gadget_u
+    zxg.phase_ids[u] = (u, 1)
+
+    rem_spider!(zxg, phase_gadget_u)
+    return zxg
+end
+
 function check_rule(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     @inbounds if has_vertex(zxg.mg, v1)

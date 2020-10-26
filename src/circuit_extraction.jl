@@ -7,16 +7,24 @@ Extract circuit from a graph-like ZX-diagram.
 """
 function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     nzxg = copy(zxg)
-    nbits = nqubits(zxg)
+    nbits = nqubits(nzxg)
+    gads = Set{T}()
+    for v in spiders(nzxg)
+        if spider_type(nzxg, v) == SpiderType.Z && degree(nzxg, v) == 1
+            push!(gads, v, neighbors(zxg, v)[1])
+        end
+    end
 
-    cir = ZXDiagram(nbits)
+    # TODO: extract a QCircuit instead
+    # cir = QCircuit(nbits)
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
-    if length(Outs) != length(Ins)
-        return cir
-    end
     if nbits == 0
         nbits = length(Outs)
+    end
+    cir = ZXDiagram(nbits)
+    if length(Outs) != length(Ins)
+        return cir
     end
     for v1 in Ins
         @inbounds v2 = neighbors(nzxg, v1)[1]
@@ -25,16 +33,18 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
     @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
+    qubit_map = Dict(zip(frontier, 1:nbits))
 
     extracted = copy(Outs)
-
+    
     for i = 1:nbits
         @inbounds w = neighbors(nzxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
-        pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
-        set_phase!(nzxg, w, zero(P))
+        if phase(nzxg, w) != 0
+            pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
+            set_phase!(nzxg, w, zero(P)) end
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
     for i = 1:nbits
@@ -49,9 +59,9 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     end
     extracted = [extracted; frontier]
 
-    while !isempty(setdiff(spiders(nzxg), extracted))
-        frontier = update_frontier!(nzxg, frontier, cir)
-        extracted = union!(extracted, frontier)
+    while !isempty(frontier)
+        update_frontier!(nzxg, gads, frontier, qubit_map, cir)
+        println(qubit_map)
     end
 
     frontier = T[]
@@ -61,7 +71,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             push!(frontier, nb[])
         end
     end
-    sort!(frontier, by = (v->qubit_loc(nzxg, v)))
+    sort!(frontier, by = (v->qubit_map[v]))
     M = biadjancency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
@@ -84,18 +94,42 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
 end
 
 """
-    update_frontier!(zxg, frontier, cir)
+    update_frontier!(zxg, frontier, qubit_map, cir)
 
 Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
-    frontier = frontier[[spider_type(zxg, f) == SpiderType.Z && (degree(zxg, f)) > 0 for f in frontier]]
+function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir::ZXDiagram{T, P}) where {T, P}
+    # TODO: use inplace methods
+    deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
+    
+    for i = 1:length(frontier)
+        v = frontier[i]
+        if any(u in gads for u in neighbors(zxg, v))
+            gad_u = zero(T)
+            for w in neighbors(zxg, u)
+                if w in gads
+                    gad_u = w
+                    break
+                end
+            end
+            rewrite!(Rule{:pivot}(), zxg, [u, gad_u, v])
+            pop!(gads, u, gad_u)
+            frontier[i] = u
+            qubit_map[u] = qubit_map[v]
+            pushfirst_gate!(cir, Val(:H), qubit_map[u])
+            # delete!(qubit_map, v)
+            return frontier
+        end
+    end
+    
     SetN = Set{T}()
     for f in frontier
         union!(SetN, neighbors(zxg, f))
     end
     N = collect(SetN)
+
+    # TODO: qubit_loc is not necessary here
     sort!(N, by = v -> qubit_loc(zxg, v))
     M = biadjancency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
@@ -117,56 +151,51 @@ function update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagra
 
     @inbounds for step in steps
         if step.op == :addto
-            ctrl = qubit_loc(zxg, frontier[step.r2])
-            loc = qubit_loc(zxg, frontier[step.r1])
+            ctrl = qubit_map[frontier[step.r2]]
+            loc = qubit_map[frontier[step.r1]]
             pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
         else
-            q1 = qubit_loc(zxg, frontier[step.r1])
-            q2 = qubit_loc(zxg, frontier[step.r2])
+            q1 = qubit_map[frontier[step.r1]]
+            q2 = qubit_map[frontier[step.r2]]
 
             pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
             pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
             pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
-    old_frontier = copy(frontier)
-    @inbounds for w in ws
-        nb_w = neighbors(zxg, w)
-        v = intersect(nb_w, old_frontier)[1]
-        if (degree(zxg, v)) == 1
-            qubit_v = qubit_loc(zxg, v)
-            qubit_w = qubit_loc(zxg, w)
-            pushfirst_gate!(cir, Val{:H}(), qubit_v)
-            if spider_type(zxg, w) == SpiderType.Z
-                pushfirst_gate!(cir, Val{:Z}(), qubit_v, phase(zxg, w))
+    
+    for i in 1:length(frontier)
+        v = frontier[i]
+        if degree(zxg, v) > 1
+            continue
+        end
+        w = neighbors(zxg, v)[1]
+        if is_hadamard(zxg, v, w)
+            pushfirst_gate!(cir, Val(:H), qubit_map[v])
+        end
+        if spider_type(zxg, w) == SpiderType.Z
+            qubit_map[w] = qubit_map[v]
+            if phase(zxg, w) != 0
+                pushfirst_gate!(cir, Val{:Z}(), qubit_map[w], phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
-            if qubit_v != qubit_w && spider_type(zxg, w) == SpiderType.Z
-                loc_v = column_loc(zxg, v)
-                loc_w = column_loc(zxg, w)
-                set_loc!(zxg.layout, w, qubit_v, loc_v)
-                set_column!(zxg.layout, v, loc_v+1//2)
-                # deleteat!(zxg.layout.spider_seq[qubit_w], loc_w)
-                # insert!(zxg.layout.spider_seq[qubit_v], loc_v, w)
-            end
             rem_edge!(zxg, v, w)
-            if spider_type(zxg, w) == SpiderType.In
-                add_edge!(zxg, w, v, EdgeType.SIM)
-            end
-            deleteat!(frontier, frontier .== v)
-            push!(frontier, w)
+        else
+            rem_edge!(zxg, v, w)
+            add_edge!(zxg, v, w, EdgeType.SIM)
         end
+        frontier[i] = w
     end
+
     @inbounds for i1 = 1:length(ws)
         for i2 = i1+1:length(ws)
             if has_edge(zxg, ws[i1], ws[i2])
-                pushfirst_gate!(cir, Val{:CZ}(), qubit_loc(zxg, ws[i1]),
-                    qubit_loc(zxg, ws[i2]))
+                pushfirst_gate!(cir, Val{:CZ}(), qubit_map[ws[i1]],
+                    qubit_map[ws[i2]])
                 rem_edge!(zxg, ws[i1], ws[i2])
             end
         end
     end
-    sort!(frontier, by = v -> qubit_loc(zxg, v))
     return frontier
 end
 
