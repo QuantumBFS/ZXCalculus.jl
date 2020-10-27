@@ -35,8 +35,6 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
     qubit_map = Dict(zip(frontier, 1:nbits))
 
-    extracted = copy(Outs)
-    
     for i = 1:nbits
         @inbounds w = neighbors(nzxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
@@ -57,11 +55,21 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             end
         end
     end
-    extracted = [extracted; frontier]
 
+    old_frontier = copy(frontier)
+    max_iter = 1000
+    current_iter = 1
     while !isempty(frontier)
         update_frontier!(nzxg, gads, frontier, qubit_map, cir)
-        println(qubit_map)
+        if frontier != old_frontier
+            old_frontier = copy(frontier)
+            current_iter = 1
+        else
+            current_iter += 1
+            if current_iter > max_iter
+                error("Circuit extraction failed!")
+            end
+        end
     end
 
     frontier = T[]
@@ -102,10 +110,13 @@ For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs
 function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir::ZXDiagram{T, P}) where {T, P}
     # TODO: use inplace methods
     deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
-    
+
     for i = 1:length(frontier)
         v = frontier[i]
-        if any(u in gads for u in neighbors(zxg, v))
+        nb_v = neighbors(zxg, v)
+        u = findfirst([u in gads for u in nb_v])
+        if u !== nothing
+            u = nb_v[u]
             gad_u = zero(T)
             for w in neighbors(zxg, u)
                 if w in gads
@@ -114,15 +125,25 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
                 end
             end
             rewrite!(Rule{:pivot}(), zxg, [u, gad_u, v])
-            pop!(gads, u, gad_u)
+            pop!(gads, u)
+            pop!(gads, gad_u)
             frontier[i] = u
             qubit_map[u] = qubit_map[v]
             pushfirst_gate!(cir, Val(:H), qubit_map[u])
-            # delete!(qubit_map, v)
+            delete!(qubit_map, v)
+            for j = 1:length(frontier)
+                for k = j+1:length(frontier)
+                    if is_hadamard(zxg, frontier[j], frontier[k])
+                        pushfirst_gate!(cir, Val(:CZ), qubit_map[frontier[j]], qubit_map[frontier[k]])
+                        rem_edge!(zxg, frontier[j], frontier[k])
+                    end
+                end
+            end
+
             return frontier
         end
     end
-    
+
     SetN = Set{T}()
     for f in frontier
         union!(SetN, neighbors(zxg, f))
@@ -130,7 +151,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
     N = collect(SetN)
 
     # TODO: qubit_loc is not necessary here
-    sort!(N, by = v -> qubit_loc(zxg, v))
+    # sort!(N, by = v -> qubit_loc(zxg, v))
     M = biadjancency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
     ws = T[]
@@ -139,7 +160,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
             push!(ws, N[findfirst(isone, M0[i,:])])
         end
     end
-    M1 = biadjancency(zxg, frontier, ws)
+    # M1 = biadjancency(zxg, frontier, ws)
     @inbounds for e in findall(M .== 1)
         if has_edge(zxg, frontier[e[1]], N[e[2]])
             rem_edge!(zxg, frontier[e[1]], N[e[2]])
@@ -163,7 +184,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
             pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
         end
     end
-    
+
     for i in 1:length(frontier)
         v = frontier[i]
         if degree(zxg, v) > 1
@@ -187,12 +208,12 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         frontier[i] = w
     end
 
-    @inbounds for i1 = 1:length(ws)
-        for i2 = i1+1:length(ws)
-            if has_edge(zxg, ws[i1], ws[i2])
-                pushfirst_gate!(cir, Val{:CZ}(), qubit_map[ws[i1]],
-                    qubit_map[ws[i2]])
-                rem_edge!(zxg, ws[i1], ws[i2])
+    @inbounds for i1 = 1:length(frontier)
+        for i2 = i1+1:length(frontier)
+            if has_edge(zxg, frontier[i1], frontier[i2])
+                pushfirst_gate!(cir, Val{:CZ}(), qubit_map[frontier[i1]],
+                    qubit_map[frontier[i2]])
+                rem_edge!(zxg, frontier[i1], frontier[i2])
             end
         end
     end
