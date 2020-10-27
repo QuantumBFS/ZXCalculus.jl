@@ -1,4 +1,4 @@
-export replace!, simplify!, clifford_simplification
+export replace!, simplify!, clifford_simplification, full_reduction
 
 const MAX_ITERATION = Ref{Int}(1000)
 
@@ -40,6 +40,31 @@ function clifford_simplification(circ::ZXDiagram)
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)
     replace!(Rule{:pab}(), zxg)
+
+    return circuit_extraction(zxg)
+end
+
+function full_reduction(cir::ZXDiagram{T, P}) where {T, P}
+    zxg = ZXGraph(cir)
+
+    simplify!(Rule{:lc}(), zxg)
+    simplify!(Rule{:p1}(), zxg)
+    simplify!(Rule{:p2}(), zxg)
+    simplify!(Rule{:p3}(), zxg)
+    simplify!(Rule{:p1}(), zxg)
+    match_id = match(Rule{:id}(), zxg)
+    match_gf = match(Rule{:gf}(), zxg)
+    while length(match_id) + length(match_gf) > 0
+        rewrite!(Rule{:id}(), zxg, match_id)
+        rewrite!(Rule{:gf}(), zxg, match_gf)
+        simplify!(Rule{:lc}(), zxg)
+        simplify!(Rule{:p1}(), zxg)
+        simplify!(Rule{:p2}(), zxg)
+        simplify!(Rule{:p3}(), zxg)
+        simplify!(Rule{:p1}(), zxg)
+        match_id = match(Rule{:id}(), zxg)
+        match_gf = match(Rule{:gf}(), zxg)
+    end
 
     return circuit_extraction(zxg)
 end
