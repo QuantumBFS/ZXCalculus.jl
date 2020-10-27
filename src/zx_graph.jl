@@ -24,7 +24,7 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     master::ZXDiagram{T, P}
 end
 
-copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps), 
+copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps),
     copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
 """
     ZXGraph(zxd::ZXDiagram)
@@ -157,9 +157,14 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxg.layout, v)
     if c_loc !== nothing
         if spider_type(zxg, v) == SpiderType.Out
-            nb = neighbors(zxg, v)[1]
-            spider_type(zxg, nb) == SpiderType.In && return 3//1
-            c_loc = floor(column_loc(zxg, nb) + 2)
+            nb = neighbors(zxg, v)
+            if length(nb) == 1
+                nb = nb[1]
+                spider_type(zxg, nb) == SpiderType.In && return 3//1
+                c_loc = floor(column_loc(zxg, nb) + 2)
+            else
+                c_loc = 1000
+            end
         end
         if spider_type(zxg, v) == SpiderType.In
             nb = neighbors(zxg, v)[1]
