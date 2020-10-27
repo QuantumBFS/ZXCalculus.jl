@@ -107,11 +107,11 @@ function push_gate!(qc::QCircuit, gate::QGate)
 end
 push_gate!(qc::QCircuit, gargs...) = push_gate!(qc, QGate(gargs...))
 
-function push_first_gate!(qc::QCircuit, gate::QGate)
-    push_first!(qc.gates, gate)
+function pushfirst_gate!(qc::QCircuit, gate::QGate)
+    pushfirst!(qc.gates, gate)
     return qc
 end
-push_first_gate!(qc::QCircuit, gargs...) = push_first_gate!(qc, QGate(gargs...))
+pushfirst_gate!(qc::QCircuit, gargs...) = pushfirst_gate!(qc, QGate(gargs...))
 
 function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
     qc = QCircuit(nbits)

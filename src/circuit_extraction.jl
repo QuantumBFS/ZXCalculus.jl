@@ -80,7 +80,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
     sort!(frontier, by = (v->qubit_map[v]))
-    M = biadjancency(nzxg, frontier, Ins)
+    M = biadjacency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
         if step.op == :addto
@@ -152,7 +152,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
 
     # TODO: qubit_loc is not necessary here
     # sort!(N, by = v -> qubit_loc(zxg, v))
-    M = biadjancency(zxg, frontier, N)
+    M = biadjacency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
     ws = T[]
     @inbounds for i = 1:length(frontier)
@@ -160,7 +160,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
             push!(ws, N[findfirst(isone, M0[i,:])])
         end
     end
-    # M1 = biadjancency(zxg, frontier, ws)
+    # M1 = biadjacency(zxg, frontier, ws)
     @inbounds for e in findall(M .== 1)
         if has_edge(zxg, frontier[e[1]], N[e[2]])
             rem_edge!(zxg, frontier[e[1]], N[e[2]])
@@ -221,11 +221,11 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
 end
 
 """
-    biadjancency(zxg, F, N)
+    biadjacency(zxg, F, N)
 
-Return the biadjancency matrix of `zxg` from vertices in `F` to vertices in `N`.
+Return the biadjacency matrix of `zxg` from vertices in `F` to vertices in `N`.
 """
-function biadjancency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, P}
+function biadjacency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, P}
     M = zeros(Int, length(F), length(N))
 
     for i = 1:length(F)
