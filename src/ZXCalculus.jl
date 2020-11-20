@@ -1,5 +1,6 @@
 module ZXCalculus
 
+include("phase.jl")
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")

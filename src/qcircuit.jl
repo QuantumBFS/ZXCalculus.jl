@@ -205,14 +205,22 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                         elseif phase(circ, v) == 7//4
                             push_gate!(qc, Val(:Tdag), q)
                         elseif phase(circ, v) != 0
-                            push_gate!(qc, Val(:shift), q, θ)
+                            if θ isa Phase && isnothing(θ.ex)
+                                push_gate!(qc, Val(:shift), q, θ.val)
+                            else
+                                push_gate!(qc, Val(:shift), q, θ)
+                            end
                         end
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.X
                         if phase(circ, v) == 1
                             push_gate!(qc, Val(:X), q)
                         else phase(circ, v) != 0
-                            push_gate!(qc, Val(:Rx), q, θ)
-                        end    
+                            if θ isa Phase && isnothing(θ.ex)
+                                push_gate!(qc, Val(:Rx), q, θ.val)
+                            else
+                                push_gate!(qc, Val(:Rx), q, θ)
+                            end
+                        end
                     elseif spider_type(circ, v) == ZXCalculus.SpiderType.H
                         push_gate!(qc, Val(:H), q)
                     end
@@ -236,14 +244,24 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v))
                                 elseif phase(circ, v) == 7//4
                                     push_gate!(qc, Val(:Tdag), qubit_loc(circ, v))
-                                else        
-                                    push_gate!(qc, Val(:shift), qubit_loc(circ, v), phase(circ, v)*π)
+                                else
+                                    θ = phase(circ, v)*π
+                                    if θ isa Phase && isnothing(θ.ex)
+                                        push_gate!(qc, Val(:shift), qubit_loc(circ, v), θ.val)
+                                    else
+                                        push_gate!(qc, Val(:shift), qubit_loc(circ, v), θ)
+                                    end
                                 end
                             else
                                 if phase(circ, v) == 1
                                     push_gate!(qc, Val(:X), qubit_loc(circ, v))
                                 else
-                                    push_gate!(qc, Val(:Rx), qubit_loc(circ, v), phase(circ, v)*π)
+                                    θ = phase(circ, v)*π
+                                    if θ isa Phase && isnothing(θ.ex)
+                                        push_gate!(qc, Val(:Rx), qubit_loc(circ, v), θ.val)
+                                    else
+                                        push_gate!(qc, Val(:Rx), qubit_loc(circ, v), θ)
+                                    end
                                 end
                             end
                         end
@@ -259,14 +277,24 @@ function QCircuit(circ::ZXDiagram{T, P}) where {T, P}
                                     push_gate!(qc, Val(:T), qubit_loc(circ, v1))
                                 elseif phase(circ, v1) == 7//4
                                     push_gate!(qc, Val(:Tdag), qubit_loc(circ, v1))
-                                else        
-                                    push_gate!(qc, Val(:shift), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                else
+                                    θ = phase(circ, v1)*π
+                                    if θ isa Phase && isnothing(θ.ex)
+                                        push_gate!(qc, Val(:shift), qubit_loc(circ, v1), θ.val)
+                                    else
+                                        push_gate!(qc, Val(:shift), qubit_loc(circ, v1), θ)
+                                    end
                                 end
                             else
                                 if phase(circ, v1) == 1
                                     push_gate!(qc, Val(:X), qubit_loc(circ, v1))
                                 else
-                                    push_gate!(qc, Val(:Rx), qubit_loc(circ, v1), phase(circ, v1)*π)
+                                    θ = phase(circ, v1)*π
+                                    if θ isa Phase && isnothing(θ.ex)
+                                        push_gate!(qc, Val(:Rx), qubit_loc(circ, v1), θ.val)
+                                    else
+                                        push_gate!(qc, Val(:Rx), qubit_loc(circ, v1), θ)
+                                    end
                                 end
                             end
                         end

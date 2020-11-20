@@ -144,7 +144,7 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
         while p < 0
             p += 2
         end
-        p = rem(p, one(P)+one(P))
+        p = rem(p, 2)
         zxg.ps[v] = p
         return true
     end
@@ -267,7 +267,7 @@ function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
         while ps[v] < 0
             ps[v] += 2
         end
-        ps[v] = rem(ps[v], one(P)+one(P))
+        ps[v] = rem(ps[v], 2)
     end
 end
 
