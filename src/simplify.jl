@@ -37,16 +37,27 @@ Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1
 """
 function clifford_simplification(circ::ZXDiagram)
     zxg = ZXGraph(circ)
-    simplify!(Rule{:lc}(), zxg)
-    simplify!(Rule{:p1}(), zxg)
-    replace!(Rule{:pab}(), zxg)
+    zxg = clifford_simplification(zxg)
 
     return circuit_extraction(zxg)
 end
 
-function full_reduction(cir::ZXDiagram{T, P}) where {T, P}
-    zxg = ZXGraph(cir)
+function clifford_simplification(zxg::ZXGraph)
+    simplify!(Rule{:lc}(), zxg)
+    simplify!(Rule{:p1}(), zxg)
+    replace!(Rule{:pab}(), zxg)
 
+    return zxg
+end
+
+function full_reduction(cir::ZXDiagram)
+    zxg = ZXGraph(cir)
+    zxg = full_reduction(zxg)
+
+    return circuit_extraction(zxg)
+end
+
+function full_reduction(zxg::ZXGraph)
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)
     simplify!(Rule{:p2}(), zxg)
@@ -66,5 +77,5 @@ function full_reduction(cir::ZXDiagram{T, P}) where {T, P}
         match_gf = match(Rule{:gf}(), zxg)
     end
 
-    return circuit_extraction(zxg)
+    return zxg
 end
