@@ -5,70 +5,85 @@ import Base: show
     Phase
 The type supports manipulating phases as expressions.
 """
-struct Phase{T}
+struct Phase
     ex
+    type
 end
 
-Phase(p::T) where {T} = Phase{T}(p)
+Phase(p::T) where {T} = Phase(p, T)
 
 Phase(p::Phase) = p
 
 function show(io::IO, p::Phase)
-    print(io, p.ex)
+    if p.ex isa Number
+        print(io, p.ex)
+    else
+        print(io, "($(p.ex))")
+    end
 end
 
-function +(p1::Phase{T1}, p2::Phase{T2}) where {T1, T2}
+function +(p1::Phase, p2::Phase)
+    T1 = p1.type
+    T2 = p2.type
     if p1.ex isa Number && p2.ex isa Number
         return Phase(p1.ex + p2.ex)
     end
 
     T = Base.promote_op(+, T1, T2)
-    return Phase{T}(Expr(:call, :+, p1.ex, p2.ex))
+    return Phase(Expr(:call, :+, p1.ex, p2.ex), T)
 end
 +(p1::Phase, p2::Number) = p1 + Phase(p2)
 +(p1::Number, p2::Phase) = Phase(p1) + p2
 
-function -(p1::Phase{T1}, p2::Phase{T2}) where {T1, T2}
+function -(p1::Phase, p2::Phase)
+    T1 = p1.type
+    T2 = p2.type
     if p1.ex isa Number && p2.ex isa Number
         return Phase(p1.ex - p2.ex)
     end
 
     T = Base.promote_op(-, T1, T2)
-    return Phase{T}(Expr(:call, :-, p1.ex, p2.ex))
+    return Phase(Expr(:call, :-, p1.ex, p2.ex), T)
 end
 -(p1::Phase, p2::Number) = p1 - Phase(p2)
 -(p1::Number, p2::Phase) = Phase(p1) - p2
 
-function -(p::Phase{T0}) where {T0}
-    if p.ex isa Number
-        return Phase(-p.ex)
-    end
-
-    T = Base.promote_op(-, T0)
-    return Phase{T}(Expr(:call, :-, p.ex))
-end
-
-function *(p1::Phase{T1}, p2::Phase{T2}) where {T1, T2}
+function *(p1::Phase, p2::Phase)
+    T1 = p1.type
+    T2 = p2.type
     if p1.ex isa Number && p2.ex isa Number
         return Phase(p1.ex * p2.ex)
     end
 
     T = Base.promote_op(*, T1, T2)
-    return Phase{T}(Expr(:call, :*, p1.ex, p2.ex))
+    return Phase(Expr(:call, :*, p1.ex, p2.ex), T)
 end
 *(p1::Phase, p2::Number) = p1 * Phase(p2)
 *(p1::Number, p2::Phase) = Phase(p1) * p2
 
-function /(p1::Phase{T1}, p2::Phase{T2}) where {T1, T2}
+function /(p1::Phase, p2::Phase)
+    T1 = p1.type
+    T2 = p2.type
     if p1.ex isa Number && p2.ex isa Number
         return Phase(p1.ex / p2.ex)
     end
 
     T = Base.promote_op(/, T1, T2)
-    return Phase{T}(Expr(:call, :/, p1.ex, p2.ex))
+    return Phase(Expr(:call, :/, p1.ex, p2.ex), T)
 end
 /(p1::Phase, p2::Number) = p1 / Phase(p2)
 /(p1::Number, p2::Phase) = Phase(p1) / p2
+
+
+function -(p::Phase)
+    T0 = p.type
+    if p.ex isa Number
+        return Phase(-p.ex)
+    end
+
+    T = Base.promote_op(-, T0)
+    return Phase(Expr(:call, :-, p.ex), T)
+end
 
 ==(p1::Phase, p2::Phase) = p1.ex == p2.ex
 ==(p1::Phase, p2::Number) = (p1 == Phase(p2))
