@@ -150,7 +150,13 @@ function match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
         if spider_type(zxg, v) == SpiderType.Z &&
             (phase(zxg, v) in (1//2, 3//2))
             if length(searchsorted(vB, v)) == 0
-                push!(matches, Match{T}([v]))
+                if degree(zxg, v) == 1
+                    # rewrite phase gadgets first
+                    pushfirst!(matches, Match{T}([neighbors(zxg, v)[]]))
+                    pushfirst!(matches, Match{T}([v]))
+                else
+                    push!(matches, Match{T}([v]))
+                end
             end
         end
     end
@@ -670,7 +676,9 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     W = intersect(nb_u, nb_v)
 
     phase_id_u = zxg.phase_ids[u]
-    if (-1)^phase_v < 0
+    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+
+    if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
         phase_id_u = zxg.phase_ids[u]
     end
@@ -690,7 +698,7 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for w0 in W
         set_phase!(zxg, w0, phase(zxg, w0)+phase_v+1)
     end
-    gad = add_spider!(zxg, SpiderType.Z, P((-1)^phase_v*phase_u))
+    gad = add_spider!(zxg, SpiderType.Z, P(sgn_phase_v*phase_u))
     add_edge!(zxg, v, gad)
     set_phase!(zxg, v, zero(P))
     zxg.phase_ids[gad] = phase_id_u
@@ -732,7 +740,9 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     W = intersect(nb_u, nb_v)
 
     phase_id_u = zxg.phase_ids[u]
-    if (-1)^phase_v < 0
+    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+
+    if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
         phase_id_u = zxg.phase_ids[u]
     end
@@ -759,7 +769,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     end
     set_phase!(zxg, v, zero(P))
     set_phase!(zxg, u, phase_v)
-    gad = add_spider!(zxg, SpiderType.Z, P((-1)^phase_v*phase_u))
+    gad = add_spider!(zxg, SpiderType.Z, P(sgn_phase_v*phase_u))
     add_edge!(zxg, v, gad)
     zxg.phase_ids[gad] = phase_id_u
     zxg.phase_ids[u] = phase_id_v
@@ -774,6 +784,60 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         rem_edge!(zxg, u, bd_u)
         add_edge!(zxg, u, bd_u)
     end
+    return zxg
+end
+
+function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    u, gadget_u, v = vs
+    phase_u = phase(zxg, u)
+    phase_v = phase(zxg, v)
+
+    for v0 in neighbors(zxg, v)
+        if spider_type(zxg, v0) != SpiderType.Z
+            if is_hadamard(zxg, v0, v)
+                v1 = insert_spider!(zxg, v0, v)
+                insert_spider!(zxg, v0, v1)
+            else
+                insert_spider!(zxg, v0, v)
+            end
+            break
+        end
+    end
+
+    nb_u = setdiff(neighbors(zxg, u), [v, gadget_u])
+    nb_v = setdiff(neighbors(zxg, v), [u])
+
+    U = setdiff(nb_u, nb_v)
+    V = setdiff(nb_v, nb_u)
+    W = intersect(nb_u, nb_v)
+
+    phase_id_gadget_u = zxg.phase_ids[gadget_u]
+    phase_gadget_u = phase(zxg, gadget_u)
+    if !iseven(Phase(phase_u))
+        zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
+        phase_id_gadget_u = zxg.phase_ids[gadget_u]
+        phase_gadget_u = -phase(zxg, gadget_u)
+    end
+
+    for u0 in U, v0 in V
+        add_edge!(zxg, u0, v0)
+    end
+    for u0 in U, w0 in W
+        add_edge!(zxg, u0, w0)
+    end
+    for v0 in V, w0 in W
+        add_edge!(zxg, v0, w0)
+    end
+
+    for w0 in W
+        set_phase!(zxg, w0, phase(zxg, w0)+1)
+    end
+
+    set_phase!(zxg, v, phase_gadget_u)
+    zxg.phase_ids[v] = phase_id_gadget_u
+    zxg.phase_ids[u] = (u, 1)
+
+    rem_spider!(zxg, gadget_u)
     return zxg
 end
 

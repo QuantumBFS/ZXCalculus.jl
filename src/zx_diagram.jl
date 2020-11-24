@@ -119,7 +119,7 @@ ZX-diagram with 6 vertices and 3 multiple edges:
 function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]
-    ps = [0//1 for _ = 1:2*nbits]
+    ps = [Phase(0//1) for _ = 1:2*nbits]
     spider_q = Dict{T, Int}()
     spider_col = Dict{T, Rational{Int}}()
     for i = 1:nbits
@@ -134,7 +134,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     return ZXDiagram(mg, st, ps, layout)
 end
 
-copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout), 
+copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
     deepcopy(zxd.phase_ids), copy(zxd._inputs), copy(zxd._outputs))
 
 """
@@ -162,7 +162,7 @@ function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
         while p < 0
             p += 2
         end
-        p = rem(p, one(P)+one(P))
+        p = rem(p, 2)
         zxd.ps[v] = p
         return true
     end
@@ -331,7 +331,7 @@ function round_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
         while ps[v] < 0
             ps[v] += 2
         end
-        ps[v] = rem(ps[v], one(P)+one(P))
+        ps[v] = rem(ps[v], 2)
     end
     return
 end
@@ -363,7 +363,7 @@ If `M` is `:Z` or `:X`, `phase` will be available and it will push a
 rotation `M` gate with angle `phase * π`.
 If `autoconvert` is `false`, the input `phase` should be a rational numbers.
 """
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
@@ -371,7 +371,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::Real = zero(
     return zxd
 end
 
-function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase::Real = zero(P); autoconvert::Bool=true) where {T, P}
+function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase = zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase

@@ -30,11 +30,11 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test ZXCalculus.continued_fraction(-0.5, 10) === -1//2
     zxd = ZXDiagram(4)
     push_gate!(zxd, Val(:X), 3, 0.5)
-    @test zxd.ps[9] === 1//2
+    @test zxd.ps[9] == 1//2
     push_gate!(zxd, Val(:X), 3, -0.5)
-    @test zxd.ps[10] === 3//2
+    @test zxd.ps[10] == 3//2
     push_gate!(zxd, Val(:Z), 3, 0)
-    @test zxd.ps[11] === 0//1
+    @test zxd.ps[11] == 0//1
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
     @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
 end
