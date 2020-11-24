@@ -16,9 +16,9 @@ Phase(p::Phase) = p
 
 function show(io::IO, p::Phase)
     if p.ex isa Number
-        print(io, p.ex)
+        print(io, "Phase($(p.ex))")
     else
-        print(io, "($(p.ex))")
+        print(io, "Phase($(p.ex)::$(p.type))")
     end
 end
 
@@ -106,5 +106,3 @@ one(::Phase) = Phase(1//1)
 one(::Type{Phase}) = Phase(1//1)
 
 iseven(p::Phase) = (p.ex isa Number) && (-1)^p.ex > 0
-
-# p1+p2+p1-p1-p1
