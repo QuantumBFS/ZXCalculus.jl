@@ -30,4 +30,8 @@ end
     include("qcircuit.jl")
 end
 
+@testset "phase.jl" begin
+    include("phase.jl")
+end
+
 doctest(ZXCalculus)
