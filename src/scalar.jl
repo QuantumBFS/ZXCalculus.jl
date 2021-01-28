@@ -1,4 +1,4 @@
-import Base: *, ==
+import Base: *, ==, copy
 
 """
     Scalar
@@ -29,3 +29,4 @@ end
 
 *(s1::Scalar, s2::Scalar) = Scalar(s1.power_of_sqrt_2 + s2.power_of_sqrt_2, s1.phase + s2.phase)
 ==(s1::Scalar, s2::Scalar) = (s1.power_of_sqrt_2 == s2.power_of_sqrt_2 && s1.phase == s2.phase)
+copy(s::Scalar{P}) where {P} = Scalar{P}(s.power_of_sqrt_2, s.phase)

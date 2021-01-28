@@ -38,3 +38,8 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
     @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
 end
+
+zxd4 = ZXDiagram(2)
+ZXCalculus.add_global_phase!(zxd4, ZXCalculus.Phase(1//2))
+ZXCalculus.add_power!(zxd4, 2)
+@test ZXCalculus.get_scalar(zxd4) == Scalar(2, 1//2)
