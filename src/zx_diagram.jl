@@ -407,6 +407,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {
     push_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -416,6 +417,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T,
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
     insert_spider!(zxd, v1, v2, SpiderType.H)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -466,6 +468,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) wh
     pushfirst_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -475,6 +478,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) wher
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
     insert_spider!(zxd, v1, v2, SpiderType.H)
+    add_power!(zxd, 1)
     return zxd
 end
 

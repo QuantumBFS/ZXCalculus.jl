@@ -439,6 +439,7 @@ end
 
 function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
+    add_global_phase!(zxd, phase(zxd, v2))
     set_phase!(zxd, v2, -phase(zxd, v2))
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
@@ -469,9 +470,11 @@ function rewrite!(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     ph = phase(zxd, v1)
     rem_spider!(zxd, v1)
+    add_power!(zxd, 1)
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
         add_spider!(zxd, SpiderType.X, ph, [v3])
+        add_power!(zxd, -1)
     end
     rem_spider!(zxd, v2)
     return zxd
@@ -508,6 +511,7 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     add_edge!(zxd, a1, a4)
     add_edge!(zxd, a2, a3)
     add_edge!(zxd, a2, a4)
+    add_power!(zxd, 1)
     return zxd
 end
 
