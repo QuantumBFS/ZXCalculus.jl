@@ -2,6 +2,10 @@ using ZXCalculus, LightGraphs, Multigraphs, SparseArrays
 using Documenter
 using Test
 
+@testset "scalar.jl" begin
+    include("scalar.jl")
+end
+
 @testset "zx_diagram.jl" begin
     include("zx_diagram.jl")
 end
