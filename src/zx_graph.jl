@@ -28,6 +28,7 @@ end
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps),
     copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.scalar), 
     copy(zxg.master))
+
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -121,11 +122,13 @@ function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.E
         if v1 == v2
             if edge_type == EdgeType.HAD
                 set_phase!(zxg, v1, phase(zxg, v1)+1)
+                add_power!(zxg, -1)
             end
             return true
         else
             if has_edge(zxg, v1, v2)
                 if is_hadamard(zxg, v1, v2)
+                    add_power!(zxg, -2)
                     return rem_edge!(zxg, v1, v2)
                 else
                     return false
