@@ -30,6 +30,7 @@ push_gate!(qc, Val{:H}(), 1)
 push_gate!(qc, Val{:S}(), 4)
 push_gate!(qc, Val{:X}(), 4)
 
+@test two_qubit_count(qc) == 5
 circ = ZXDiagram(qc)
 @test tcount(qc) == tcount(circ)
 pt_circ = phase_teleportation(circ)
