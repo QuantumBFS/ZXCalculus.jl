@@ -831,6 +831,7 @@ function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
     U = setdiff(nb_u, nb_v)
     V = setdiff(nb_v, nb_u)
     W = intersect(nb_u, nb_v)
+    add_power!(zxg, length(U)*length(V) + length(V)*length(W) + length(W)*length(U))
 
     phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
