@@ -316,7 +316,7 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
     end
 end
 
-get_scalar(zxg::ZXGraph) = zxg.scalar
+scalar(zxg::ZXGraph) = zxg.scalar
 
 function add_global_phase!(zxg::ZXGraph{T, P}, p::P) where {T, P}
     add_phase!(zxg.scalar, p)

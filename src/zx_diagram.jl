@@ -504,11 +504,11 @@ Returns a vector of output ids.
 get_outputs(zxd::ZXDiagram) = zxd._outputs
 
 """
-    get_scalar(zxd)
+    scalar(zxd)
 
 Returns the scalar of `zxd`.
 """
-get_scalar(zxd::ZXDiagram) = zxd.scalar
+scalar(zxd::ZXDiagram) = zxd.scalar
 
 function add_global_phase!(zxd::ZXDiagram{T, P}, p::P) where {T, P}
     add_phase!(zxd.scalar, p)

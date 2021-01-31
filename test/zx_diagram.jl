@@ -42,4 +42,4 @@ end
 zxd4 = ZXDiagram(2)
 ZXCalculus.add_global_phase!(zxd4, ZXCalculus.Phase(1//2))
 ZXCalculus.add_power!(zxd4, 2)
-@test ZXCalculus.get_scalar(zxd4) == Scalar(2, 1//2)
+@test ZXCalculus.scalar(zxd4) == Scalar(2, 1//2)
