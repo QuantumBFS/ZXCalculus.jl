@@ -439,6 +439,7 @@ end
 
 function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
+    add_global_phase!(zxd, phase(zxd, v2))
     set_phase!(zxd, v2, -phase(zxd, v2))
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
@@ -469,9 +470,11 @@ function rewrite!(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     ph = phase(zxd, v1)
     rem_spider!(zxd, v1)
+    add_power!(zxd, 1)
     nb = neighbors(zxd, v2, count_mul = true)
     for v3 in nb
         add_spider!(zxd, SpiderType.X, ph, [v3])
+        add_power!(zxd, -1)
     end
     rem_spider!(zxd, v2)
     return zxd
@@ -508,6 +511,7 @@ function rewrite!(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     add_edge!(zxd, a1, a4)
     add_edge!(zxd, a2, a3)
     add_edge!(zxd, a2, a4)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -528,7 +532,14 @@ end
 function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
     phase_v = phase(zxg, v)
+    if phase_v == 1//2
+        add_global_phase!(zxg, P(1//4))
+    else
+        add_global_phase!(zxg, P(-1//4))
+    end
     nb = neighbors(zxg, v)
+    n = length(nb)
+    add_power!(zxg, (n-1)*(n-2)//2)
     rem_spider!(zxg, v)
     for u1 in nb, u2 in nb
         if u2 > u1
@@ -562,12 +573,14 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v = vs
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
+    add_global_phase!(zxg, phase_u*phase_v)
     nb_u = setdiff(neighbors(zxg, u), [v])
     nb_v = setdiff(neighbors(zxg, v), [u])
 
     U = setdiff(nb_u, nb_v)
     V = setdiff(nb_v, nb_u)
     W = intersect(nb_u, nb_v)
+    add_power!(zxg, (length(U)+length(V)-2)*length(W) + (length(U)-1)*(length(V)-1))
 
     rem_spiders!(zxg, vs)
     for u0 in U, v0 in V
@@ -665,6 +678,7 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 
 function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    # u has non-Clifford phase
     u, v = vs
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
@@ -674,6 +688,7 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     U = setdiff(nb_u, nb_v)
     V = setdiff(nb_v, nb_u)
     W = intersect(nb_u, nb_v)
+    add_power!(zxg, (length(U)+length(V)-1)*length(W) + length(U)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
     sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
@@ -727,6 +742,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 
 function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    # u is the boundary spider
     u, v = vs
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
@@ -738,6 +754,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     U = setdiff(nb_u, nb_v)
     V = setdiff(nb_v, nb_u)
     W = intersect(nb_u, nb_v)
+    add_power!(zxg, (length(U)+length(V))*length(W) + (length(U)+1)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
     sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
@@ -788,6 +805,10 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 
 function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    # This rule should be only used in circuit extraction.
+    # This rule will do pivoting on u, v but preserve u, v.
+    # And the scalars are not considered in this rule.
+    # gadget_u is the non-Clifford spider
     u, gadget_u, v = vs
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
@@ -810,6 +831,7 @@ function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
     U = setdiff(nb_u, nb_v)
     V = setdiff(nb_v, nb_u)
     W = intersect(nb_u, nb_v)
+    add_power!(zxg, length(U)*length(V) + length(V)*length(W) + length(W)*length(U))
 
     phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
@@ -894,11 +916,13 @@ end
 function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
     if phase(zxg, v2) == 1
+        add_global_phase!(zxg, phase(zxg, v1))
         set_phase!(zxg, v2, zero(P))
         set_phase!(zxg, v1, -phase(zxg, v1))
         zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
     end
     if phase(zxg, u2) == 1
+        add_global_phase!(zxg, phase(zxg, u1))
         set_phase!(zxg, u2, zero(P))
         set_phase!(zxg, u1, -phase(zxg, u1))
         zxg.phase_ids[u1] = (zxg.phase_ids[u1][1], -zxg.phase_ids[u1][2])
@@ -911,6 +935,7 @@ function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     set_phase!(zxg.master, idv, (mulv * phase(zxg.master,idv) + mulu * phase(zxg.master,idu)) * mulv)
     set_phase!(zxg.master, idu, zero(P))
 
+    add_power!(zxg, degree(zxg, v2)-2)
     rem_spiders!(zxg, [u1, u2])
     return zxg
 end

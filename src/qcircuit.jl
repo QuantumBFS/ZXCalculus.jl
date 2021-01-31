@@ -1,5 +1,5 @@
 import Base: show, vcat, hcat, adjoint, getindex
-export QCircuit, QGate, random_circuit, gates, gate_count
+export QCircuit, QGate, random_circuit, gates, gate_count, two_qubit_count
 
 struct QGate
     name::Symbol
@@ -96,6 +96,16 @@ function tcount(qc::QCircuit)
             if rem(Rational(g.param/π), 1//2) != 0
                 tc += 1
             end
+        end
+    end
+    return tc
+end
+
+function two_qubit_count(qc::QCircuit)
+    tc = 0
+    for g in gates(qc)
+        if g.name ∈ (:CZ, :CNOT)
+            tc += 1
         end
     end
     return tc

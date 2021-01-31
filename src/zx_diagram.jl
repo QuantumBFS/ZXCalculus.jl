@@ -23,11 +23,13 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     layout::ZXLayout{T}
     phase_ids::Dict{T, Tuple{T, Int}}
 
+    scalar::Scalar{P}
     _inputs::Vector{T}
     _outputs::Vector{T}
 
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
+        s::Scalar{P} = Scalar{P}(), 
         inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
@@ -57,7 +59,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
                     sort!(outputs, by = (v -> qubit_loc(layout, v)))
                 end
             end
-            zxd = new{T, P}(mg, st, ps, layout, phase_ids, inputs, outputs)
+            zxd = new{T, P}(mg, st, ps, layout, phase_ids, s, inputs, outputs)
             round_phases!(zxd)
             return zxd
         else
@@ -135,7 +137,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
 end
 
 copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
-    deepcopy(zxd.phase_ids), copy(zxd._inputs), copy(zxd._outputs))
+    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd._inputs), copy(zxd._outputs))
 
 """
     spider_type(zxd, v)
@@ -405,6 +407,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where {
     push_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -414,6 +417,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T,
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
     insert_spider!(zxd, v1, v2, SpiderType.H)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -464,6 +468,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) wh
     pushfirst_gate!(zxd, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -473,6 +478,7 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) wher
     @inbounds v1, v2 = (sort!(spiders(zxd)))[end-1:end]
     add_edge!(zxd, v1, v2)
     insert_spider!(zxd, v1, v2, SpiderType.H)
+    add_power!(zxd, 1)
     return zxd
 end
 
@@ -496,6 +502,23 @@ get_inputs(zxd::ZXDiagram) = zxd._inputs
 Returns a vector of output ids.
 """
 get_outputs(zxd::ZXDiagram) = zxd._outputs
+
+"""
+    scalar(zxd)
+
+Returns the scalar of `zxd`.
+"""
+scalar(zxd::ZXDiagram) = zxd.scalar
+
+function add_global_phase!(zxd::ZXDiagram{T, P}, p::P) where {T, P}
+    add_phase!(zxd.scalar, p)
+    return zxd
+end
+
+function add_power!(zxd::ZXDiagram, n)
+    add_power!(zxd.scalar, n)
+    return zxd
+end
 
 function spider_sequence(zxd::ZXDiagram{T, P}) where {T, P}
     nbits = nqubits(zxd)

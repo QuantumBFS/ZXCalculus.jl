@@ -16,9 +16,9 @@ Phase(p::Phase) = p
 
 function show(io::IO, p::Phase)
     if p.ex isa Number
-        print(io, "Phase($(p.ex))")
+        print(io, "$(p.ex)")
     else
-        print(io, "Phase($(p.ex)::$(p.type))")
+        print(io, "Phase(($(p.ex))::$(p.type))")
     end
 end
 

@@ -21,11 +21,14 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     et::Dict{Tuple{T, T}, EdgeType.EType}
     layout::ZXLayout{T}
     phase_ids::Dict{T,Tuple{T, Int}}
+    scalar::Scalar{P}
     master::ZXDiagram{T, P}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps),
-    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.master))
+    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.scalar), 
+    copy(zxg.master))
+
 """
     ZXGraph(zxd::ZXDiagram)
 
@@ -87,7 +90,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, zxd)
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd)
 
     for e in eH
         v1, v2 = e
@@ -119,11 +122,13 @@ function add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.E
         if v1 == v2
             if edge_type == EdgeType.HAD
                 set_phase!(zxg, v1, phase(zxg, v1)+1)
+                add_power!(zxg, -1)
             end
             return true
         else
             if has_edge(zxg, v1, v2)
                 if is_hadamard(zxg, v1, v2)
+                    add_power!(zxg, -2)
                     return rem_edge!(zxg, v1, v2)
                 else
                     return false
@@ -309,4 +314,16 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
         end
         return spider_seq
     end
+end
+
+scalar(zxg::ZXGraph) = zxg.scalar
+
+function add_global_phase!(zxg::ZXGraph{T, P}, p::P) where {T, P}
+    add_phase!(zxg.scalar, p)
+    return zxg
+end
+
+function add_power!(zxg::ZXGraph, n)
+    add_power!(zxg.scalar, n)
+    return zxg
 end

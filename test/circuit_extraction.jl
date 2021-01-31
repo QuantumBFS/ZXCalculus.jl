@@ -35,3 +35,5 @@ cir = circuit_extraction(zxg)
 cir2 = clifford_simplification(zxd)
 @test nv(cir2) == nv(cir)
 @test ne(cir2) == ne(cir)
+
+cir3 = full_reduction(zxd)

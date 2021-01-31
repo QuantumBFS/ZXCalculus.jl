@@ -41,6 +41,7 @@ zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:pi}(), zxd)
 rewrite!(Rule{:pi}(), zxd, matches)
 @test nv(zxd) == 8 && ne(zxd) == 7
+@test zxd.scalar == Scalar(0, 1//2)
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
 ps = [1, 1//2, 0]
@@ -49,6 +50,7 @@ zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:pi}(), zxd)
 rewrite!(Rule{:pi}(), zxd, matches)
 @test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul = true) == 4
+@test zxd.scalar == Scalar(0, 1//2)
 
 g = Multigraph(5)
 add_edge!(g, 1, 2)
@@ -61,6 +63,7 @@ zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:c}(), zxd)
 rewrite!(Rule{:c}(), zxd, matches)
 @test nv(zxd) == 7 && ne(zxd) == 4
+@test zxd.scalar == Scalar(-3, 0//1)
 
 g = Multigraph(6)
 add_edge!(g, 1, 3)
@@ -76,6 +79,7 @@ matches = match(Rule{:b}(), zxd)
 rewrite!(Rule{:b}(), zxd, matches)
 @test ZXCalculus.spider_sequence(zxd) == [[1, 7, 8, 5], [2, 9, 10, 6]]
 @test nv(zxd) == 8 && ne(zxd) == 8
+@test zxd.scalar == Scalar(1, 0//1)
 
 g = Multigraph(9)
 for e in [[2,6],[3,7],[4,8],[5,9]]
