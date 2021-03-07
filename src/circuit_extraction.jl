@@ -16,13 +16,13 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     end
 
     # TODO: extract a QCircuit instead
-    # cir = QCircuit(nbits)
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
     if nbits == 0
         nbits = length(Outs)
     end
-    cir = ZXDiagram(nbits)
+    cir = QCircuit(nbits)
+    # cir = ZXDiagram(nbits)
     if length(Outs) != length(Ins)
         return cir
     end
@@ -41,7 +41,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         if phase(nzxg, w) != 0
-            pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
+            pushfirst_gate!(cir, Val{:shift}(), i, phase(nzxg, w))
             set_phase!(nzxg, w, zero(P)) end
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
@@ -96,9 +96,10 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    simplify!(Rule{:i1}(), cir)
-    simplify!(Rule{:i2}(), cir)
-    return cir
+    ex_zxd = ZXDiagram(cir)
+    simplify!(Rule{:i1}(), ex_zxd)
+    simplify!(Rule{:i2}(), ex_zxd)
+    return ex_zxd
 end
 
 """
@@ -107,7 +108,7 @@ end
 Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir::ZXDiagram{T, P}) where {T, P}
+function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
     # TODO: use inplace methods
     deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
 
@@ -197,7 +198,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         if spider_type(zxg, w) == SpiderType.Z
             qubit_map[w] = qubit_map[v]
             if phase(zxg, w) != 0
-                pushfirst_gate!(cir, Val{:Z}(), qubit_map[w], phase(zxg, w))
+                pushfirst_gate!(cir, Val{:shift}(), qubit_map[w], phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
             rem_edge!(zxg, v, w)
