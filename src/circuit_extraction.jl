@@ -90,11 +90,13 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         elseif step.op == :swap
             q1 = step.r1
             q2 = step.r2
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:SWAP}(), q1, q2)
         end
     end
+
+    bring_swap_forward!(cir)
+    swap_simplification!(cir)
+    reduce_swap!(cir)
 
     ex_zxd = ZXDiagram(cir)
     simplify!(Rule{:i1}(), ex_zxd)
@@ -176,13 +178,11 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
             ctrl = qubit_map[frontier[step.r2]]
             loc = qubit_map[frontier[step.r1]]
             pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
-        else
+        elseif step.op == :swap
             q1 = qubit_map[frontier[step.r1]]
             q2 = qubit_map[frontier[step.r2]]
 
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:SWAP}(), q1, q2)
         end
     end
 
@@ -265,12 +265,16 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
             continue
         end
         while current_col <= nc
-            r0 = findfirst(!iszero, M[i:nr, current_col])
-            if r0 !== nothing
+            rs = findall(!iszero, M[i:nr, current_col])
+            if length(rs) > 0
+                sort!(rs, by = k -> sum(M[k,:]), rev = rev)
+                r0 = rs[1]
                 r0 += i - 1
                 r0 == i && break
-                M[i,:] = M[i,:] .⊻ M[r0,:]
-                step = GEStep(:addto, r0, i)
+                M_r0 = M[r0,:]
+                M[r0,:] = M[i,:]
+                M[i,:] = M_r0
+                step = GEStep(:swap, r0, i)
                 push!(steps, step)
                 break
             else

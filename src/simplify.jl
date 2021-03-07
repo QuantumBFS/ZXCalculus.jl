@@ -79,3 +79,119 @@ function full_reduction(zxg::ZXGraph)
 
     return zxg
 end
+
+function bring_swap_forward!(qc::QCircuit)
+    qc_swap = QCircuit(nqubits(qc))
+    for i = gate_count(qc):-1:1
+        g = qc.gates[i]
+        if g.name === :SWAP
+            push_gate!(qc_swap, g)
+            loc1 = g.loc
+            loc2 = g.ctrl
+            loc_map = Dict{Int, Int}(loc1 => loc2, loc2 => loc1)
+
+            # delete g
+            deleteat!(qc, i)
+            
+            # change previous gates
+            for j in (i-1):-1:1
+                pg = qc.gates[j]
+                if pg.loc in (loc1, loc2)
+                    pg.loc = loc_map[pg.loc]
+                end
+                if pg.ctrl in (loc1, loc2)
+                    pg.ctrl = loc_map[pg.ctrl]
+                end
+            end
+        end
+    end
+    qc.gates = [qc_swap.gates; qc.gates]
+    return qc
+end
+
+function swap_simplification!(qc::QCircuit)
+    i1 = 1
+    i2 = 0
+    for i = 1:gate_count(qc)
+        if qc.gates[i].name === :SWAP
+            i2 = i
+        else
+            break
+        end
+    end
+    qc_swap = qc[i1:i2]
+    deleteat!(qc, i1:i2)
+    perm = collect(1:nqubits(qc_swap))
+    for i = 1:gate_count(qc_swap)
+        g = qc_swap.gates[i]
+        loc1 = g.loc
+        loc2 = g.ctrl
+        temp = perm[loc1]
+        perm[loc1] = perm[loc2]
+        perm[loc2] = temp
+    end
+
+    rec = collect(1:nqubits(qc_swap))
+    subperms = []
+    while length(rec) > 0
+        id = rec[1]
+        sp = Int[]
+        while !(id in sp)
+            push!(sp, id)
+            deleteat!(rec, findfirst(isequal(id), rec))
+            id = perm[id]
+        end
+        push!(subperms, sp)
+    end
+
+    qc_swap_opt = QCircuit(nqubits(qc_swap))
+    for subperm in subperms
+        for k in length(subperm):-1:2
+            push_gate!(qc_swap_opt, Val(:SWAP), subperm[k], subperm[k-1])
+        end
+    end
+    qc.gates = [qc_swap_opt.gates; qc.gates] 
+    return qc
+end
+
+function reduce_swap!(qc::QCircuit)
+    i1 = 1
+    i2 = 0
+    for i = 1:gate_count(qc)
+        if qc.gates[i].name === :SWAP
+            i2 = i
+        else
+            break
+        end
+    end
+    qc_swap = qc[i1:i2]
+    deleteat!(qc, i1:i2)
+
+    for i = gate_count(qc_swap):-1:1
+        g_swap = qc_swap.gates[i]
+        qmap = Dict(g_swap.loc => g_swap.ctrl, g_swap.ctrl => g_swap.loc)
+        j = 1
+        while j < gate_count(qc)
+            g = qc.gates[j]
+            if g.name === :CNOT && haskey(qmap, g.loc) && haskey(qmap, g.ctrl)
+                insert!(qc, j+1, QGate(Val(:CNOT), g.ctrl, g.loc))
+                break
+            else
+                if haskey(qmap, g.loc)
+                    g.loc = qmap[g.loc]
+                end
+                if haskey(qmap, g.ctrl)
+                    g.ctrl = qmap[g.ctrl]
+                end
+                j += 1
+            end
+        end
+        if j > gate_count(qc)
+            push_gate!(qc, Val(:CNOT), g_swap.loc, g_swap.ctrl)
+            push_gate!(qc, Val(:CNOT), g_swap.ctrl, g_swap.loc)
+            push_gate!(qc, Val(:CNOT), g_swap.loc, g_swap.ctrl)
+        end
+    end
+
+    return qc
+end
