@@ -1,7 +1,7 @@
-import Base: show, vcat, hcat, adjoint, getindex
+import Base: show, vcat, hcat, adjoint, getindex, deleteat!, insert!
 export QCircuit, QGate, random_circuit, gates, gate_count, two_qubit_count
 
-struct QGate
+mutable struct QGate
     name::Symbol
     loc::Int
     ctrl::Int
@@ -20,9 +20,10 @@ QGate(::Val{:Rz}, loc, theta) = QGate(:Rz, loc; param = theta)
 QGate(::Val{:Rx}, loc, theta) = QGate(:Rx, loc; param = theta)
 QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
 QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
+QGate(::Val{:SWAP}, loc1, loc2) = QGate(:SWAP, loc1, ctrl = loc2)
 
 function adjoint(g::QGate)
-    g.name in (:X, :Z, :H, :CNOT, :CZ) && return g
+    g.name in (:X, :Z, :H, :CNOT, :CZ, :SWAP) && return g
     g.name === :S && return QGate(Val(:Sdag), g.loc)
     g.name === :Sdag && return QGate(Val(:S), g.loc)
     g.name === :T && return QGate(Val(:Tdag), g.loc)
@@ -31,6 +32,10 @@ function adjoint(g::QGate)
 end
 
 function show(io::IO, g::QGate)
+    if g.name === :SWAP
+        print(io, g.name, " on ($(g.loc), $(g.ctrl))")
+        return
+    end
     if g.ctrl == 0
         if g.param === nothing
             print(io, g.name, " on ($(g.loc))")
@@ -81,7 +86,21 @@ end
 
 function getindex(qc::QCircuit, i...)
     n = nqubits(qc)
-    return QCircuit(n, gates(qc)[i...])
+    gs = gates(qc)[i...]
+    if gs isa QGate
+        gs = QGate[gs]
+    end
+    return QCircuit(n, gs)
+end
+
+function deleteat!(qc::QCircuit, args...)
+    deleteat!(qc.gates, args...)
+    return qc
+end
+
+function insert!(qc::QCircuit, args... )
+    insert!(qc.gates, args...)
+    return qc
 end
 
 nqubits(qc::QCircuit) = qc.nbits
@@ -132,7 +151,7 @@ function random_circuit(nbits, ngates, cnot_per = 0.2, t_per = 0.1)
         end
         if r < 1 - (cnot_per + t_per)
             name = rand([:X, :Z, :H, :S])
-            if name == :S
+            if name === :S
                 name = rand([:S, :Sdag])
             end
             push_gate!(qc, Val(name), rand(1:nbits))
@@ -162,30 +181,35 @@ function ZXDiagram(qc::QCircuit)
         if !(theta isa Phase)
             theta = Phase(theta) * (1/π)
         end
-        if name == :Z
+        if name === :Z
             push_gate!(circ, Val(:Z), loc, 1//1)
-        elseif name == :X
+        elseif name === :X
             push_gate!(circ, Val(:X), loc, 1//1)
-        elseif name == :H
+        elseif name === :H
             push_gate!(circ, Val(:H), loc)
-        elseif name == :S
+        elseif name === :S
             push_gate!(circ, Val(:Z), loc, 1//2)
-        elseif name == :Sdag
+        elseif name === :Sdag
             push_gate!(circ, Val(:Z), loc, 3//2)
-        elseif name == :T
+        elseif name === :T
             push_gate!(circ, Val(:Z), loc, 1//4)
-        elseif name == :Tdag
+        elseif name === :Tdag
             push_gate!(circ, Val(:Z), loc, 7//4)
-        elseif name == :shift
+        elseif name === :shift
             push_gate!(circ, Val(:Z), loc, theta)
-        elseif name == :Rz
+        elseif name === :Rz
             push_gate!(circ, Val(:Z), loc, theta)
-        elseif name == :Rx
+        elseif name === :Rx
             push_gate!(circ, Val(:X), loc, theta)
-        elseif name == :CNOT
+        elseif name === :CNOT
             push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
-        elseif name == :CZ
+        elseif name === :CZ
             push_gate!(circ, Val(:CZ), loc, gate.ctrl)
+        elseif name === :SWAP
+            @warn "SWAP gate is converted to CNOTs when constructing the ZXDiagram!"
+            push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
+            push_gate!(circ, Val(:CNOT), gate.ctrl, loc)
+            push_gate!(circ, Val(:CNOT), loc, gate.ctrl)
         end
     end
     return circ
