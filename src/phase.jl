@@ -4,6 +4,7 @@ import Base: show
 """
     Phase
 The type supports manipulating phases as expressions.
+`Phase(x)` represents the number `x⋅π`.
 """
 struct Phase
     ex
@@ -16,7 +17,7 @@ Phase(p::Phase) = p
 
 function show(io::IO, p::Phase)
     if p.ex isa Number
-        print(io, "$(p.ex)")
+        print(io, "$(p.ex)⋅π")
     else
         print(io, "Phase(($(p.ex))::$(p.type))")
     end
