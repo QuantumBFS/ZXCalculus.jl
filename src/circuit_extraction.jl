@@ -15,14 +15,12 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    # TODO: extract a QCircuit instead
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
     if nbits == 0
         nbits = length(Outs)
     end
     cir = QCircuit(nbits)
-    # cir = ZXDiagram(nbits)
     if length(Outs) != length(Ins)
         return cir
     end
@@ -256,7 +254,7 @@ end
 Return result and steps of Gaussian elimination of matrix `M`. Here we assume
 that the elements of `M` is in binary field F_2 = {0,1}.
 """
-function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}()) where {T<:Integer}
+function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}(); rev = false) where {T<:Integer}
     M = copy(M)
     nr, nc = size(M)
     current_col = 1
