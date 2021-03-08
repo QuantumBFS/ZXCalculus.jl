@@ -122,7 +122,7 @@ function swap_simplification!(qc::QCircuit)
     qc_swap = qc[i1:i2]
     deleteat!(qc, i1:i2)
     perm = collect(1:nqubits(qc_swap))
-    for i = 1:gate_count(qc_swap)
+    for i = gate_count(qc_swap):-1:1
         g = qc_swap.gates[i]
         loc1 = g.loc
         loc2 = g.ctrl
@@ -146,8 +146,8 @@ function swap_simplification!(qc::QCircuit)
 
     qc_swap_opt = QCircuit(nqubits(qc_swap))
     for subperm in subperms
-        for k in length(subperm):-1:2
-            push_gate!(qc_swap_opt, Val(:SWAP), subperm[k], subperm[k-1])
+        for k in 2:length(subperm)
+            push_gate!(qc_swap_opt, Val(:SWAP), subperm[1], subperm[k])
         end
     end
     qc.gates = [qc_swap_opt.gates; qc.gates] 
@@ -171,7 +171,7 @@ function reduce_swap!(qc::QCircuit)
         g_swap = qc_swap.gates[i]
         qmap = Dict(g_swap.loc => g_swap.ctrl, g_swap.ctrl => g_swap.loc)
         j = 1
-        while j < gate_count(qc)
+        while j <= gate_count(qc)
             g = qc.gates[j]
             if g.name === :CNOT && haskey(qmap, g.loc) && haskey(qmap, g.ctrl)
                 insert!(qc, j+1, QGate(Val(:CNOT), g.ctrl, g.loc))
