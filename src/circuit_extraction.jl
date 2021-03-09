@@ -93,8 +93,8 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     end
 
     bring_swap_forward!(cir)
-    swap_simplification!(cir)
-    reduce_swap!(cir)
+    simplify_swap!(cir)
+    replace_swap!(cir)
 
     ex_zxd = ZXDiagram(cir)
     simplify!(Rule{:i1}(), ex_zxd)

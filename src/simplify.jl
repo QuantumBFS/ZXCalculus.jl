@@ -109,7 +109,7 @@ function bring_swap_forward!(qc::QCircuit)
     return qc
 end
 
-function swap_simplification!(qc::QCircuit)
+function simplify_swap!(qc::QCircuit)
     i1 = 1
     i2 = 0
     for i = 1:gate_count(qc)
@@ -154,7 +154,7 @@ function swap_simplification!(qc::QCircuit)
     return qc
 end
 
-function reduce_swap!(qc::QCircuit)
+function replace_swap!(qc::QCircuit)
     i1 = 1
     i2 = 0
     for i = 1:gate_count(qc)
