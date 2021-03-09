@@ -22,6 +22,21 @@ QGate(::Val{:CNOT}, loc, ctrl) = QGate(:CNOT, loc; ctrl = ctrl)
 QGate(::Val{:CZ}, loc, ctrl) = QGate(:CZ, loc; ctrl = ctrl)
 QGate(::Val{:SWAP}, loc1, loc2) = QGate(:SWAP, loc1, ctrl = loc2)
 
+function to_QASM(g::QGate, qreg)
+    g.name === :X && return "x $(qreg)[$(g.loc-1)];"
+    g.name === :Z && return "z $(qreg)[$(g.loc-1)];"
+    g.name === :H && return "h $(qreg)[$(g.loc-1)];"
+    g.name === :S && return "s $(qreg)[$(g.loc-1)];"
+    g.name === :Sdag && return "sdg $(qreg)[$(g.loc-1)];"
+    g.name === :T && return "t $(qreg)[$(g.loc-1)];"
+    g.name === :Tdag && return "tdg $(qreg)[$(g.loc-1)];"
+    g.name in (:shift, :Rz) && return "rz($(g.param)) $(qreg)[$(g.loc-1)];"
+
+    g.name === :CNOT && return "cx $(qreg)[$(g.ctrl-1)], $(qreg)[$(g.loc-1)];"
+    g.name === :CZ && return "cz $(qreg)[$(g.ctrl-1)], $(qreg)[$(g.loc-1)];"
+    g.name === :SWAP && return "cx $(qreg)[$(g.ctrl-1)], $(qreg)[$(g.loc-1)];\ncx $(qreg)[$(g.loc-1)], $(qreg)[$(g.ctrl-1)];\ncx $(qreg)[$(g.ctrl-1)], $(qreg)[$(g.loc-1)];"
+end
+
 function adjoint(g::QGate)
     g.name in (:X, :Z, :H, :CNOT, :CZ, :SWAP) && return g
     g.name === :S && return QGate(Val(:Sdag), g.loc)
@@ -63,6 +78,18 @@ function show(io::IO, qc::QCircuit)
     for g in gates(qc)
         println(io, "  ", g)
     end
+end
+
+function export_QASM(qc::QCircuit, f)
+    io = open(f, "w")
+    source = "OPENQASM 2.0;\ninclude \"qelib1.inc\";\n"
+    n = nqubits(qc)
+    source = source * "qreg q[$n];\n"
+    for g in gates(qc)
+        source = source * to_QASM(g, "q") * "\n"
+    end
+    write(io, source)
+    close(io)
 end
 
 function vcat(qcs::QCircuit...)

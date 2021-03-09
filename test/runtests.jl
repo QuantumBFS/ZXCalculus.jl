@@ -34,4 +34,8 @@ end
     include("phase.jl")
 end
 
+@testset "simplify.jl" begin
+    include("simplify.jl")
+end
+
 doctest(ZXCalculus)
