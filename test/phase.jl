@@ -1,3 +1,5 @@
+using YaoHIR
+using YaoLocations
 using ZXCalculus
 using ZXCalculus: Phase
 
