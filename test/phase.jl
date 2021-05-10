@@ -1,15 +1,23 @@
 using Test
 using YaoHIR
 using YaoLocations
+using CompilerPluginTools
 using ZXCalculus
 using ZXCalculus: Phase
 using YaoHIR: Chain, Gate, Ctrl, shift, Rz
 
-qc = Chain(
+ir = @make_ircode begin
+    Expr(:call, :+, 1, 1)::Int
+    Expr(:call, :+, 3, 3)::Int
+end
+
+circ = Chain(
     Gate(shift(1.0), Locations(1)),
-    Gate(Rz(Phase(:a, Int)), Locations(1)),
+    Gate(Rz(Core.SSAValue(2)), Locations(1)),
 )
 
-zxd = convert_to_zxd(qc, 4)
+bir = BlockIR(ir, 4, circ)
+
+zxd = convert_to_zxd(bir)
 qc_tl = convert_to_block_ir(phase_teleportation(zxd))
 @test length(qc_tl) == 1

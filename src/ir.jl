@@ -1,7 +1,21 @@
-function convert_to_zxd(root::YaoHIR.Chain, nqubits::Int)
-    circ = ZXDiagram(nqubits)
+function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
+    if theta isa Core.SSAValue
+        return Phase(theta, ir.stmts[theta.id][:type])
+    elseif theta isa QuoteNode
+        return theta.value
+    elseif theta isa Core.Const
+        return theta.val
+    elseif theta isa Number
+        return theta
+    else
+        error("expect SSAValue or Number")
+    end
+end
 
-    for gate in YaoHIR.leaves(root)
+function convert_to_zxd(root::YaoHIR.BlockIR)
+    circ = ZXDiagram(root.nqubits)
+
+    for gate in YaoHIR.leaves(root.circuit)
         @switch gate begin
             @case Gate(&Z, loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 1//1)
@@ -14,18 +28,18 @@ function convert_to_zxd(root::YaoHIR.Chain, nqubits::Int)
             @case Gate(&T, loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 1//4)
             @case Gate(shift(theta), loc::Locations{Int})
-                theta = theta isa Number ? theta : Phase(theta)
+                theta = unwrap_ssa_phase(theta, root.parent)
                 push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
             @case Gate(Rx(theta), loc::Locations{Int})
-                theta = theta isa Number ? theta : Phase(theta)
+                theta = unwrap_ssa_phase(theta, root.parent)
                 push_gate!(circ, Val(:X), plain(loc), (1/π)*theta)
             @case Gate(Ry(theta), loc::Locations{Int})
-                theta = theta isa Number ? theta : Phase(theta)
+                theta = unwrap_ssa_phase(theta, root.parent)
                 push_gate!(circ, Val(:X), plain(loc),  1//2)
                 push_gate!(circ, Val(:Z), plain(loc),  (1/π) * theta)
                 push_gate!(circ, Val(:X), plain(loc), -1//2)
             @case Gate(Rz(theta), loc::Locations{Int})
-                theta = theta isa Number ? theta : Phase(theta)
+                theta = unwrap_ssa_phase(theta, root.parent)
                 push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
             @case Gate(AdjointOperation(&S), loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 3//2)
