@@ -3,7 +3,7 @@ using YaoHIR
 using YaoLocations
 using CompilerPluginTools
 using ZXCalculus
-using ZXCalculus: Phase
+using ZXCalculus: Phase, BlockIR
 using YaoHIR: Chain, Gate, Ctrl, shift, Rz
 
 ir = @make_ircode begin
