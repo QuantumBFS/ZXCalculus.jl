@@ -6,6 +6,8 @@ using YaoLocations
 using YaoHIR: X, Y, Z, H, S, T, Rx, Ry, Rz, UGate, shift
 using YaoLocations: plain
 
+export convert_to_block_ir, convert_to_zxd
+
 include("phase.jl")
 include("scalar.jl")
 include("abstract_zx_diagram.jl")

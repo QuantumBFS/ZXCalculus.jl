@@ -1,4 +1,4 @@
-function ZXDiagram(root::YaoHIR.Chain, nqubits::Int)
+function convert_to_zxd(root::YaoHIR.Chain, nqubits::Int)
     circ = ZXDiagram(nqubits)
 
     for gate in YaoHIR.leaves(root)
@@ -42,7 +42,7 @@ function ZXDiagram(root::YaoHIR.Chain, nqubits::Int)
     return circ
 end
 
-function convert_to_yao_ir(circ::ZXDiagram{T, P}) where {T, P}
+function convert_to_block_ir(circ::ZXDiagram{T, P}) where {T, P}
     spider_seq = spider_sequence(circ)
     vs = spiders(circ)
     locs = Dict()
