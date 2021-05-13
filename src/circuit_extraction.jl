@@ -20,7 +20,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     if nbits == 0
         nbits = length(Outs)
     end
-    cir = QCircuit(nbits)
+    cir = Chain()
     if length(Outs) != length(Ins)
         return cir
     end
@@ -39,7 +39,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         if phase(nzxg, w) != 0
-            pushfirst_gate!(cir, Val{:shift}(), i, phase(nzxg, w))
+            pushfirst_gate!(cir, Val{:Rz}(), i, phase(nzxg, w))
             set_phase!(nzxg, w, zero(P)) end
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
@@ -92,14 +92,8 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    bring_swap_forward!(cir)
     simplify_swap!(cir)
-    replace_swap!(cir)
-
-    ex_zxd = ZXDiagram(cir)
-    simplify!(Rule{:i1}(), ex_zxd)
-    simplify!(Rule{:i2}(), ex_zxd)
-    return ex_zxd
+    return cir
 end
 
 """
@@ -196,7 +190,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         if spider_type(zxg, w) == SpiderType.Z
             qubit_map[w] = qubit_map[v]
             if phase(zxg, w) != 0
-                pushfirst_gate!(cir, Val{:shift}(), qubit_map[w], phase(zxg, w))
+                pushfirst_gate!(cir, Val{:Rz}(), qubit_map[w], phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
             rem_edge!(zxg, v, w)
