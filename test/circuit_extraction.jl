@@ -29,11 +29,10 @@ replace!(Rule{:lc}(), zxg)
 replace!(Rule{:pab}(), zxg)
 
 cir = circuit_extraction(zxg)
-# @test nv(cir) == 32
-# @test ne(cir) == 32
 
-cir2 = clifford_simplification(zxd)
-@test nv(cir2) == nv(cir)
-@test ne(cir2) == ne(cir)
+zxg2 = clifford_simplification(zxd)
+@test nv(zxg2) == nv(zxg)
+@test ne(zxg2) == ne(zxg)
 
-cir3 = full_reduction(zxd)
+zxg3 = full_reduction(zxd)
+cir = circuit_extraction(zxg3)

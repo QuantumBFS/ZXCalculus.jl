@@ -15,14 +15,12 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    # TODO: extract a QCircuit instead
-    # cir = QCircuit(nbits)
     Outs = get_outputs(nzxg)
     Ins = get_inputs(nzxg)
     if nbits == 0
         nbits = length(Outs)
     end
-    cir = ZXDiagram(nbits)
+    cir = Chain()
     if length(Outs) != length(Ins)
         return cir
     end
@@ -41,7 +39,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         if phase(nzxg, w) != 0
-            pushfirst_gate!(cir, Val{:Z}(), i, phase(nzxg, w))
+            pushfirst_gate!(cir, Val{:Rz}(), i, phase(nzxg, w))
             set_phase!(nzxg, w, zero(P)) end
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
@@ -90,14 +88,11 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         elseif step.op == :swap
             q1 = step.r1
             q2 = step.r2
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:SWAP}(), q1, q2)
         end
     end
 
-    simplify!(Rule{:i1}(), cir)
-    simplify!(Rule{:i2}(), cir)
+    simplify_swap!(cir)
     return cir
 end
 
@@ -107,7 +102,7 @@ end
 Update frontier. This is a important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir::ZXDiagram{T, P}) where {T, P}
+function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
     # TODO: use inplace methods
     deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
 
@@ -175,13 +170,11 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
             ctrl = qubit_map[frontier[step.r2]]
             loc = qubit_map[frontier[step.r1]]
             pushfirst_gate!(cir, Val{:CNOT}(), loc, ctrl)
-        else
+        elseif step.op == :swap
             q1 = qubit_map[frontier[step.r1]]
             q2 = qubit_map[frontier[step.r2]]
 
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
-            pushfirst_gate!(cir, Val{:CNOT}(), q1, q2)
-            pushfirst_gate!(cir, Val{:CNOT}(), q2, q1)
+            pushfirst_gate!(cir, Val{:SWAP}(), q1, q2)
         end
     end
 
@@ -197,7 +190,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         if spider_type(zxg, w) == SpiderType.Z
             qubit_map[w] = qubit_map[v]
             if phase(zxg, w) != 0
-                pushfirst_gate!(cir, Val{:Z}(), qubit_map[w], phase(zxg, w))
+                pushfirst_gate!(cir, Val{:Rz}(), qubit_map[w], phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
             rem_edge!(zxg, v, w)
@@ -255,7 +248,7 @@ end
 Return result and steps of Gaussian elimination of matrix `M`. Here we assume
 that the elements of `M` is in binary field F_2 = {0,1}.
 """
-function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}()) where {T<:Integer}
+function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}(); rev = false) where {T<:Integer}
     M = copy(M)
     nr, nc = size(M)
     current_col = 1
@@ -264,12 +257,16 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
             continue
         end
         while current_col <= nc
-            r0 = findfirst(!iszero, M[i:nr, current_col])
-            if r0 !== nothing
+            rs = findall(!iszero, M[i:nr, current_col])
+            if length(rs) > 0
+                sort!(rs, by = k -> sum(M[k,:]), rev = rev)
+                r0 = rs[1]
                 r0 += i - 1
                 r0 == i && break
-                M[i,:] = M[i,:] .⊻ M[r0,:]
-                step = GEStep(:addto, r0, i)
+                M_r0 = M[r0,:]
+                M[r0,:] = M[i,:]
+                M[i,:] = M_r0
+                step = GEStep(:swap, r0, i)
                 push!(steps, step)
                 break
             else

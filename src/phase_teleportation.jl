@@ -31,3 +31,10 @@ function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     simplify!(Rule{:i2}(), ncir)
     return ncir
 end
+
+function phase_teleportation(bir::BlockIR)
+    zxd = convert_to_zxd(bir)
+    nzxd = phase_teleportation(zxd)
+    chain = convert_to_chain(nzxd)
+    return BlockIR(bir.parent, bir.nqubits, chain)
+end

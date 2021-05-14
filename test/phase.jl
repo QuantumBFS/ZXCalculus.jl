@@ -19,5 +19,6 @@ circ = Chain(
 bir = BlockIR(ir, 4, circ)
 
 zxd = convert_to_zxd(bir)
-qc_tl = convert_to_block_ir(phase_teleportation(zxd))
+c = clifford_simplification(zxd)
+qc_tl = convert_to_chain(phase_teleportation(zxd))
 @test length(qc_tl) == 1

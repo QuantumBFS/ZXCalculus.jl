@@ -238,7 +238,7 @@ end
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(phase(zxg, v))⋅π}"; color = :green)
+        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color = :green)
     elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
     elseif st_v == SpiderType.Out

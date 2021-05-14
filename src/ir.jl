@@ -1,3 +1,46 @@
+using YaoHIR: X, Z, S, T, SWAP, Rz, Rx, shift
+
+convert_to_gate(::Val{:X}, loc) = Gate(X, Locations(loc))
+convert_to_gate(::Val{:Z}, loc) = Gate(Z, Locations(loc))
+convert_to_gate(::Val{:H}, loc) = Gate(H, Locations(loc))
+convert_to_gate(::Val{:S}, loc) = Gate(S, Locations(loc))
+convert_to_gate(::Val{:Sdag}, loc) = Gate(AdjointOperation(S), Locations(loc))
+convert_to_gate(::Val{:T}, loc) =  Gate(T, Locations(loc))
+convert_to_gate(::Val{:Tdag}, loc) = Gate(AdjointOperation(S), Locations(loc))
+convert_to_gate(::Val{:SWAP}, loc1, loc2) = Gate(SWAP, Locations((loc1, loc2)))
+convert_to_gate(::Val{:CNOT}, loc, ctrl) = Ctrl(Gate(X, Locations(loc)), CtrlLocations(ctrl))
+convert_to_gate(::Val{:CZ}, loc, ctrl) = Ctrl(Gate(Z, Locations(loc)), CtrlLocations(ctrl))
+function convert_to_gate(::Val{:Rz}, loc, theta)
+    if theta isa Phase
+        theta = theta * π
+        theta = theta.ex
+    end
+    return Gate(Rz(theta), Locations(loc))
+end
+function convert_to_gate(::Val{:Rx}, loc, theta)
+    if theta isa Phase
+        theta = theta * π
+        theta = theta.ex
+    end
+    return Gate(Rx(theta), Locations(loc))
+end
+function convert_to_gate(::Val{:shift}, loc, theta)
+    if theta isa Phase
+        theta = theta * π
+        theta = theta.ex
+    end
+    return Gate(shift(theta), Locations(loc))
+end
+
+function push_gate!(circ::Chain, gargs...) 
+    push!(circ.args, convert_to_gate(gargs...))
+    return circ
+end
+function pushfirst_gate!(circ::Chain, gargs...) 
+    pushfirst!(circ.args, convert_to_gate(gargs...))
+    return circ
+end
+
 function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
     if theta isa Core.SSAValue
         return Phase(theta, ir.stmts[theta.id][:type])
@@ -22,7 +65,7 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
             @case Gate(&X, loc::Locations{Int})
                 push_gate!(circ, Val(:X), plain(loc), 1//1)
             @case Gate(&H, loc::Locations{Int})
-                push_gate!(circ, Val(:H), loc)
+                push_gate!(circ, Val(:H), plain(loc))
             @case Gate(&S, loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 1//2)
             @case Gate(&T, loc::Locations{Int})
@@ -56,7 +99,7 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
     return circ
 end
 
-function convert_to_block_ir(circ::ZXDiagram{T, P}) where {T, P}
+function convert_to_chain(circ::ZXDiagram{T, P}) where {T, P}
     spider_seq = spider_sequence(circ)
     vs = spiders(circ)
     locs = Dict()
@@ -119,7 +162,7 @@ function convert_to_block_ir(circ::ZXDiagram{T, P}) where {T, P}
                                 elseif phase(circ, v) == 1//4
                                     push!(qc, Gate(T, Locations(qubit_loc(circ, v))))
                                 elseif phase(circ, v) == 7//4
-                                    push!(qc, GatE(T', Locations(qubit_loc(circ, v))))
+                                    push!(qc, Gate(T', Locations(qubit_loc(circ, v))))
                                 else
                                     θ = phase(circ, v)*π
                                     if θ isa Phase
@@ -188,5 +231,5 @@ function convert_to_block_ir(circ::ZXDiagram{T, P}) where {T, P}
             end
         end
     end
-    return qc
+    return Chain(qc...)
 end
