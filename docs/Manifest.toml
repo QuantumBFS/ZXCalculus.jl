@@ -240,7 +240,9 @@ version = "0.1.6"
 
 [[ZXCalculus]]
 deps = ["LightGraphs", "LinearAlgebra", "MLStyle", "Multigraphs", "SparseArrays", "YaoHIR", "YaoLocations"]
-git-tree-sha1 = "f527e781d95dfd75044311d53205ce8372a0b44b"
+git-tree-sha1 = "e2edbc4152cef6f5cd9051d1d0cc8c0041a66b05"
+repo-rev = "extract-opt"
+repo-url = "https://github.com/QuantumBFS/ZXCalculus.jl.git"
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
 version = "0.4.1"
 
