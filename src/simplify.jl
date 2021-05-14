@@ -125,7 +125,7 @@ function simplify_swap!(qc::Chain; replace_swap::Bool = true)
         g = pop!(qc.args)
         if g isa Gate
             if g.operation === SWAP
-                loc1, loc2 = g.locations.storage[1:2]
+                loc1, loc2 = plain(g.locations)[1:2]
                 loc_map = compose_permutation(Dict{Int, Int}(loc1 => loc2, loc2 => loc1), loc_map)
                 continue
             end
@@ -179,8 +179,8 @@ function replace_swap!(chain_swap::Chain, chain_after_swap::Chain)
             j += 1
             g isa Ctrl || continue
             if g.gate === X && length(g.gate.locations) == 1 && length(g.ctrl) == 1
-                loc = g.gate.locations.storage[]
-                ctrl = g.ctrl.storage.storage[]
+                loc = plain(g.gate.locations)[]
+                ctrl = plain(g.ctrl.storage)[]
                 if haskey(qmap, loc) && haskey(qmap, ctrl)
                     insert!(qc, j, convert_to_gate(Val(:CNOT), ctrl, loc))
                     break
