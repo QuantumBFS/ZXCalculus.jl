@@ -177,17 +177,17 @@ function replace_swap!(chain_swap::Chain, chain_after_swap::Chain)
         while j <= length(qc_after_swap)
             g = qc_after_swap[j]
             j += 1
-            g isa Ctrl || continue
-            if g.gate === X && length(g.gate.locations) == 1 && length(g.ctrl) == 1
-                loc = plain(g.gate.locations)[]
-                ctrl = plain(g.ctrl.storage)[]
-                if haskey(qmap, loc) && haskey(qmap, ctrl)
-                    insert!(qc, j, convert_to_gate(Val(:CNOT), ctrl, loc))
-                    break
+            if g isa Ctrl 
+                if g.gate === X && length(g.gate.locations) == 1 && length(g.ctrl) == 1
+                    loc = plain(g.gate.locations)[]
+                    ctrl = plain(g.ctrl.storage)[]
+                    if haskey(qmap, loc) && haskey(qmap, ctrl)
+                        insert!(qc, j, convert_to_gate(Val(:CNOT), ctrl, loc))
+                        break
+                    end
                 end
-            else
-                qc_after_swap[j-1] = map_locations(qmap, qc_after_swap[j-1])
             end
+            qc_after_swap[j-1] = map_locations(qmap, qc_after_swap[j-1])
         end
         if j > length(qc_after_swap)
             push!(qc_after_swap, convert_to_gate(Val(:CNOT), loc1, loc2))
