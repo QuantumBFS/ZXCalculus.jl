@@ -1,5 +1,8 @@
 using YaoHIR: X, Z, S, T, SWAP, Rz, Rx, shift
 
+ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
+Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
+
 convert_to_gate(::Val{:X}, loc) = Gate(X, Locations(loc))
 convert_to_gate(::Val{:Z}, loc) = Gate(Z, Locations(loc))
 convert_to_gate(::Val{:H}, loc) = Gate(H, Locations(loc))
@@ -99,13 +102,13 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
     return circ
 end
 
-function convert_to_chain(circ::ZXDiagram{T, P}) where {T, P}
+function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
     spider_seq = spider_sequence(circ)
     vs = spiders(circ)
     locs = Dict()
     nqubit = nqubits(circ)
     qc = []
-    frontier_v = ones(T, nqubit)
+    frontier_v = ones(TT, nqubit)
 
     while sum([frontier_v[i] <= length(spider_seq[i]) for i = 1:nqubit]) > 0
         for q = 1:nqubit
