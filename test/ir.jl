@@ -34,6 +34,7 @@ ir = @make_ircode begin
 end
 bir = BlockIR(ir, 4, chain)
 zxd = convert_to_zxd(bir)
+convert_to_chain(zxd)
 pt_zxd = phase_teleportation(zxd)
 @test tcount(pt_zxd) <= tcount(zxd)
 pt_chain = convert_to_chain(pt_zxd)

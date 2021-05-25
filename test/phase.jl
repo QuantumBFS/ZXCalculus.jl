@@ -20,5 +20,6 @@ bir = BlockIR(ir, 4, circ)
 
 zxd = convert_to_zxd(bir)
 c = clifford_simplification(zxd)
+ZXCalculus.generate_layout!(zxd)
 qc_tl = convert_to_chain(phase_teleportation(zxd))
 @test length(qc_tl) == 1
