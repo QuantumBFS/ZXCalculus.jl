@@ -24,8 +24,8 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     phase_ids::Dict{T, Tuple{T, Int}}
 
     scalar::Scalar{P}
-    _inputs::Vector{T}
-    _outputs::Vector{T}
+    inputs::Vector{T}
+    outputs::Vector{T}
 
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
@@ -137,7 +137,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
 end
 
 copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
-    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd._inputs), copy(zxd._outputs))
+    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd.inputs), copy(zxd.outputs))
 
 """
     spider_type(zxd, v)
@@ -483,14 +483,14 @@ tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders
 
 Returns a vector of input ids.
 """
-get_inputs(zxd::ZXDiagram) = zxd._inputs
+get_inputs(zxd::ZXDiagram) = zxd.inputs
 
 """
     get_outputs(zxd)
 
 Returns a vector of output ids.
 """
-get_outputs(zxd::ZXDiagram) = zxd._outputs
+get_outputs(zxd::ZXDiagram) = zxd.outputs
 
 """
     scalar(zxd)
@@ -517,8 +517,8 @@ end
 
 function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T, P}
     layout = zxd.layout
-    nbits = length(zxd._inputs)
-    vs_frontier = copy(zxd._inputs)
+    nbits = length(zxd.inputs)
+    vs_frontier = copy(zxd.inputs)
     vs_generated = Set(vs_frontier)
     frontier_col = [1//1 for _ = 1:nbits]
     frontier_active = [true for _ = 1:nbits]
@@ -527,7 +527,7 @@ function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T,
         set_column!(layout, vs_frontier[i], 1//1)
     end
 
-    while !(zxd._outputs ⊆ vs_frontier)
+    while !(zxd.outputs ⊆ vs_frontier)
         while any(frontier_active)
             for q in 1:nbits
                 if frontier_active[q]

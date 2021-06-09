@@ -23,13 +23,13 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     phase_ids::Dict{T,Tuple{T, Int}}
     scalar::Scalar{P}
     master::ZXDiagram{T, P}
-    _inputs::Vector{T}
-    _outputs::Vector{T}
+    inputs::Vector{T}
+    outputs::Vector{T}
 end
 
 copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps),
     copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.scalar), 
-    copy(zxg.master), copy(zxg._inputs), copy(zxg._outputs))
+    copy(zxg.master), copy(zxg.inputs), copy(zxg.outputs))
 
 """
     ZXGraph(zxd::ZXDiagram)
@@ -92,7 +92,7 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd._inputs, nzxd._outputs)
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
 
     for e in eH
         v1, v2 = e
@@ -323,8 +323,8 @@ end
 
 function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
     layout = zxg.layout
-    nbits = length(zxg._inputs)
-    vs_frontier = copy(zxg._inputs)
+    nbits = length(zxg.inputs)
+    vs_frontier = copy(zxg.inputs)
     vs_generated = Set(vs_frontier)
     frontier_col = [1//1 for _ = 1:nbits]
     frontier_active = [true for _ = 1:nbits]
@@ -343,7 +343,7 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
         end
     end
 
-    while !(zxg._outputs ⊆ vs_frontier)
+    while !(zxg.outputs ⊆ vs_frontier)
         while any(frontier_active)
             for q in 1:nbits
                 if frontier_active[q]
