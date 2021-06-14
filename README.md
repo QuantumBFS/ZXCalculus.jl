@@ -1,6 +1,6 @@
 # ZXCalculus
 
-[![Build Status](https://travis-ci.com/QuantumBFS/ZXCalculus.jl.svg?branch=master)](https://travis-ci.com/QuantumBFS/ZXCalculus.jl)
+[![CI](https://github.com/QuantumBFS/ZXCalculus.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/QuantumBFS/ZXCalculus.jl/actions/workflows/CI.yml)
 [![Codecov](https://codecov.io/gh/QuantumBFS/ZXCalculus.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/QuantumBFS/ZXCalculus.jl)
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://yaoquantum.org/ZXCalculus.jl/dev/)
 
