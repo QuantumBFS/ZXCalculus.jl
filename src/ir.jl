@@ -1,4 +1,4 @@
-using YaoHIR: X, Z, S, T, SWAP, Rz, Rx, shift
+using YaoHIR: X, Y, Z, H, S, T, SWAP, shift, Rx, Ry, Rz, UGate
 
 ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
 Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
