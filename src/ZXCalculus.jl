@@ -3,10 +3,15 @@ module ZXCalculus
 using YaoHIR
 using MLStyle
 using YaoLocations
-using YaoHIR: X, Y, Z, H, S, T, Rx, Ry, Rz, UGate, shift
+using YaoHIR.IntrinsicOperation
 using YaoLocations: plain
+using LightGraphs
+using Multigraphs
 
-export convert_to_chain, convert_to_zxd
+import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+    add_edge!, has_edge, degree, indegree, outdegree
+
+export ZXGraph, spider_type, phase, convert_to_chain, convert_to_zxd
 
 include("phase.jl")
 include("scalar.jl")

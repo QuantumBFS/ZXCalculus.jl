@@ -1,5 +1,8 @@
-using ZXCalculus, Test
-using YaoHIR, YaoLocations
+using Test
+using ZXCalculus
+using YaoHIR
+using YaoLocations
+using YaoHIR.IntrinsicOperation
 using CompilerPluginTools
 
 chain = Chain()
@@ -52,3 +55,14 @@ fl_bir = full_reduction(bir)
 @test length(pt_chain) == length(pt_bir.circuit)
 @test length(cl_chain) == length(cl_bir.circuit)
 @test length(fl_chain) == length(fl_bir.circuit)
+
+@testset "issue#80" begin
+    ir = @make_ircode begin
+    end
+
+    circuit = Chain(Gate(X, Locations(1)), Gate(X, Locations(1)))
+    bir = BlockIR(ir, 1, circuit)
+    bir = clifford_simplification(bir)
+    bir = clifford_simplification(bir)
+    @test bir.circuit == Chain(Gate(H, Locations((1, ))), Gate(H, Locations((1, ))))
+end

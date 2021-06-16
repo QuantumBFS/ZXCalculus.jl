@@ -1,10 +1,3 @@
-using LightGraphs, Multigraphs
-import Base: show, copy
-import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
-    add_edge!, has_edge, degree, indegree, outdegree
-
-export ZXGraph, spider_type, phase
-
 module EdgeType
     @enum EType SIM HAD
 end
@@ -25,9 +18,14 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     master::ZXDiagram{T, P}
 end
 
-copy(zxg::ZXGraph{T, P}) where {T, P} = ZXGraph{T, P}(copy(zxg.mg), copy(zxg.ps),
-    copy(zxg.st), copy(zxg.et), copy(zxg.layout), deepcopy(zxg.phase_ids), copy(zxg.scalar), 
-    copy(zxg.master))
+function Base.copy(zxg::ZXGraph{T, P}) where {T, P}
+    ZXGraph{T, P}(
+        copy(zxg.mg), copy(zxg.ps),
+        copy(zxg.st), copy(zxg.et), copy(zxg.layout),
+        deepcopy(zxg.phase_ids), copy(zxg.scalar), 
+        copy(zxg.master)
+    )
+end
 
 """
     ZXGraph(zxd::ZXDiagram)
@@ -246,7 +244,7 @@ function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     end
 end
 
-function show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
+function Base.show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     println(io, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges:")
     vs = sort!(spiders(zxg))
     for i = 1:length(vs)
