@@ -16,7 +16,7 @@ YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 LightGraphs = "1.3"
 MLStyle = "0.4"
 Multigraphs = "0.2"
-YaoHIR = "0.2"
+YaoHIR = "0.2, 0.1"
 YaoLocations = "0.1"
 julia = "1"
 
