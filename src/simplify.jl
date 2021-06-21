@@ -1,12 +1,10 @@
-export replace!, simplify!, clifford_simplification, full_reduction
-
 const MAX_ITERATION = Ref{Int}(1000)
 
 """
     replace!(r, zxd)
 Match and replace with the rule `r`.
 """
-function replace!(r::AbstractRule, zxd::AbstractZXDiagram)
+function Base.replace!(r::AbstractRule, zxd::AbstractZXDiagram)
     matches = match(r, zxd)
     rewrite!(r, zxd, matches)
     return zxd

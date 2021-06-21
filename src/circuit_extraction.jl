@@ -1,5 +1,3 @@
-export circuit_extraction
-
 """
     circuit_extraction(zxg::ZXGraph)
 
