@@ -1,6 +1,3 @@
-export Rule, Match
-export rewrite!
-
 abstract type AbstractRule end
 
 """

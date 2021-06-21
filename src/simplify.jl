@@ -1,5 +1,3 @@
-export replace!, simplify!, clifford_simplification, full_reduction
-
 const MAX_ITERATION = Ref{Int}(1000)
 
 """

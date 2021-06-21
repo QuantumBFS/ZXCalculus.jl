@@ -1,8 +1,3 @@
-using Multigraphs
-
-export AbstractZXDiagram
-export spider_type, phase, spiders, rem_spider!, rem_spiders!
-
 abstract type AbstractZXDiagram{T, P} end
 
 LightGraphs.nv(::AbstractZXDiagram) = 0

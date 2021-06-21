@@ -1,8 +1,3 @@
-using LightGraphs, Multigraphs
-
-export ZXDiagram, SpiderType, spiders, spider_type, phase
-export push_gate!, push_gate!, pushfirst_gate!, tcount
-
 module SpiderType
     @enum SType Z X H In Out
 end  # module SpiderType
