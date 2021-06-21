@@ -1,7 +1,4 @@
 using LightGraphs, Multigraphs
-import Base: show, copy
-import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
-    add_edge!, degree, indegree, outdegree
 
 export ZXDiagram, SpiderType, spiders, spider_type, phase
 export push_gate!, push_gate!, pushfirst_gate!, tcount
@@ -136,7 +133,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     return ZXDiagram(mg, st, ps, layout)
 end
 
-copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
+Base.copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
     deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd._inputs), copy(zxd._outputs))
 
 """
@@ -194,7 +191,7 @@ function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
     end
 end
 
-function show(io::IO, zxd::ZXDiagram{T, P}) where {T<:Integer, P}
+function Base.show(io::IO, zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     println(io, "ZX-diagram with $(nv(zxd.mg)) vertices and $(ne(zxd.mg)) multiple edges:")
     for v1 in sort!(vertices(zxd.mg))
         for v2 in neighbors(zxd.mg, v1)
@@ -214,7 +211,7 @@ end
 
 Returns the number of vertices (spiders) of a ZX-diagram.
 """
-nv(zxd::ZXDiagram) = nv(zxd.mg)
+LightGraphs.nv(zxd::ZXDiagram) = nv(zxd.mg)
 
 """
     ne(zxd; count_mul = false)
@@ -223,14 +220,14 @@ Returns the number of edges of a ZX-diagram. If `count_mul`, it will return the
 sum of multiplicities of all multiple edges. Otherwise, it will return the
 number of multiple edges.
 """
-ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
+LightGraphs.ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
 
-outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
-inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
+LightGraphs.outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
+LightGraphs.inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
 
-degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
-indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
-outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+LightGraphs.degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
+LightGraphs.indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+LightGraphs.outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
 
 """
     neighbors(zxd, v; count_mul = false)
@@ -238,11 +235,11 @@ outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
 Returns a vector of vertices connected to `v`. If `count_mul`, there will be
 multiple copy for each vertex. Otherwise, each vertex will only appear once.
 """
-neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
-function rem_edge!(zxd::ZXDiagram, x...)
+LightGraphs.neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
+function LightGraphs.rem_edge!(zxd::ZXDiagram, x...)
     rem_edge!(zxd.mg, x...)
 end
-function add_edge!(zxd::ZXDiagram, x...)
+function LightGraphs.add_edge!(zxd::ZXDiagram, x...)
     add_edge!(zxd.mg, x...)
 end
 

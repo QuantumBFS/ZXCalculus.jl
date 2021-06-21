@@ -1,5 +1,3 @@
-import Base: match, replace!
-
 export Rule, Match
 export rewrite!
 
@@ -44,9 +42,9 @@ end
 Returns all matched vertices, which will be store in sturct `Match`, for rule `r`
 in a ZX-diagram `zxd`.
 """
-match(::AbstractRule, zxd::AbstractZXDiagram{T, P}) where {T, P} = Match{T}[]
+Base.match(::AbstractRule, zxd::AbstractZXDiagram{T, P}) where {T, P} = Match{T}[]
 
-function match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.Z || spider_type(zxd, v1) == SpiderType.X
@@ -60,7 +58,7 @@ function match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:h}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:h}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X
@@ -70,7 +68,7 @@ function match(::Rule{:h}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:i1}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:i1}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.Z || spider_type(zxd, v1) == SpiderType.X
@@ -82,7 +80,7 @@ function match(::Rule{:i1}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:i2}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:i2}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.H && (degree(zxd, v1)) == 2
@@ -96,7 +94,7 @@ function match(::Rule{:i2}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:pi}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:pi}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == one(P) && (degree(zxd, v1)) == 2
@@ -110,7 +108,7 @@ function match(::Rule{:pi}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:c}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:c}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == zero(P) && (degree(zxd, v1)) == 1
@@ -124,7 +122,7 @@ function match(::Rule{:c}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
+function Base.match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == zero(P) && (degree(zxd, v1)) == 3
@@ -138,7 +136,7 @@ function match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -163,7 +161,7 @@ function match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -185,7 +183,7 @@ function match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -206,7 +204,7 @@ function match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -243,7 +241,7 @@ function match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -277,7 +275,7 @@ function match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxg)
         nb1 = neighbors(zxg, v1)
@@ -298,7 +296,7 @@ function match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     gad_ids = vs[[spider_type(zxg, v) == SpiderType.Z && (degree(zxg, v)) == 1 for v in vs]]

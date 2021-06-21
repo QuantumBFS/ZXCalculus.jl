@@ -1,14 +1,13 @@
 module ZXCalculus
 
-using YaoHIR
-using MLStyle
-using YaoLocations
+using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
 using YaoLocations: plain
+using MLStyle
 using LightGraphs
 using Multigraphs
 
-import LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+using LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
 export ZXGraph, spider_type, phase, convert_to_chain, convert_to_zxd
