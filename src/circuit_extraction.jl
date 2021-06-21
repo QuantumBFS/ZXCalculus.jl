@@ -285,24 +285,24 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
     return M, steps
 end
 
-"""
-    reverse_gaussian_elimination(M, steps)
+# """
+#     reverse_gaussian_elimination(M, steps)
 
-Apply back the operations in `steps` to `M`.
-"""
-function reverse_gaussian_elimination(M, steps)
-    for i = length(steps):-1:1
-        s = steps[i]
-        op = s.op
-        r1 = s.r1
-        r2 = s.r2
-        if op == :addto
-            M[r2,:] = M[r2,:] .⊻ M[r1,:]
-        else
-            r_temp = M[r1,:]
-            M[r1,:] = M[r2,:]
-            M[r2,:] = r_temp
-        end
-    end
-    return M
-end
+# Apply back the operations in `steps` to `M`.
+# """
+# function reverse_gaussian_elimination(M, steps)
+#     for i = length(steps):-1:1
+#         s = steps[i]
+#         op = s.op
+#         r1 = s.r1
+#         r2 = s.r2
+#         if op == :addto
+#             M[r2,:] = M[r2,:] .⊻ M[r1,:]
+#         else
+#             r_temp = M[r1,:]
+#             M[r1,:] = M[r2,:]
+#             M[r2,:] = r_temp
+#         end
+#     end
+#     return M
+# end

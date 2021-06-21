@@ -1,7 +1,6 @@
 using Test
 using ZXCalculus
-using YaoHIR
-using YaoLocations
+using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
 using CompilerPluginTools
 
@@ -23,6 +22,9 @@ push_gate!(chain, Val{:T}(), 2)
 push_gate!(chain, Val{:S}(), 3)
 push_gate!(chain, Val{:H}(), 4)
 push_gate!(chain, Val{:T}(), 1)
+push_gate!(chain, Val{:T}(), 2)
+push_gate!(chain, Val{:T}(), 3)
+push_gate!(chain, Val{:X}(), 3)
 push_gate!(chain, Val{:H}(), 2)
 push_gate!(chain, Val{:H}(), 3)
 push_gate!(chain, Val{:Sdag}(), 4)
@@ -30,8 +32,11 @@ push_gate!(chain, Val{:S}(), 3)
 push_gate!(chain, Val{:X}(), 4)
 push_gate!(chain, Val{:CNOT}(), 3, 2)
 push_gate!(chain, Val{:H}(), 1)
-push_gate!(chain, Val{:S}(), 4)
-push_gate!(chain, Val{:X}(), 4)
+push_gate!(chain, Val(:shift), 4, ZXCalculus.Phase(1//2))
+push_gate!(chain, Val(:Rx), 4, ZXCalculus.Phase(1//1))
+push_gate!(chain, Val(:Rx), 3, ZXCalculus.Phase(1//4))
+push_gate!(chain, Val(:Rx), 2, ZXCalculus.Phase(1//4))
+push_gate!(chain, Val(:S), 3)
 
 ir = @make_ircode begin
 end
