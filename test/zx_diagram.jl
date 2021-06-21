@@ -37,9 +37,15 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test zxd.ps[11] == 0//1
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
     @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
+    @test ZXCalculus.safe_convert(Rational{Int64}, 1.2) == 6//5 && ZXCalculus.safe_convert(Rational{Int64}, 1//2) == 1//2
 end
 
 zxd4 = ZXDiagram(2)
 ZXCalculus.add_global_phase!(zxd4, ZXCalculus.Phase(1//2))
 ZXCalculus.add_power!(zxd4, 2)
-@test ZXCalculus.scalar(zxd4) == Scalar(2, 1//2)
+@test ZXCalculus.scalar(zxd4) == ZXCalculus.Scalar(2, 1//2)
+pushfirst_gate!(zxd4, Val(:X), 1)
+pushfirst_gate!(zxd4, Val(:H), 1)
+pushfirst_gate!(zxd4, Val(:CNOT), 2, 1)
+pushfirst_gate!(zxd4, Val(:CZ), 1, 2)
+@test indegree(zxd4, 5) == outdegree(zxd4, 5) == degree(zxd4, 5)
