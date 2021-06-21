@@ -2,6 +2,7 @@ module ZXCalculus
 
 using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
+using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
 using LightGraphs, Multigraphs
