@@ -23,3 +23,8 @@ zxd = convert_to_zxd(bir)
 c = clifford_simplification(zxd)
 qc_tl = convert_to_chain(phase_teleportation(zxd))
 @test length(qc_tl) == 1
+p = Phase(1//1)
+@test p + 1 == 1 + p == p + p
+@test p - 1 == 1 - p == p - p
+@test p / 1 == 1 / p == p / p
+@test zero(Phase) == zero(p) && one(Phase) == one(p)
