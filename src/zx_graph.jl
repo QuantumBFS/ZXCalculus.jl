@@ -219,20 +219,8 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     return v
 end
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
-    # TODO: rem qubit_loc
-    # l1 = qubit_loc(zxg, v1)
-    # l2 = qubit_loc(zxg, v2)
-    # t1 = column_loc(zxg, v1)
-    # t2 = column_loc(zxg, v2)
     v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
-    # if l1 == l2 && l1 !== nothing
-    #     t = min(floor(t1), floor(t2)) + 1
-    #     if t >= max(t1, t2)
-    #         t = (t1 + t2) / 2
-    #     end
-    #     set_loc!(zxg.layout, v, l1, t)
-    # end
     return v
 end
 
@@ -298,7 +286,7 @@ end
 get_outputs(zxg::ZXGraph) = get_outputs(zxg.master)
 get_inputs(zxg::ZXGraph) = get_inputs(zxg.master)
 
-# TODO: generate layout instead
+# TODO: remove it?
 function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
     nbits = nqubits(zxg)
     if nbits > 0
@@ -309,7 +297,8 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
         end
         for v in vs
             if qubit_loc(zxg, v) !== nothing
-                push!(spider_seq[qubit_loc(zxg, v)], v)
+                q_loc = Int(qubit_loc(zxg, v))
+                q_loc > 0 && push!(spider_seq[q_loc], v)
             end
         end
         for q = 1:nbits

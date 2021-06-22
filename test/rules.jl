@@ -77,7 +77,6 @@ layout = ZXCalculus.ZXLayout(2, Dict(zip(1:6, [1//1, 2, 1, 2, 1, 2])), Dict(zip(
 zxd = ZXDiagram(g, v_t, ps, layout)
 matches = match(Rule{:b}(), zxd)
 rewrite!(Rule{:b}(), zxd, matches)
-# @test ZXCalculus.spider_sequence(zxd) == [[1, 7, 8, 5], [2, 9, 10, 6]]
 @test nv(zxd) == 8 && ne(zxd) == 8
 @test zxd.scalar == Scalar(1, 0//1)
 
