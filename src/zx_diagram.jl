@@ -129,7 +129,7 @@ function ZXDiagram(nbits::T) where {T<:Integer}
 end
 
 Base.copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
-    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd._inputs), copy(zxd._outputs))
+    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd.inputs), copy(zxd.outputs))
 
 """
     spider_type(zxd, v)

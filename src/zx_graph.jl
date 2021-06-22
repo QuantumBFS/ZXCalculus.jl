@@ -25,7 +25,7 @@ function Base.copy(zxg::ZXGraph{T, P}) where {T, P}
         copy(zxg.mg), copy(zxg.ps),
         copy(zxg.st), copy(zxg.et), copy(zxg.layout),
         deepcopy(zxg.phase_ids), copy(zxg.scalar), 
-        copy(zxg.master)
+        copy(zxg.master), copy(zxg.inputs), copy(zxg.outputs)
     )
 end
 
