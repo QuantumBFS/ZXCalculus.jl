@@ -1,26 +1,39 @@
 module ZXCalculus
 
-using YaoHIR
-using MLStyle
-using YaoLocations
-using YaoHIR: X, Y, Z, H, S, T, Rx, Ry, Rz, UGate, shift
+using YaoHIR, YaoLocations
+using YaoHIR.IntrinsicOperation
+using YaoHIR: Chain
 using YaoLocations: plain
+using MLStyle
+using LightGraphs, Multigraphs
 
+using LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+    add_edge!, has_edge, degree, indegree, outdegree
+
+export SpiderType, EdgeType
+export AbstractZXDiagram, ZXDiagram, ZXGraph
+export Rule, Match
+
+export spider_type, phase, spiders, rem_spider!, rem_spiders!
+export push_gate!, pushfirst_gate!, tcount
 export convert_to_chain, convert_to_zxd
+export rewrite!, simplify!, clifford_simplification, full_reduction, 
+    circuit_extraction, phase_teleportation
 
 include("phase.jl")
 include("scalar.jl")
+    
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")
+
 include("rules.jl")
 include("simplify.jl")
-
-include("ir.jl")
-
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")
+
+include("ir.jl")
 
 include("deprecations.jl")
 

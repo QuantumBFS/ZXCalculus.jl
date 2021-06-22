@@ -1,5 +1,3 @@
-using YaoHIR: X, Z, S, T, SWAP, Rz, Rx, shift
-
 ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
 Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
 
@@ -58,10 +56,29 @@ function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
     end
 end
 
+function canonicalize_single_location(ir::YaoHIR.Chain)
+    Chain(map(canonicalize_single_location, ir.args)...)
+end
+
+function canonicalize_single_location(node::YaoHIR.Ctrl)
+    if node.ctrl isa CtrlLocations && length(node.ctrl) == 1
+        ctrl = CtrlLocations(node.ctrl.storage[1], node.ctrl.flags)
+    else
+        ctrl = node.ctrl
+    end
+    return YaoHIR.Ctrl(canonicalize_single_location(node.gate), node.ctrl)
+end
+
+function canonicalize_single_location(node::YaoHIR.Gate)
+    length(node.locations) == 1 || return node
+    return YaoHIR.Gate(node.operation, node.locations[1])
+end
+
 function convert_to_zxd(root::YaoHIR.BlockIR)
     circ = ZXDiagram(root.nqubits)
 
-    for gate in YaoHIR.leaves(root.circuit)
+    circuit = canonicalize_single_location(root.circuit)
+    for gate in YaoHIR.leaves(circuit)
         @switch gate begin
             @case Gate(&Z, loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 1//1)

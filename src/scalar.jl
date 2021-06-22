@@ -1,5 +1,3 @@
-import Base: *, ==, copy
-
 """
     Scalar
 
@@ -27,6 +25,6 @@ function add_phase!(s::Scalar{P}, p) where {P}
     return s
 end
 
-*(s1::Scalar, s2::Scalar) = Scalar(s1.power_of_sqrt_2 + s2.power_of_sqrt_2, s1.phase + s2.phase)
-==(s1::Scalar, s2::Scalar) = (s1.power_of_sqrt_2 == s2.power_of_sqrt_2 && s1.phase == s2.phase)
-copy(s::Scalar{P}) where {P} = Scalar{P}(s.power_of_sqrt_2, s.phase)
+Base.:(*)(s1::Scalar, s2::Scalar) = Scalar(s1.power_of_sqrt_2 + s2.power_of_sqrt_2, s1.phase + s2.phase)
+Base.:(==)(s1::Scalar, s2::Scalar) = (s1.power_of_sqrt_2 == s2.power_of_sqrt_2 && s1.phase == s2.phase)
+Base.copy(s::Scalar{P}) where {P} = Scalar{P}(s.power_of_sqrt_2, s.phase)

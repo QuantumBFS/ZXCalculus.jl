@@ -1,6 +1,3 @@
-import LightGraphs: rem_vertex!
-import Base: copy
-
 """
     ZXLayout
 
@@ -15,8 +12,8 @@ end
 ZXLayout(nbits::Integer, spider_q::Dict{T, Rational{Int}}, spider_col::Dict{T, Rational{Int}}) where {T} = ZXLayout{T}(Int(nbits), spider_q, spider_col)
 ZXLayout{T}() where {T} = ZXLayout(0, Dict{T, Rational{Int}}(), Dict{T, Rational{Int}}())
 
-copy(layout::ZXLayout) = ZXLayout(layout.nbits, copy(layout.spider_q), copy(layout.spider_col))
-function rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
+Base.copy(layout::ZXLayout) = ZXLayout(layout.nbits, copy(layout.spider_q), copy(layout.spider_col))
+function LightGraphs.rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
     delete!(layout.spider_q, v)
     delete!(layout.spider_col, v)
     return
