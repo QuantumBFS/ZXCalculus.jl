@@ -296,21 +296,9 @@ function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType
     mt = mul(zxd.mg, v1, v2)
     vs = Vector{T}(undef, mt)
     for i = 1:mt
-        # TODO: remove qubit_loc
-        # l1 = qubit_loc(zxd, v1)
-        # l2 = qubit_loc(zxd, v2)
-        # t1 = column_loc(zxd, v1)
-        # t2 = column_loc(zxd, v2)
         v = add_spider!(zxd, st, phase, [v1, v2])
         @inbounds vs[i] = v
         rem_edge!(zxd, v1, v2)
-        # if l1 == l2 && l1 !== nothing
-        #     t = min(floor(t1), floor(t2)) + 1
-        #     if t >= max(t1, t2)
-        #         t = (t1 + t2) / 2
-        #     end
-        #     set_loc!(zxd.layout, v, l1, t)
-        # end
     end
     return vs
 end
