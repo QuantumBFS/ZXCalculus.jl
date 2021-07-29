@@ -15,8 +15,8 @@ ZXDiagram(nbit::T) where T<:Integer
 ```
 Then one can use `push_gate!` to push quantum gates at the end of a quantum circuit, or use `pushfirst_gate!` to push gates at the beginning of a quantum circuit.
 ```@docs
-push_gate!
-pushfirst_gate!
+push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase = zero(P); autoconvert::Bool=true) where {T, P}
+pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase::P = zero(P)) where {T, P}
 ```
 
 For example, in `example\ex1.jl`, one can generate the demo circuit by the function

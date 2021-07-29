@@ -47,9 +47,4 @@ ZXCalculus.Match
 ## Circuit extraction
 ```@docs
 ZXCalculus.circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
-update_frontier!(zxg::ZXGraph{T, P}, frontier::Vector{T}, cir::ZXDiagram{T, P}) where {T, P}
-ZXCalculus.GEStep
-ZXCalculus.gaussian_elimination
-ZXCalculus.reverse_gaussian_elimination
-ZXCalculus.biadjancency
 ```
