@@ -31,7 +31,7 @@ rem_spiders!(zxd::AbstractZXDiagram, vs)= throw(MethodError(ZXCalculus.rem_spide
 qubit_loc(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.qubit_loc, (zxd, v)))
 column_loc(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.column_loc, (zxd, v)))
 add_global_phase!(zxd::AbstractZXDiagram, p) = throw(MethodError(ZXCalculus.add_global_phase!, (zxd, p)))
-add_power!(zxd::AbstractZXDiagram, n) = throw(MethodError(ZXCalculus.add_power, (zxd, n)))
+add_power!(zxd::AbstractZXDiagram, n) = throw(MethodError(ZXCalculus.add_power!, (zxd, n)))
 generate_layout!(zxd::AbstractZXDiagram, seq) = throw(MethodError(ZXCalculus.generate_layout!, (zxd, seq)))
 
 set_phase!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.set_phase!, (zxd, args...)))

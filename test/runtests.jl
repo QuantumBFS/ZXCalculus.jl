@@ -6,6 +6,10 @@ using Test
     include("scalar.jl")
 end
 
+@testset "abstract_zx_diagram.jl" begin
+    include("abstract_zx_diagram.jl")
+end
+
 @testset "zx_diagram.jl" begin
     include("zx_diagram.jl")
 end
