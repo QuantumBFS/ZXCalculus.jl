@@ -1,18 +1,41 @@
 abstract type AbstractZXDiagram{T, P} end
 
-LightGraphs.nv(::AbstractZXDiagram) = 0
-LightGraphs.ne(::AbstractZXDiagram) = 0
-LightGraphs.outneighbors(::AbstractZXDiagram{T, P}, v) where {T, P} = T[]
-LightGraphs.inneighbors(::AbstractZXDiagram{T, P}, v) where {T, P} = T[]
-LightGraphs.neighbors(::AbstractZXDiagram{T, P}, v) where {T, P} = T[]
-LightGraphs.rem_edge!(::AbstractZXDiagram, x...) = false
-LightGraphs.rem_edge!(::AbstractZXDiagram, v1, v2) = false
-LightGraphs.add_edge!(::AbstractZXDiagram, x...) = false
-LightGraphs.add_edge!(::AbstractZXDiagram, v1, v2) = false
-LightGraphs.has_edge(::AbstractZXDiagram, vs...) = false
+LightGraphs.nv(zxd::AbstractZXDiagram) = throw(MethodError(LightGraphs.nv, zxd))
+LightGraphs.ne(zxd::AbstractZXDiagram) = throw(MethodError(LightGraphs.ne, zxd))
+LightGraphs.degree(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.degree, (zxd, v)))
+LightGraphs.indegree(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.indegree, (zxd, v)))
+LightGraphs.outdegree(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.outdegree, (zxd, v)))
+LightGraphs.neighbors(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.neighbors, (zxd, v)))
+LightGraphs.outneighbors(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.outneighbors, (zxd, v)))
+LightGraphs.inneighbors(zxd::AbstractZXDiagram, v) = throw(MethodError(LightGraphs.inneighbors, (zxd, v)))
+LightGraphs.rem_edge!(zxd::AbstractZXDiagram, args...) = throw(MethodError(LightGraphs.rem_edge!, (zxd, args...)))
+LightGraphs.add_edge!(zxd::AbstractZXDiagram, args...) = throw(MethodError(LightGraphs.add_edge!, (zxd, args...)))
+LightGraphs.has_edge(zxd::AbstractZXDiagram, args...) = throw(MethodError(LightGraphs.has_edge, (zxd, args...)))
 
-spider_type(::AbstractZXDiagram, v) = nothing
-phase(::AbstractZXDiagram, v) = nothing
-spiders(::AbstractZXDiagram{T, P}) where {T, P} = T[]
-rem_spider!(::AbstractZXDiagram, v) = false
-rem_spiders!(::AbstractZXDiagram, vs)= false
+Base.show(io::IO, zxd::AbstractZXDiagram) = throw(MethodError(Base.show, io, zxd))
+Base.copy(zxd::AbstractZXDiagram) = throw(MethodError(Base.copy, zxd))
+
+nqubits(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.nqubits, zxd))
+spiders(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.spiders, zxd))
+tcount(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.tcount, zxd))
+get_inputs(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.get_inputs, zxd))
+get_outputs(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.get_outputs, zxd))
+scalar(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.scalar, zxd))
+spider_sequence(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.spider_sequence, zxd))
+round_phases!(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.round_phases!, zxd))
+
+spider_type(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.spider_type, (zxd, v)))
+phase(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.phase, (zxd, v)))
+rem_spider!(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.rem_spider!, (zxd, v)))
+rem_spiders!(zxd::AbstractZXDiagram, vs)= throw(MethodError(ZXCalculus.rem_spiders!, (zxd, vs)))
+qubit_loc(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.qubit_loc, (zxd, v)))
+column_loc(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.column_loc, (zxd, v)))
+add_global_phase!(zxd::AbstractZXDiagram, p) = throw(MethodError(ZXCalculus.add_global_phase!, (zxd, p)))
+add_power!(zxd::AbstractZXDiagram, n) = throw(MethodError(ZXCalculus.add_power!, (zxd, n)))
+generate_layout!(zxd::AbstractZXDiagram, seq) = throw(MethodError(ZXCalculus.generate_layout!, (zxd, seq)))
+
+set_phase!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.set_phase!, (zxd, args...)))
+push_gate!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.push_gate!, (zxd, args...)))
+pushfirst_gate!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.pushfirst_gate!, (zxd, args...)))
+add_spider!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.add_spider!, (zxd, args...)))
+insert_spider!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.insert_spider!, (zxd, args...)))
