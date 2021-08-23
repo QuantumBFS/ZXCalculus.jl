@@ -12,7 +12,7 @@ LightGraphs.rem_edge!(zxd::AbstractZXDiagram, args...) = throw(MethodError(Light
 LightGraphs.add_edge!(zxd::AbstractZXDiagram, args...) = throw(MethodError(LightGraphs.add_edge!, (zxd, args...)))
 LightGraphs.has_edge(zxd::AbstractZXDiagram, args...) = throw(MethodError(LightGraphs.has_edge, (zxd, args...)))
 
-Base.show(zxd::AbstractZXDiagram) = throw(MethodError(Base.show, zxd))
+Base.show(io::IO, zxd::AbstractZXDiagram) = throw(MethodError(Base.show, io, zxd))
 Base.copy(zxd::AbstractZXDiagram) = throw(MethodError(Base.copy, zxd))
 
 nqubits(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.nqubits, zxd))
@@ -22,6 +22,7 @@ get_inputs(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.get_inputs, zx
 get_outputs(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.get_outputs, zxd))
 scalar(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.scalar, zxd))
 spider_sequence(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.spider_sequence, zxd))
+round_phases!(zxd::AbstractZXDiagram) = throw(MethodError(ZXCalculus.round_phases!, zxd))
 
 spider_type(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.spider_type, (zxd, v)))
 phase(zxd::AbstractZXDiagram, v) = throw(MethodError(ZXCalculus.phase, (zxd, v)))
@@ -38,4 +39,3 @@ push_gate!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.push_
 pushfirst_gate!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.pushfirst_gate!, (zxd, args...)))
 add_spider!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.add_spider!, (zxd, args...)))
 insert_spider!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.insert_spider!, (zxd, args...)))
-round_phases!(zxd::AbstractZXDiagram, args...) = throw(MethodError(ZXCalculus.round_phases!, (zxd, args...)))
