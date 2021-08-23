@@ -33,7 +33,7 @@ test_zxd = TestZXDiagram{Int, Phase}();
 @test_throws MethodError spider_type(test_zxd, 1)
 @test_throws MethodError phase(test_zxd, 1)
 @test_throws MethodError rem_spider!(test_zxd, 1)
-@test_throws MethodError rem_spiders!(test_zxd, [1, 2])= throw(MethodError(ZXCalculus.rem_spiders!, (zxd, [1, 2])))
+@test_throws MethodError rem_spiders!(test_zxd, [1, 2])
 @test_throws MethodError ZXCalculus.qubit_loc(test_zxd, 1)
 @test_throws MethodError ZXCalculus.column_loc(test_zxd, 1)
 @test_throws MethodError ZXCalculus.add_global_phase!(test_zxd, 3)
