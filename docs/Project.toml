@@ -1,4 +1,5 @@
 [deps]
+DocThemeIndigo = "8bac0ac5-51bf-41f9-885e-2bf1ac2bec5f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
