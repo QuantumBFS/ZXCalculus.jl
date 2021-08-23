@@ -456,7 +456,7 @@ end
 
 Returns the T-count of a ZX-diagram.
 """
-tcount(cir::AbstractZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+tcount(cir::ZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
 
 """
     get_inputs(zxd)

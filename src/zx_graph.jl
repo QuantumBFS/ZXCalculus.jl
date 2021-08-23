@@ -224,6 +224,8 @@ function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) wh
     return v
 end
 
+tcount(cir::ZXGraph) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
