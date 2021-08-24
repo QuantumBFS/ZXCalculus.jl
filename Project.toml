@@ -1,7 +1,7 @@
 name = "ZXCalculus"
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
 authors = ["Chen Zhao and contributors"]
-version = "0.4.3"
+version = "0.4.4"
 
 [deps]
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
