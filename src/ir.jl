@@ -108,10 +108,18 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
                 push_gate!(circ, Val(:Z), plain(loc), 3//2)
             @case Gate(AdjointOperation(&T), loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 7//4)
-            @case Ctrl(Gate(&X, loc::Locations{Int}), ctrl::CtrlLocations{Int}) # CNOT
-                push_gate!(circ, Val(:CNOT), plain(loc), plain(ctrl))
-            @case Ctrl(Gate(&Z, loc::Locations{Int}), ctrl::CtrlLocations{Int}) # CZ
-                push_gate!(circ, Val(:CZ), plain(loc), plain(ctrl))
+            @case Ctrl(Gate(&X, loc::Locations), ctrl::CtrlLocations) # CNOT
+                if length(loc) == 1 && length(ctrl) == 1
+                    push_gate!(circ, Val(:CNOT), plain(loc)[1], plain(ctrl)[1])
+                else
+                    error("Multi qubits controlled gates are not supported")
+                end
+            @case Ctrl(Gate(&Z, loc::Locations), ctrl::CtrlLocations) # CZ
+                if length(loc) == 1 && length(ctrl) == 1
+                    push_gate!(circ, Val(:CZ), plain(loc)[1], plain(ctrl)[1])
+                else
+                    error("Multi qubits controlled gates are not supported")
+                end
             @case _
                 error("$gate is not supported")
         end
@@ -193,4 +201,38 @@ function push_spider_to_chain!(qc, q, ps, st)
             push!(qc, Gate(H, Locations(q)))
         end
     end
+end
+
+using CompilerPluginTools
+function random_circuit(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
+    ir = @make_ircode begin
+    end
+    CLIFF = 1 - T - CZ - CNOT
+    circ = Chain()
+    for _ = 1:ngates
+        x = rand()
+        nbits == 1 && (x = x*(CLIFF+T))
+        if x <= CLIFF
+            g = rand([:X, :X, :Z, :Z, :S, :Sdag, :H, :H])
+            push_gate!(circ, Val(g), rand(1:nbits))
+        elseif x - CLIFF <= T
+            g = rand([:T, :Tdag])
+            push_gate!(circ, Val(g), rand(1:nbits))
+        elseif x - CLIFF - T <= CZ
+            loc = rand(1:nbits)
+            ctrl = loc
+            while ctrl == loc
+                ctrl = rand(1:nbits)
+            end
+            push_gate!(circ, Val(:CZ), loc, ctrl)
+        else
+            loc = rand(1:nbits)
+            ctrl = loc
+            while ctrl == loc
+                ctrl = rand(1:nbits)
+            end
+            push_gate!(circ, Val(:CNOT), loc, ctrl)
+        end
+    end
+    return BlockIR(ir, nbits, circ)
 end
