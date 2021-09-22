@@ -19,6 +19,7 @@ export push_gate!, pushfirst_gate!, tcount
 export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 
     circuit_extraction, phase_teleportation
+export random_circuit
 
 include("phase.jl")
 include("scalar.jl")
