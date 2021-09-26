@@ -315,23 +315,11 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
     nbits = length(zxg.inputs)
     vs_frontier = copy(zxg.inputs)
     vs_generated = Set(vs_frontier)
-    frontier_col = [1//1 for _ = 1:nbits]
-    frontier_active = [true for _ = 1:nbits]
     for i = 1:nbits
         set_qubit!(layout, vs_frontier[i], i)
         set_column!(layout, vs_frontier[i], 1//1)
     end
-    gad_col = 1//1
-    for v in spiders(zxg)
-        if degree(zxg, v) == 1 && spider_type(zxg, v) == SpiderType.Z
-            v1 = neighbors(zxg, v)[1]
-            set_loc!(layout, v, -1//1, gad_col)
-            set_loc!(layout, v1, 0//1, gad_col)
-            push!(vs_generated, v, v1)
-            gad_col += 1
-        end
-    end
-
+    
     curr_col = 1//1
 
     while !(isempty(vs_frontier))
@@ -352,9 +340,23 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
         vs_frontier = collect(vs_after)
         curr_col += 1
     end
+    gad_col = 2//1
+    for v in spiders(zxg)
+        if degree(zxg, v) == 1 && spider_type(zxg, v) == SpiderType.Z
+            v1 = neighbors(zxg, v)[1]
+            set_loc!(layout, v, -1//1, gad_col)
+            set_loc!(layout, v1, 0//1, gad_col)
+            push!(vs_generated, v, v1)
+            gad_col += 1
+        elseif degree(zxg, v) == 0
+            set_loc!(layout, v, 0//1, gad_col)
+            gad_col += 1
+            push!(vs_generated, v)
+        end
+    end
     for q = 1:length(zxg.outputs)
-        set_loc!(layout, zxg.outputs[q], q, curr_col)
-        set_qubit!(layout, neighbors(zxg, zxg.outputs[q])[1], q)
+        set_loc!(layout, zxg.outputs[q], q, curr_col + 1)
+        set_loc!(layout, neighbors(zxg, zxg.outputs[q])[1], q, curr_col)
     end
     for q = 1:length(zxg.inputs)
         set_qubit!(layout, neighbors(zxg, zxg.inputs[q])[1], q)
