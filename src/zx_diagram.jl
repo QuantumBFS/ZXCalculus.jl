@@ -590,8 +590,8 @@ function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T,
             end
         end
     end
-    for q = 1:length(vs_frontier)
-        set_loc!(layout, vs_frontier[q], q, frontier_col[q])
+    for q = 1:length(zxd.outputs)
+        set_loc!(layout, zxd.outputs[q], q, maximum(frontier_col))
     end
     return layout
 end

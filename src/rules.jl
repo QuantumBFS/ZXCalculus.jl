@@ -23,6 +23,7 @@ Rule for `ZXGraph`s:
 * `Rule{:gf}()`: gadget fushion rule
 """
 struct Rule{L} <: AbstractRule end
+Rule(r::Symbol) = Rule{r}()
 
 """
     Match{T<:Integer}
@@ -308,6 +309,19 @@ function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
             u1, u2, gad_u = gads[j]
             if gad_u == gad_v && phase(zxg, v2) in (zero(P), one(P)) && phase(zxg, u2) in (zero(P), one(P))
                 push!(matches, Match{T}([v1, v2, u1, u2]))
+            end
+        end
+    end
+    return matches
+end
+
+function Base.match(::Rule{:scalar}, zxg::Union{ZXGraph{T, P}, ZXDiagram{T, P}}) where {T, P}
+    matches = Match{T}[]
+    vs = spiders(zxg)
+    for v in vs
+        if degree(zxg, v) == 0
+            if spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+                push!(matches, Match{T}([v]))
             end
         end
     end
@@ -942,5 +956,23 @@ function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     add_power!(zxg, degree(zxg, v2)-2)
     rem_spiders!(zxg, [u1, u2])
+    return zxg
+end
+
+function check_rule(::Rule{:scalar}, zxg::Union{ZXGraph{T, P}, ZXDiagram{T, P}}, vs::Vector{T}) where {T, P}
+    @inbounds v = vs[1]
+    if has_vertex(zxg.mg, v)
+        if degree(zxg, v) == 0
+            if spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function rewrite!(::Rule{:scalar}, zxg::Union{ZXGraph{T, P}, ZXDiagram{T, P}}, vs::Vector{T}) where {T, P}
+    @inbounds v = vs[1]
+    rem_spider!(zxg, v)
     return zxg
 end

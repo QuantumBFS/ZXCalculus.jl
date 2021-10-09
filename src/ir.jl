@@ -133,7 +133,7 @@ function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
     for vs in spider_seq
         if length(vs) == 1
             v = vs
-            q = Int(qubit_loc(circ, vs))
+            q = Int(qubit_loc(circ, v))
             push_spider_to_chain!(qc, q, phase(circ, v), spider_type(circ, v))
         elseif length(vs) == 2
             v1, v2 = vs
