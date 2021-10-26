@@ -43,7 +43,7 @@ function clifford_simplification(zxg::ZXGraph)
     simplify!(Rule{:lc}(), zxg)
     simplify!(Rule{:p1}(), zxg)
     match_id = match(Rule{:id}(), zxg)
-    if length(match_id) > 0
+    while length(match_id) > 0
         rewrite!(Rule{:id}(), zxg, match_id)
         simplify!(Rule{:lc}(), zxg)
         simplify!(Rule{:p1}(), zxg)
