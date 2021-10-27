@@ -31,8 +31,8 @@ replace!(Rule{:pab}(), zxg)
 cir = circuit_extraction(zxg)
 
 zxg2 = clifford_simplification(zxd)
-@test nv(zxg2) == nv(zxg)
-@test ne(zxg2) == ne(zxg)
+@test nv(zxg2) <= nv(zxg)
+@test ne(zxg2) <= ne(zxg)
 
 zxg3 = full_reduction(zxd)
 cir = circuit_extraction(zxg3)

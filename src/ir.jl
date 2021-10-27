@@ -108,10 +108,18 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
                 push_gate!(circ, Val(:Z), plain(loc), 3//2)
             @case Gate(AdjointOperation(&T), loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 7//4)
-            @case Ctrl(Gate(&X, loc::Locations{Int}), ctrl::CtrlLocations{Int}) # CNOT
-                push_gate!(circ, Val(:CNOT), plain(loc), plain(ctrl))
-            @case Ctrl(Gate(&Z, loc::Locations{Int}), ctrl::CtrlLocations{Int}) # CZ
-                push_gate!(circ, Val(:CZ), plain(loc), plain(ctrl))
+            @case Ctrl(Gate(&X, loc::Locations), ctrl::CtrlLocations) # CNOT
+                if length(loc) == 1 && length(ctrl) == 1
+                    push_gate!(circ, Val(:CNOT), plain(loc)[1], plain(ctrl)[1])
+                else
+                    error("Multi qubits controlled gates are not supported")
+                end
+            @case Ctrl(Gate(&Z, loc::Locations), ctrl::CtrlLocations) # CZ
+                if length(loc) == 1 && length(ctrl) == 1
+                    push_gate!(circ, Val(:CZ), plain(loc)[1], plain(ctrl)[1])
+                else
+                    error("Multi qubits controlled gates are not supported")
+                end
             @case _
                 error("$gate is not supported")
         end
@@ -125,7 +133,7 @@ function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
     for vs in spider_seq
         if length(vs) == 1
             v = vs
-            q = Int(qubit_loc(circ, vs))
+            q = Int(qubit_loc(circ, v))
             push_spider_to_chain!(qc, q, phase(circ, v), spider_type(circ, v))
         elseif length(vs) == 2
             v1, v2 = vs

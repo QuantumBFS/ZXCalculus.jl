@@ -315,13 +315,32 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
     nbits = length(zxg.inputs)
     vs_frontier = copy(zxg.inputs)
     vs_generated = Set(vs_frontier)
-    frontier_col = [1//1 for _ = 1:nbits]
-    frontier_active = [true for _ = 1:nbits]
     for i = 1:nbits
         set_qubit!(layout, vs_frontier[i], i)
         set_column!(layout, vs_frontier[i], 1//1)
     end
-    gad_col = 1//1
+    
+    curr_col = 1//1
+
+    while !(isempty(vs_frontier))
+        vs_after = Set{Int}()
+        for v in vs_frontier
+            nb_v = neighbors(zxg, v)
+            for v1 in nb_v
+                if !(v1 in vs_generated) && !(v1 in vs_frontier)
+                    push!(vs_after, v1)
+                end
+            end
+        end
+        for i = 1:length(vs_frontier)
+            v = vs_frontier[i]
+            set_loc!(layout, v, i, curr_col)
+            push!(vs_generated, v)
+        end
+        vs_frontier = collect(vs_after)
+        curr_col += 1
+    end
+    gad_col = 2//1
     for v in spiders(zxg)
         if degree(zxg, v) == 1 && spider_type(zxg, v) == SpiderType.Z
             v1 = neighbors(zxg, v)[1]
@@ -329,71 +348,18 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
             set_loc!(layout, v1, 0//1, gad_col)
             push!(vs_generated, v, v1)
             gad_col += 1
+        elseif degree(zxg, v) == 0
+            set_loc!(layout, v, 0//1, gad_col)
+            gad_col += 1
+            push!(vs_generated, v)
         end
     end
-
-    while !(zxg.outputs ⊆ vs_frontier)
-        while any(frontier_active)
-            for q in 1:nbits
-                if frontier_active[q]
-                    v = vs_frontier[q]
-                    nb = neighbors(zxg, v)
-                    nb_not_gen = nb[findall(v -> !(v in vs_generated), nb)]
-                    if length(nb_not_gen) == 1
-                        set_loc!(layout, v, q, frontier_col[q])
-                        frontier_col[q] += 1
-                        push!(vs_generated, v)
-                        vs_frontier[q] = nb_not_gen[1]
-                    else
-                        frontier_active[q] = false
-                    end
-                end
-            end
-        end
-        for q = 1:nbits
-            isupdated = false
-            v = vs_frontier[q]
-            nb = neighbors(zxg, v)
-            for v1 in nb
-                if !(v1 in vs_generated)
-                    q1 = findfirst(isequal(v1), vs_frontier)
-                    if q1 !== nothing
-                        col = maximum(frontier_col[min(q, q1):max(q, q1)])
-                        set_loc!(layout, v, q, col)
-                        set_loc!(layout, v1, q1, col)
-                        nb_v1 = neighbors(zxg, v1)
-                        push!(vs_generated, v, v1)
-                        new_v1 = nb_v1[findall(v -> !(v in vs_generated), nb_v1)]
-                        new_v = nb[findall(v -> !(v in vs_generated), nb)]
-                        if length(new_v) == 1
-                            vs_frontier[q] = new_v[]
-                            frontier_active[q] = true
-                            isupdated = true
-                            for i in min(q, q1):max(q, q1)
-                                frontier_col[i] = col + 1
-                            end
-                        else
-                            delete!(vs_generated, v)
-                        end
-                        if length(new_v1) == 1
-                            vs_frontier[q1] = new_v1[]
-                            frontier_active[q1] = true
-                            isupdated = true
-                            for i in min(q, q1):max(q, q1)
-                                frontier_col[i] = col + 1
-                            end
-                        else
-                            delete!(vs_generated, v1)
-                        end
-                        break
-                    end
-                end
-            end
-            isupdated && break
-        end
+    for q = 1:length(zxg.outputs)
+        set_loc!(layout, zxg.outputs[q], q, curr_col + 1)
+        set_loc!(layout, neighbors(zxg, zxg.outputs[q])[1], q, curr_col)
     end
-    for q = 1:length(vs_frontier)
-        set_loc!(layout, vs_frontier[q], q, frontier_col[q])
+    for q = 1:length(zxg.inputs)
+        set_qubit!(layout, neighbors(zxg, zxg.inputs[q])[1], q)
     end
     return layout
 end
