@@ -4,7 +4,6 @@ authors = ["Chen Zhao and contributors"]
 version = "0.4.4"
 
 [deps]
-CompilerPluginTools = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3638"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
