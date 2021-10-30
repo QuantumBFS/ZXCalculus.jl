@@ -285,8 +285,8 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     return false
 end
 
-get_outputs(zxg::ZXGraph) = get_outputs(zxg.master)
-get_inputs(zxg::ZXGraph) = get_inputs(zxg.master)
+get_outputs(zxg::ZXGraph) = zxg.outputs
+get_inputs(zxg::ZXGraph) = zxg.inputs
 
 # TODO: remove it?
 function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
