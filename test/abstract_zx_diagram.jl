@@ -1,4 +1,4 @@
-using ZXCalculus, LightGraphs
+using ZXCalculus, Graphs
 using Test
 using ZXCalculus: Phase
 
@@ -6,17 +6,17 @@ struct TestZXDiagram{T, P} <: AbstractZXDiagram{T, P} end
 
 test_zxd = TestZXDiagram{Int, Phase}();
 
-@test_throws MethodError LightGraphs.nv(test_zxd)
-@test_throws MethodError LightGraphs.ne(test_zxd)
-@test_throws MethodError LightGraphs.degree(test_zxd, 1)
-@test_throws MethodError LightGraphs.indegree(test_zxd, 1)
-@test_throws MethodError LightGraphs.outdegree(test_zxd, 1)
-@test_throws MethodError LightGraphs.neighbors(test_zxd, 1)
-@test_throws MethodError LightGraphs.outneighbors(test_zxd, 1)
-@test_throws MethodError LightGraphs.inneighbors(test_zxd, 1)
-@test_throws MethodError LightGraphs.rem_edge!(test_zxd, 1, 2)
-@test_throws MethodError LightGraphs.add_edge!(test_zxd, 1, 2, 1)
-@test_throws MethodError LightGraphs.has_edge(test_zxd, 1, 2)
+@test_throws MethodError Graphs.nv(test_zxd)
+@test_throws MethodError Graphs.ne(test_zxd)
+@test_throws MethodError Graphs.degree(test_zxd, 1)
+@test_throws MethodError Graphs.indegree(test_zxd, 1)
+@test_throws MethodError Graphs.outdegree(test_zxd, 1)
+@test_throws MethodError Graphs.neighbors(test_zxd, 1)
+@test_throws MethodError Graphs.outneighbors(test_zxd, 1)
+@test_throws MethodError Graphs.inneighbors(test_zxd, 1)
+@test_throws MethodError Graphs.rem_edge!(test_zxd, 1, 2)
+@test_throws MethodError Graphs.add_edge!(test_zxd, 1, 2, 1)
+@test_throws MethodError Graphs.has_edge(test_zxd, 1, 2)
 
 @test_throws MethodError print(test_zxd)
 @test_throws MethodError Base.copy(test_zxd)

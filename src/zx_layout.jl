@@ -13,7 +13,7 @@ ZXLayout(nbits::Integer, spider_q::Dict{T, Rational{Int}}, spider_col::Dict{T, R
 ZXLayout{T}() where {T} = ZXLayout(0, Dict{T, Rational{Int}}(), Dict{T, Rational{Int}}())
 
 Base.copy(layout::ZXLayout) = ZXLayout(layout.nbits, copy(layout.spider_q), copy(layout.spider_col))
-function LightGraphs.rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
+function Graphs.rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
     delete!(layout.spider_q, v)
     delete!(layout.spider_col, v)
     return

@@ -5,9 +5,9 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using LightGraphs, Multigraphs
+using Graphs, Multigraphs
 
-using LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
 export SpiderType, EdgeType
