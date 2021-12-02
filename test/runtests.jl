@@ -1,4 +1,4 @@
-using ZXCalculus, LightGraphs, Multigraphs, SparseArrays
+using ZXCalculus, Graphs, Multigraphs, SparseArrays
 using Documenter
 using Test
 
