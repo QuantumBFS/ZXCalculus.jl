@@ -120,3 +120,28 @@ function random_circuit(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
     end
     return BlockIR(ir, nbits, circ)
 end
+
+function random_identity(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
+    bir = random_circuit(nbits, ngates; T = T, CZ = CZ, CNOT = CNOT)
+    c = bir.circuit.args
+    for i = length(c):-1:1
+        if c[i] isa Gate
+            g = c[i].operation
+            if (g in (S, YaoHIR.IntrinsicOperation.T)) || (g isa AdjointOperation)
+                println(g)
+                push!(c, Gate(g', c[i].locations))
+            else
+                push!(c, c[i])
+            end
+        else
+            push!(c, c[i])
+        end
+    end
+    return bir
+end
+
+circ = random_identity(5, 50);
+zxd = convert_to_zxd(circ)
+zxg = ZXGraph(zxd)
+plot(zxd)
+zxg |> clifford_simplification |> full_reduction |> plot |> display
