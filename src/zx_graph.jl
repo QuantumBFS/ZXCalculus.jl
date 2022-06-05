@@ -177,7 +177,8 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
             c_loc = ceil(column_loc(zxg, nb) - 2)
         end
     end
-    return c_loc
+    c_loc !== nothing && return c_loc
+    return 0
 end
 
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)

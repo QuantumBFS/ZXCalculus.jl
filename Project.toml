@@ -4,18 +4,21 @@ authors = ["Chen Zhao and contributors"]
 version = "0.5.0"
 
 [deps]
+Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
 YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 
 [compat]
 CompilerPluginTools = "0.1"
-MLStyle = "0.4"
 Graphs = "1"
+MLStyle = "0.4"
 Multigraphs = "0.3"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
