@@ -47,7 +47,7 @@ end
     include("challenge.jl")
 end
 
-@test "plots" begin
+@testset "plots" begin
     include("plots/zx_plot.jl")
 end
 

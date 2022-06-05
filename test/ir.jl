@@ -128,7 +128,6 @@ function random_identity(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
         if c[i] isa Gate
             g = c[i].operation
             if (g in (S, YaoHIR.IntrinsicOperation.T)) || (g isa AdjointOperation)
-                println(g)
                 push!(c, Gate(g', c[i].locations))
             else
                 push!(c, c[i])
@@ -144,4 +143,4 @@ circ = random_identity(5, 50);
 zxd = convert_to_zxd(circ)
 zxg = ZXGraph(zxd)
 plot(zxd)
-zxg |> clifford_simplification |> full_reduction |> plot |> display
+zxg |> clifford_simplification |> full_reduction |> plot

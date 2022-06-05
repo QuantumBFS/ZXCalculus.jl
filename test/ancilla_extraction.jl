@@ -24,4 +24,6 @@ plot(zxd_swap)
 convert_to_chain(zxd_swap)
 
 zxg_swap = ZXGraph(zxd_swap)
-ancilla_extraction(zxg_swap) |> plot
+zxd_anc = ancilla_extraction(zxg_swap)
+plot(zxd_anc)
+@test length(ZXCalculus.convert_to_chain(zxd_anc)) == 3
