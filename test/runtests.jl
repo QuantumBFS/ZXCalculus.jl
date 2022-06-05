@@ -42,4 +42,13 @@ end
     include("simplify.jl")
 end
 
+@testset "ancilla_extraction.jl" begin
+    include("ancilla_extraction.jl")
+    include("challenge.jl")
+end
+
+@test "plots" begin
+    include("plots/zx_plot.jl")
+end
+
 doctest(ZXCalculus)
