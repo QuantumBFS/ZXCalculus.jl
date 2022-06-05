@@ -32,12 +32,13 @@ push_gate!(c, Val{:S}(), 4)
 push_gate!(c, Val{:X}(), 4)
 
 ir = @make_ircode begin
-end
-bir = BlockIR(ir, 4, c)
+end;
+bir = BlockIR(ir, 4, c);
 zxd = convert_to_zxd(bir)
 zxg = ZXGraph(zxd)
 
 @test plot(zxd) !== nothing
 @test plot(zxg) !== nothing
+plot_compose(zxd)
 @test plot(zxd; backend = :compose) !== nothing
 @test plot(zxg; backend = :compose) !== nothing

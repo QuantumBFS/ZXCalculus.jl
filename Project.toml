@@ -22,7 +22,7 @@ MLStyle = "0.4"
 Multigraphs = "0.3"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
-julia = "1"
+julia = "1.6, 1.7"
 
 [extras]
 CompilerPluginTools = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3638"
