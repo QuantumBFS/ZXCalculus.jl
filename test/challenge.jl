@@ -195,7 +195,7 @@ using Graphs
 zxg = ZXGraph(ZXDiagram(0))
 vs = 1:52
 for v in vs
-    ZXCalculus.add_spider!(zxg, st[v], ZXCalculus.Phase(ps[v]))
+    ZXCalculus.add_spider!(zxg, st[v], ZXCalculus.PiUnit(ps[v]))
 end
 for (e, _) in es
     Graphs.add_edge!(zxg, e[1], e[2])

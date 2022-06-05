@@ -1,10 +1,10 @@
 using ZXCalculus, Graphs
 using Test
-using ZXCalculus: Phase
+using ZXCalculus: PiUnit
 
 struct TestZXDiagram{T, P} <: AbstractZXDiagram{T, P} end
 
-test_zxd = TestZXDiagram{Int, Phase}();
+test_zxd = TestZXDiagram{Int, PiUnit}();
 
 @test_throws MethodError Graphs.nv(test_zxd)
 @test_throws MethodError Graphs.ne(test_zxd)
@@ -40,8 +40,8 @@ test_zxd = TestZXDiagram{Int, Phase}();
 @test_throws MethodError ZXCalculus.add_power!(test_zxd, 4)
 @test_throws MethodError ZXCalculus.generate_layout!(test_zxd, [])
 
-@test_throws MethodError ZXCalculus.set_phase!(test_zxd, 1, Phase(1//1))
-@test_throws MethodError push_gate!(test_zxd, 1, Val(:X), Phase(1//2))
+@test_throws MethodError ZXCalculus.set_phase!(test_zxd, 1, PiUnit(1//1))
+@test_throws MethodError push_gate!(test_zxd, 1, Val(:X), PiUnit(1//2))
 @test_throws MethodError pushfirst_gate!(test_zxd, 1, 2, Val(:CNOT))
-@test_throws MethodError ZXCalculus.add_spider!(test_zxd, Phase(1//1))
-@test_throws MethodError ZXCalculus.insert_spider!(test_zxd, Phase(1//2), [2, 3])
+@test_throws MethodError ZXCalculus.add_spider!(test_zxd, PiUnit(1//1))
+@test_throws MethodError ZXCalculus.insert_spider!(test_zxd, PiUnit(1//2), [2, 3])

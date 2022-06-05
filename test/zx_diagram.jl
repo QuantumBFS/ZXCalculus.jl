@@ -41,7 +41,7 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
 end
 
 zxd4 = ZXDiagram(2)
-ZXCalculus.add_global_phase!(zxd4, ZXCalculus.Phase(1//2))
+ZXCalculus.add_global_phase!(zxd4, ZXCalculus.PiUnit(1//2))
 ZXCalculus.add_power!(zxd4, 2)
 @test ZXCalculus.scalar(zxd4) == ZXCalculus.Scalar(2, 1//2)
 pushfirst_gate!(zxd4, Val(:X), 1)

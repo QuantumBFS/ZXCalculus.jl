@@ -714,7 +714,7 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_power!(zxg, (length(U)+length(V)-1)*length(W) + length(U)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
-    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+    sgn_phase_v = iseven(PiUnit(phase_v)) ? 1 : -1
 
     if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -780,7 +780,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_power!(zxg, (length(U)+length(V))*length(W) + (length(U)+1)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
-    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+    sgn_phase_v = iseven(PiUnit(phase_v)) ? 1 : -1
 
     if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -858,7 +858,7 @@ function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
 
     phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
-    if !iseven(Phase(phase_u))
+    if !iseven(PiUnit(phase_u))
         zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
         phase_id_gadget_u = zxg.phase_ids[gadget_u]
         phase_gadget_u = -phase(zxg, gadget_u)

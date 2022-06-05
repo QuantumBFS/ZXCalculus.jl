@@ -102,7 +102,7 @@ ZX-diagram with 6 vertices and 3 multiple edges:
 function ZXDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ = 1:2*nbits]
-    ps = [Phase(0//1) for _ = 1:2*nbits]
+    ps = [PiUnit(0//1) for _ = 1:2*nbits]
     spider_q = Dict{T, Rational{Int}}()
     spider_col = Dict{T, Rational{Int}}()
     for i = 1:nbits
@@ -163,9 +163,9 @@ nqubits(zxd::ZXDiagram) = zxd.layout.nbits
 function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
     st_v = spider_type(zxd, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color = :green)
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa PiUnit ? "}" : "⋅π}"); color = :green)
     elseif st_v == SpiderType.X
-        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color = :red)
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa PiUnit ? "}" : "⋅π}"); color = :red)
     elseif st_v == SpiderType.H
         printstyled(io, "S_$(v){H}"; color = :yellow)
     elseif st_v == SpiderType.In

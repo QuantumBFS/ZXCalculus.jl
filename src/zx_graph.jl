@@ -236,7 +236,7 @@ tcount(cir::ZXGraph) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color = :green)
+        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa PiUnit ? "}" : "⋅π}"); color = :green)
     elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
     elseif st_v == SpiderType.Out

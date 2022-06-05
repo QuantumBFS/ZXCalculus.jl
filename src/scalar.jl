@@ -11,8 +11,8 @@ mutable struct Scalar{P}
     end
 end
 
-function Scalar(n = 0, p = Phase(0//1))
-    return Scalar{Phase}(n, Phase(p))
+function Scalar(n = 0, p = PiUnit(0//1))
+    return Scalar{PiUnit}(n, PiUnit(p))
 end
 
 function add_power!(s::Scalar, n)

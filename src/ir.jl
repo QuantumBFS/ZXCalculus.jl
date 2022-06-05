@@ -12,21 +12,21 @@ convert_to_gate(::Val{:SWAP}, loc1, loc2) = Gate(SWAP, Locations((loc1, loc2)))
 convert_to_gate(::Val{:CNOT}, loc, ctrl) = Ctrl(Gate(X, Locations(loc)), CtrlLocations(ctrl))
 convert_to_gate(::Val{:CZ}, loc, ctrl) = Ctrl(Gate(Z, Locations(loc)), CtrlLocations(ctrl))
 function convert_to_gate(::Val{:Rz}, loc, theta)
-    if theta isa Phase
+    if theta isa PiUnit
         theta = theta * π
         theta = theta.ex
     end
     return Gate(Rz(theta), Locations(loc))
 end
 function convert_to_gate(::Val{:Rx}, loc, theta)
-    if theta isa Phase
+    if theta isa PiUnit
         theta = theta * π
         theta = theta.ex
     end
     return Gate(Rx(theta), Locations(loc))
 end
 function convert_to_gate(::Val{:shift}, loc, theta)
-    if theta isa Phase
+    if theta isa PiUnit
         theta = theta * π
         theta = theta.ex
     end
@@ -44,7 +44,7 @@ end
 
 function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
     if theta isa Core.SSAValue
-        return Phase(theta, ir.stmts[theta.id][:type])
+        return PiUnit(theta, ir.stmts[theta.id][:type])
     elseif theta isa QuoteNode
         return theta.value
     elseif theta isa Core.Const
@@ -182,7 +182,7 @@ function push_spider_to_chain!(qc, q, ps, st)
                 push!(qc, Gate(AdjointOperation(T), Locations(q)))
             elseif ps != 0
                 θ = ps * π
-                if θ isa Phase
+                if θ isa PiUnit
                     θ = θ.ex
                 end
                 push!(qc, Gate(shift(θ), Locations(q)))
@@ -192,7 +192,7 @@ function push_spider_to_chain!(qc, q, ps, st)
                 push!(qc, Gate(X, Locations(q)))
             else ps != 0
                 θ = ps * π
-                if θ isa Phase
+                if θ isa PiUnit
                     θ = θ.ex
                 end
                 push!(qc, Gate(Rx(θ), Locations(q)))

@@ -3,7 +3,7 @@ using YaoHIR
 using YaoLocations
 using CompilerPluginTools
 using ZXCalculus
-using ZXCalculus: Phase, BlockIR
+using ZXCalculus: PiUnit, BlockIR
 using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain, Gate, Ctrl
 
@@ -24,8 +24,8 @@ c = clifford_simplification(zxd)
 ZXCalculus.generate_layout!(zxd)
 qc_tl = convert_to_chain(phase_teleportation(zxd))
 @test length(qc_tl) == 1
-p = Phase(1//1)
+p = PiUnit(1//1)
 @test p + 1 == 1 + p == p + p
 @test p - 1 == 1 - p == p - p
 @test p / 1 == 1 / p == p / p
-@test zero(Phase) == zero(p) && one(Phase) == one(p)
+@test zero(PiUnit) == zero(p) && one(PiUnit) == one(p)

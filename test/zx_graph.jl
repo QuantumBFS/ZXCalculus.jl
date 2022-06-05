@@ -24,7 +24,7 @@ push_gate!(zxd, Val(:CNOT), 2, 1)
 zxg = ZXGraph(zxd)
 
 zxg3 = ZXGraph(ZXDiagram(3))
-ZXCalculus.add_global_phase!(zxg3, ZXCalculus.Phase(1//4))
+ZXCalculus.add_global_phase!(zxg3, ZXCalculus.PiUnit(1//4))
 ZXCalculus.add_power!(zxg3, 3)
 @test ZXCalculus.scalar(zxg3) == Scalar(3, 1//4)
 @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)

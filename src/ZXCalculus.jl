@@ -21,7 +21,7 @@ export rewrite!, simplify!, clifford_simplification, full_reduction,
     circuit_extraction, phase_teleportation
 export random_circuit
 
-include("phase.jl")
+include("im_pi_unit.jl")
 include("scalar.jl")
     
 include("abstract_zx_diagram.jl")
