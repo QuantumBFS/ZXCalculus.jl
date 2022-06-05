@@ -1,10 +1,13 @@
+using Test
+using ZXCalculus
+
 g = Multigraph(6)
 add_edge!(g, 1, 3)
 add_edge!(g, 2, 4)
 add_edge!(g, 3, 4)
 add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
-ps = [0//1 for i = 1:6]
+ps = [zero(PiUnit) for i = 1:6]
 v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
 zxd = ZXDiagram(g, v_t, ps)
 zxg1 = ZXGraph(zxd)

@@ -13,21 +13,32 @@ convert_to_gate(::Val{:CNOT}, loc, ctrl) = Ctrl(Gate(X, Locations(loc)), CtrlLoc
 convert_to_gate(::Val{:CZ}, loc, ctrl) = Ctrl(Gate(Z, Locations(loc)), CtrlLocations(ctrl))
 function convert_to_gate(::Val{:Rz}, loc, theta)
     if theta isa PiUnit
-        theta = theta * π
+        theta == one(PiUnit) && return convert_to_gate(Val(:Z), loc)
+        theta == PiUnit(1//2) && return convert_to_gate(Val(:S), loc)
+        theta == PiUnit(1//4) && return convert_to_gate(Val(:T), loc)
+        theta == PiUnit(3//2) && return convert_to_gate(Val(:Sdag), loc)
+        theta == PiUnit(7//4) && return convert_to_gate(Val(:Tdag), loc)
+        theta = theta * one(PiUnit)
         theta = theta.ex
     end
     return Gate(Rz(theta), Locations(loc))
 end
 function convert_to_gate(::Val{:Rx}, loc, theta)
     if theta isa PiUnit
-        theta = theta * π
+        theta == one(PiUnit) && return convert_to_gate(Val(:X), loc)
+        theta = theta * one(PiUnit)
         theta = theta.ex
     end
     return Gate(Rx(theta), Locations(loc))
 end
 function convert_to_gate(::Val{:shift}, loc, theta)
     if theta isa PiUnit
-        theta = theta * π
+        theta == one(PiUnit) && return convert_to_gate(Val(:Z), loc)
+        theta == PiUnit(1//2) && return convert_to_gate(Val(:S), loc)
+        theta == PiUnit(1//4) && return convert_to_gate(Val(:T), loc)
+        theta == PiUnit(3//2) && return convert_to_gate(Val(:Sdag), loc)
+        theta == PiUnit(7//4) && return convert_to_gate(Val(:Tdag), loc)
+        theta = theta * one(PiUnit)
         theta = theta.ex
     end
     return Gate(shift(theta), Locations(loc))
@@ -44,7 +55,7 @@ end
 
 function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
     if theta isa Core.SSAValue
-        return PiUnit(theta, ir.stmts[theta.id][:type])
+        return PiUnit(theta, ir.stmts[theta.id][:type])/one(PiUnit)
     elseif theta isa QuoteNode
         return theta.value
     elseif theta isa Core.Const
@@ -81,33 +92,33 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
     for gate in YaoHIR.leaves(circuit)
         @switch gate begin
             @case Gate(&Z, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//1)
+                push_gate!(circ, Val(:Z), plain(loc), one(PiUnit))
             @case Gate(&X, loc::Locations{Int})
-                push_gate!(circ, Val(:X), plain(loc), 1//1)
+                push_gate!(circ, Val(:X), plain(loc), one(PiUnit))
             @case Gate(&H, loc::Locations{Int})
                 push_gate!(circ, Val(:H), plain(loc))
             @case Gate(&S, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//2)
+                push_gate!(circ, Val(:Z), plain(loc), PiUnit(1//2))
             @case Gate(&T, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//4)
+                push_gate!(circ, Val(:Z), plain(loc), PiUnit(1//4))
             @case Gate(shift(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:Z), plain(loc), to_pi_unit(theta))
             @case Gate(Rx(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:X), plain(loc), to_pi_unit(theta))
             @case Gate(Ry(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc),  1//2)
-                push_gate!(circ, Val(:Z), plain(loc),  (1/π) * theta)
-                push_gate!(circ, Val(:X), plain(loc), -1//2)
+                push_gate!(circ, Val(:X), plain(loc), PiUnit(1//2))
+                push_gate!(circ, Val(:Z), plain(loc), to_pi_unit(theta))
+                push_gate!(circ, Val(:X), plain(loc), PiUnit(-1//2))
             @case Gate(Rz(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:Z), plain(loc), to_pi_unit(theta))
             @case Gate(AdjointOperation(&S), loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 3//2)
+                push_gate!(circ, Val(:Z), plain(loc), PiUnit(3//2))
             @case Gate(AdjointOperation(&T), loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 7//4)
+                push_gate!(circ, Val(:Z), plain(loc), PiUnit(7//4))
             @case Ctrl(Gate(&X, loc::Locations), ctrl::CtrlLocations) # CNOT
                 if length(loc) == 1 && length(ctrl) == 1
                     push_gate!(circ, Val(:CNOT), plain(loc)[1], plain(ctrl)[1])
@@ -170,30 +181,35 @@ end
 function push_spider_to_chain!(qc, q, ps, st)
     if ps != 0
         if st == SpiderType.Z
-            if ps == 1
+            if ps == one(PiUnit)
                 push!(qc, Gate(Z, Locations(q)))
-            elseif ps == 1//2
+            elseif ps == PiUnit(1//2)
                 push!(qc, Gate(S, Locations(q)))
-            elseif ps == 3//2
+            elseif ps == PiUnit(3//2)
                 push!(qc, Gate(AdjointOperation(S), Locations(q)))
-            elseif ps == 1//4
+            elseif ps == PiUnit(1//4)
                 push!(qc, Gate(T, Locations(q)))
-            elseif ps == 7//4
+            elseif ps == PiUnit(7//4)
                 push!(qc, Gate(AdjointOperation(T), Locations(q)))
-            elseif ps != 0
-                θ = ps * π
-                if θ isa PiUnit
+            elseif ps != zero(PiUnit)
+                @show ps
+                if ps isa PiUnit
+                    θ = ps * one(PiUnit)
                     θ = θ.ex
+                else
+                    θ = ps * π
                 end
                 push!(qc, Gate(shift(θ), Locations(q)))
             end
         elseif st == SpiderType.X
-            if ps == 1
+            if ps == one(PiUnit)
                 push!(qc, Gate(X, Locations(q)))
-            else ps != 0
-                θ = ps * π
-                if θ isa PiUnit
+            else ps != zero(PiUnit)
+                if ps isa PiUnit
+                    θ = ps * one(PiUnit)
                     θ = θ.ex
+                else
+                    θ = ps * π
                 end
                 push!(qc, Gate(Rx(θ), Locations(q)))
             end

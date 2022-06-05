@@ -34,8 +34,8 @@ end
     include("ir.jl")
 end
 
-@testset "im_pi_unit.jl" begin
-    include("im_pi_unit.jl")
+@testset "pi_unit.jl" begin
+    include("pi_unit.jl")
 end
 
 @testset "simplify.jl" begin

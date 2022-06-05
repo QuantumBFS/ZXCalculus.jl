@@ -127,7 +127,7 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Edg
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
             if edge_type == EdgeType.HAD
-                set_phase!(zxg, v1, phase(zxg, v1)+1)
+                set_phase!(zxg, v1, phase(zxg, v1)+one(PiUnit))
                 add_power!(zxg, -1)
             end
             return true
@@ -153,9 +153,9 @@ phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     if has_vertex(zxg.mg, v)
         while p < 0
-            p += 2
+            p += PiUnit(2//1)
         end
-        p = rem(p, 2)
+        p = rem2pi(p, RoundToZero)
         zxg.ps[v] = p
         return true
     end
@@ -231,7 +231,7 @@ function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) wh
     return v
 end
 
-tcount(cir::ZXGraph) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+tcount(cir::ZXGraph) = sum(!is_clifford(cir, v) for v in spiders(cir))
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     st_v = spider_type(zxg, v)
@@ -270,7 +270,7 @@ function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
         while ps[v] < 0
             ps[v] += 2
         end
-        ps[v] = rem(ps[v], 2)
+        ps[v] = rem2pi(ps[v], RoundToZero)
     end
 end
 
@@ -382,3 +382,6 @@ function add_power!(zxg::ZXGraph, n)
     add_power!(zxg.scalar, n)
     return zxg
 end
+
+is_clifford(zxg::ZXGraph, v) = (rem(phase(zxg, v), PiUnit(1//2)) == zero(PiUnit))
+is_pauli(zxg::ZXGraph, v) = (rem(phase(zxg, v), one(PiUnit)) == zero(PiUnit))

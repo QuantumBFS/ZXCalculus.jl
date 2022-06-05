@@ -10,6 +10,8 @@ using Graphs, Multigraphs
 using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
+export PiUnit
+
 export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
 export Rule, Match
@@ -21,8 +23,8 @@ export rewrite!, simplify!, clifford_simplification, full_reduction,
     circuit_extraction, phase_teleportation
 export random_circuit
 
-include("im_pi_unit.jl")
-include("scalar.jl")
+include("phases/pi_unit.jl")
+include("phases/scalar.jl")
     
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")

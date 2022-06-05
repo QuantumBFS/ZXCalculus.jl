@@ -11,7 +11,7 @@ mutable struct Scalar{P}
     end
 end
 
-function Scalar(n = 0, p = PiUnit(0//1))
+function Scalar(n = 0, p = zero(PiUnit))
     return Scalar{PiUnit}(n, PiUnit(p))
 end
 

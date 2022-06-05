@@ -40,8 +40,8 @@ push_gate!(chain, Val(:Rx), 2, ZXCalculus.PiUnit(1//4))
 push_gate!(chain, Val(:S), 3)
 
 ir = @make_ircode begin
-end
-bir = BlockIR(ir, 4, chain)
+end;
+bir = BlockIR(ir, 4, chain);
 zxd = convert_to_zxd(bir)
 convert_to_chain(zxd)
 pt_zxd = phase_teleportation(zxd)
@@ -51,6 +51,7 @@ pt_chain = convert_to_chain(pt_zxd)
 
 zxg = clifford_simplification(zxd)
 cl_chain = circuit_extraction(zxg)
+plot(zxg)
 
 zxg = full_reduction(zxd)
 fl_chain = circuit_extraction(zxg)
@@ -58,9 +59,9 @@ ZXCalculus.generate_layout!(zxg)
 @test ZXCalculus.qubit_loc(zxg, 40) == 0//1
 ZXCalculus.spider_sequence(zxg)
 
-pt_bir = phase_teleportation(bir)
-cl_bir = clifford_simplification(bir)
-fl_bir = full_reduction(bir)
+pt_bir = phase_teleportation(bir);
+cl_bir = clifford_simplification(bir);
+fl_bir = full_reduction(bir);
 
 @test length(pt_chain) == length(pt_bir.circuit)
 @test length(cl_chain) == length(cl_bir.circuit)
@@ -139,8 +140,8 @@ function random_identity(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
     return bir
 end
 
-circ = random_identity(5, 50);
+circ = random_identity(5, 100);
 zxd = convert_to_zxd(circ)
 zxg = ZXGraph(zxd)
 plot(zxd)
-zxg |> clifford_simplification |> full_reduction |> plot
+c = zxg |> clifford_simplification |> full_reduction |> plot

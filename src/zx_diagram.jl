@@ -1,5 +1,5 @@
 module SpiderType
-    @enum SType Z X H In Out
+    @enum SType Z X H W D In Out
 end  # module SpiderType
 
 """
@@ -64,13 +64,15 @@ julia> using Graphs, Multigraphs, ZXCalculus;
 
 julia> using ZXCalculus.SpiderType: In, Out, H, Z, X;
 
+julia> using ZXCalculus: PiUnit
+
 julia> mg = Multigraph(5);
 
 julia> for i = 1:4
            add_edge!(mg, i, i+1)
        end;
 
-julia> ZXDiagram(mg, [In, Z, H, X, Out], [0//1, 1, 0, 1//2, 0])
+julia> ZXDiagram(mg, [In, Z, H, X, Out], PiUnit.([0//1, 1, 0, 1//2, 0]))
 ZX-diagram with 5 vertices and 4 multiple edges:
 (S_1{input} <-1-> S_2{phase = 1//1⋅π})
 (S_2{phase = 1//1⋅π} <-1-> S_3{H})
@@ -143,9 +145,9 @@ Set the phase of `v` in `zxd` to `p`.
 function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
     if has_vertex(zxd.mg, v)
         while p < 0
-            p += 2
+            p += PiUnit(2//1)
         end
-        p = rem(p, 2)
+        p = rem2pi(p, RoundToZero)
         zxd.ps[v] = p
         return true
     end
@@ -297,9 +299,9 @@ function round_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
     ps = zxd.ps
     for v in keys(ps)
         while ps[v] < 0
-            ps[v] += 2
+            ps[v] += PiUnit(2//1)
         end
-        ps[v] = rem(ps[v], 2)
+        ps[v] = rem2pi(ps[v], RoundToZero)
     end
     return
 end
@@ -450,7 +452,7 @@ end
 
 Returns the T-count of a ZX-diagram.
 """
-tcount(cir::ZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+tcount(cir::ZXDiagram) = sum(!is_clifford(cir, v) for v in spiders(cir))
 
 """
     get_inputs(zxd)
@@ -614,3 +616,6 @@ function safe_convert(::Type{T}, x::Real) where T<:Rational
     @warn "converting phase to rational, but with rounding error $(abs(fr-x))."
     return fr
 end
+
+is_clifford(zxd::ZXDiagram, v) = (rem(phase(zxd, v), PiUnit(1//2)) == zero(PiUnit))
+is_pauli(zxd::ZXDiagram, v) = (rem(phase(zxd, v), one(PiUnit)) == zero(PiUnit))

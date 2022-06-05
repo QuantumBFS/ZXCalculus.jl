@@ -8,7 +8,7 @@ function ancilla_extraction(zxg::ZXGraph)
     for v in spiders(nzxg)
         if spider_type(nzxg, v) == SpiderType.Z && degree(nzxg, v) == 1
             v1 = neighbors(nzxg, v)[1]
-            if phase(nzxg, v1) in (0, 1)
+            if is_pauli(nzxg, v1)
                 gads[v1] = v
             end
         end
@@ -76,7 +76,7 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
     nbs = Int[]
     for i in 1:length(frontiers)
         v = frontiers[i]
-        if phase(nzxg, v) != 0
+        if phase(nzxg, v) != zero(PiUnit)
             pushfirst_gate!(circ, Val(:Z), i, phase(nzxg, v))
             set_phase!(nzxg, v, zero(phase(nzxg, v)))
         end
@@ -177,7 +177,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     for v in spiders(nzxg)
         if spider_type(nzxg, v) == SpiderType.Z && degree(nzxg, v) == 1
             v1 = neighbors(nzxg, v)[1]
-            if phase(nzxg, v1) in (0, 1)
+            if is_pauli(nzxg, v1)
                 push!(gads, v, v1)
             end
         end
@@ -206,8 +206,8 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
-        if phase(nzxg, w) != 0
-            pushfirst_gate!(cir, Val{:Rz}(), i, phase(nzxg, w))
+        if phase(nzxg, w) != zero(PiUnit)
+            pushfirst_gate!(cir, Val{:shift}(), i, phase(nzxg, w))
             set_phase!(nzxg, w, zero(P)) 
         end
         @inbounds rem_edge!(nzxg, w, Outs[i])
@@ -356,8 +356,8 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         end
         if spider_type(zxg, w) == SpiderType.Z
             qubit_map[w] = qubit_map[v]
-            if phase(zxg, w) != 0
-                pushfirst_gate!(cir, Val{:Rz}(), qubit_map[w], phase(zxg, w))
+            if phase(zxg, w) != zero(PiUnit)
+                pushfirst_gate!(cir, Val{:shift}(), qubit_map[w], phase(zxg, w))
                 set_phase!(zxg, w, zero(P))
             end
             rem_edge!(zxg, v, w)

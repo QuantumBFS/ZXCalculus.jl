@@ -1,13 +1,14 @@
+using Test
 using ZXCalculus
-using ZXCalculus: ancilla_extraction
+using ZXCalculus: ancilla_extraction, PiUnit
 
 function gen_phase_gadget()
     zxd = ZXDiagram(2)
-    push_gate!(zxd, Val(:Z), 1, 1//2)
+    push_gate!(zxd, Val(:Z), 1, PiUnit(1//2))
     push_gate!(zxd, Val(:CNOT), 1, 2)
-    push_gate!(zxd, Val(:Z), 1, 1//4)
+    push_gate!(zxd, Val(:Z), 1, PiUnit(1//4))
     push_gate!(zxd, Val(:CNOT), 1, 2)
-    push_gate!(zxd, Val(:Z), 1, 1//2)
+    push_gate!(zxd, Val(:Z), 1, PiUnit(1//2))
     
     return zxd
 end

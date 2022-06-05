@@ -1,5 +1,8 @@
+using Test
+using ZXCalculus
+
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
-ps = [Rational(0) for i = 1:3]
+ps = [zero(PiUnit) for i = 1:3]
 v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 zxd2 = ZXDiagram(g, Dict(zip(1:3,v_t)), Dict(zip(1:3,ps)))
@@ -13,7 +16,7 @@ zxd2 = copy(zxd)
 @test rem_edge!(zxd, 2, 3)
 @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
 
-ZXCalculus.add_spider!(zxd, SpiderType.H, 0//1, [2, 3])
+ZXCalculus.add_spider!(zxd, SpiderType.H, zero(PiUnit), [2, 3])
 ZXCalculus.insert_spider!(zxd, 2, 4, SpiderType.H)
 @test nv(zxd) == 5 && ne(zxd) == 4
 
@@ -30,11 +33,11 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     @test ZXCalculus.continued_fraction(-0.5, 10) === -1//2
     zxd = ZXDiagram(4)
     push_gate!(zxd, Val(:X), 3, 0.5)
-    @test zxd.ps[9] == 1//2
+    @test zxd.ps[9] == PiUnit(1//2)
     push_gate!(zxd, Val(:X), 3, -0.5)
-    @test zxd.ps[10] == 3//2
+    @test zxd.ps[10] == PiUnit(3//2)
     push_gate!(zxd, Val(:Z), 3, 0)
-    @test zxd.ps[11] == 0//1
+    @test zxd.ps[11] == zero(PiUnit)
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
     @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
     @test ZXCalculus.safe_convert(Rational{Int64}, 1.2) == 6//5 && ZXCalculus.safe_convert(Rational{Int64}, 1//2) == 1//2
