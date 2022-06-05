@@ -90,7 +90,13 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
+    phase_ids = Dict{T, Tuple{T, Int}}()
+    for v in spiders(nzxd)
+        if spider_type(nzxd, v) == SpiderType.Z
+            phase_ids[v] = (v, 1)
+        end
+    end
+    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
 
     for e in eH
         v1, v2 = e

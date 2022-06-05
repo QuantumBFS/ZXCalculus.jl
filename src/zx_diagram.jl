@@ -13,24 +13,15 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     ps::Dict{T, P}
 
     layout::ZXLayout{T}
-    phase_ids::Dict{T, Tuple{T, Int}}
 
     scalar::Scalar{P}
     inputs::Vector{T}
     outputs::Vector{T}
 
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
-        s::Scalar{P} = Scalar{P}(), 
+        layout::ZXLayout{T}, s::Scalar{P} = Scalar{P}(), 
         inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
-            if length(phase_ids) == 0
-                for v in vertices(mg)
-                    if st[v] in (SpiderType.Z, SpiderType.X)
-                        phase_ids[v] = (v, 1)
-                    end
-                end
-            end
             if length(inputs) == 0
                 for v in vertices(mg)
                     if st[v] == SpiderType.In
@@ -51,7 +42,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
                     sort!(outputs, by = (v -> qubit_loc(layout, v)))
                 end
             end
-            zxd = new{T, P}(mg, st, ps, layout, phase_ids, s, inputs, outputs)
+            zxd = new{T, P}(mg, st, ps, layout, s, inputs, outputs)
             round_phases!(zxd)
             return zxd
         else
@@ -62,8 +53,7 @@ end
 
 """
     ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T} = ZXLayout{T}(),
-        phase_ids::Dict{T,Tuple{T, Int}} = Dict{T,Tuple{T,Int}}()) where {T, P}
+        layout::ZXLayout{T} = ZXLayout{T}()) where {T, P}
     ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
         layout::ZXLayout{T} = ZXLayout{T}()) where {T, P}
 
@@ -90,8 +80,7 @@ ZX-diagram with 5 vertices and 4 multiple edges:
 ```
 """
 ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-    layout::ZXLayout{T} = ZXLayout{T}(),
-    phase_ids::Dict{T,Tuple{T, Int}} = Dict{T,Tuple{T,Int}}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout, phase_ids)
+    layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} = ZXDiagram{T, P}(mg, st, ps, layout)
 ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
     layout::ZXLayout{T} = ZXLayout{T}()) where {T, P} =
     ZXDiagram(mg, Dict(zip(sort!(vertices(mg)), st)), Dict(zip(sort!(vertices(mg)), ps)), layout)
@@ -128,8 +117,8 @@ function ZXDiagram(nbits::T) where {T<:Integer}
     return ZXDiagram(mg, st, ps, layout)
 end
 
-Base.copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
-    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd.inputs), copy(zxd.outputs))
+Base.copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), 
+    copy(zxd.layout), copy(zxd.scalar), copy(zxd.inputs), copy(zxd.outputs))
 
 """
     spider_type(zxd, v)
@@ -248,7 +237,6 @@ function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
         for v in vs
             delete!(zxd.ps, v)
             delete!(zxd.st, v)
-            delete!(zxd.phase_ids, v)
             rem_vertex!(zxd.layout, v)
         end
         return true
@@ -273,9 +261,6 @@ function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero
     v = add_vertex!(zxd.mg)[1]
     set_phase!(zxd, v, phase)
     zxd.st[v] = st
-    if st in (SpiderType.Z, SpiderType.X)
-        zxd.phase_ids[v] = (v, 1)
-    end
     if all(has_vertex(zxd.mg, c) for c in connect)
         for c in connect
             add_edge!(zxd.mg, v, c)
