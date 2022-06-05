@@ -143,7 +143,7 @@ function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
             push_spider_to_chain!(qc, q2, phase(circ, v2), spider_type(circ, v2))
             if spider_type(circ, v1) == SpiderType.Z && spider_type(circ, v2) == SpiderType.X
                 push!(qc, Ctrl(Gate(X, Locations(q2)), CtrlLocations(q1)))
-            elseif spider_type(circ, v1) == SpiderType.X && spider_type(circ, v1) == SpiderType.Z
+            elseif spider_type(circ, v1) == SpiderType.X && spider_type(circ, v2) == SpiderType.Z
                 push!(qc, Ctrl(Gate(X, Locations(q1)), CtrlLocations(q2)))
             else
                 error("Spiders ($v1, $v2) should represent a CNOT")
