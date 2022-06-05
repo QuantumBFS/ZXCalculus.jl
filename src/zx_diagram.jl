@@ -70,7 +70,7 @@ end
 Construct a ZXDiagram with all information.
 
 ```jldoctest
-julia> using LightGraphs, Multigraphs, ZXCalculus;
+julia> using Graphs, Multigraphs, ZXCalculus;
 
 julia> using ZXCalculus.SpiderType: In, Out, H, Z, X;
 
@@ -206,7 +206,7 @@ end
 
 Returns the number of vertices (spiders) of a ZX-diagram.
 """
-LightGraphs.nv(zxd::ZXDiagram) = nv(zxd.mg)
+Graphs.nv(zxd::ZXDiagram) = nv(zxd.mg)
 
 """
     ne(zxd; count_mul = false)
@@ -215,14 +215,14 @@ Returns the number of edges of a ZX-diagram. If `count_mul`, it will return the
 sum of multiplicities of all multiple edges. Otherwise, it will return the
 number of multiple edges.
 """
-LightGraphs.ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
+Graphs.ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
 
-LightGraphs.outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
-LightGraphs.inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
+Graphs.outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
+Graphs.inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
 
-LightGraphs.degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
-LightGraphs.indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
-LightGraphs.outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+Graphs.degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
+Graphs.indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+Graphs.outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
 
 """
     neighbors(zxd, v; count_mul = false)
@@ -230,11 +230,11 @@ LightGraphs.outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
 Returns a vector of vertices connected to `v`. If `count_mul`, there will be
 multiple copy for each vertex. Otherwise, each vertex will only appear once.
 """
-LightGraphs.neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
-function LightGraphs.rem_edge!(zxd::ZXDiagram, x...)
+Graphs.neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
+function Graphs.rem_edge!(zxd::ZXDiagram, x...)
     rem_edge!(zxd.mg, x...)
 end
-function LightGraphs.add_edge!(zxd::ZXDiagram, x...)
+function Graphs.add_edge!(zxd::ZXDiagram, x...)
     add_edge!(zxd.mg, x...)
 end
 
@@ -601,7 +601,6 @@ function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T,
     end
     for q = 1:length(zxd.outputs)
         set_loc!(layout, zxd.outputs[q], q, maximum(frontier_col))
-        #TODO: add SWAPs
     end
     return layout
 end

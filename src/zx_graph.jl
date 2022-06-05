@@ -100,16 +100,16 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
-LightGraphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
-LightGraphs.nv(zxg::ZXGraph) = nv(zxg.mg)
-LightGraphs.ne(zxg::ZXGraph) = ne(zxg.mg)
-LightGraphs.outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
-LightGraphs.inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
-LightGraphs.neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
-LightGraphs.degree(zxg::ZXGraph, v::Integer) = degree(zxg.mg, v)
-LightGraphs.indegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
-LightGraphs.outdegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
-function LightGraphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
+Graphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
+Graphs.nv(zxg::ZXGraph) = nv(zxg.mg)
+Graphs.ne(zxg::ZXGraph) = ne(zxg.mg)
+Graphs.outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
+Graphs.inneighbors(zxg::ZXGraph, v::Integer) = inneighbors(zxg.mg, v)
+Graphs.neighbors(zxg::ZXGraph, v::Integer) = neighbors(zxg.mg, v)
+Graphs.degree(zxg::ZXGraph, v::Integer) = degree(zxg.mg, v)
+Graphs.indegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
+Graphs.outdegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
+function Graphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     if rem_edge!(zxg.mg, v1, v2)
         delete!(zxg.et, (min(v1, v2), max(v1, v2)))
         return true
@@ -117,7 +117,7 @@ function LightGraphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     return false
 end
 
-function LightGraphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
+function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
             if edge_type == EdgeType.HAD

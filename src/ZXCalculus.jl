@@ -5,9 +5,9 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using LightGraphs, Multigraphs
+using Graphs, Multigraphs
 
-using LightGraphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
+using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
 export SpiderType, EdgeType
@@ -19,6 +19,7 @@ export push_gate!, pushfirst_gate!, tcount
 export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 
     circuit_extraction, phase_teleportation
+export random_circuit
 
 include("phase.jl")
 include("scalar.jl")
