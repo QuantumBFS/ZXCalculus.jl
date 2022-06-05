@@ -1,5 +1,5 @@
 using Test
-using ZXCalculus, YaoPlots
+using ZXCalculus
 using YaoHIR, YaoLocations
 using CompilerPluginTools
 
