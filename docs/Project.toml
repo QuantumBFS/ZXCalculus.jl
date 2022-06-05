@@ -1,6 +1,6 @@
 [deps]
 DocThemeIndigo = "8bac0ac5-51bf-41f9-885e-2bf1ac2bec5f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 ZXCalculus = "3525faa3-032d-4235-a8d4-8c2939a218dd"
