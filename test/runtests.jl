@@ -47,8 +47,4 @@ end
     include("challenge.jl")
 end
 
-@testset "plots" begin
-    include("plots/zx_plot.jl")
-end
-
 doctest(ZXCalculus)
