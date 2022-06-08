@@ -1,3 +1,9 @@
+"""
+    ancilla_extraction(zxg::ZXGraph) -> ZXDiagram
+
+Extract a quantum circuit from a general `ZXGraph` even without a gflow. 
+It will introduce post-selection operators.
+"""
 function ancilla_extraction(zxg::ZXGraph)
     nzxg = copy(zxg)
     simplify!(Rule(:scalar), nzxg)

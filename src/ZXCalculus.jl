@@ -40,11 +40,4 @@ include("ir.jl")
 
 include("deprecations.jl")
 
-using Compose
-using Vega
-using DataFrames
-
-export plot, plot_vega, plot_compose
-include("plots/zx_plot.jl")
-
 end # module
