@@ -147,7 +147,6 @@ end
     for e in [[1,2],[2,3],[1,4],[1,5]]
         add_edge!(zxg, e[1], e[2])
     end
-    zxg |> plot
     @test length(match(Rule{:p1}(), zxg)) == 1
     replace!(Rule{:pab}(), zxg)
     @test nv(zxg) == 6 && ne(zxg) == 6
@@ -166,10 +165,8 @@ end
     for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
         add_edge!(zxg, e[1], e[2])
     end
-    plot(zxg)
     match(Rule{:p2}(), zxg)
     replace!(Rule{:p2}(), zxg)
-    plot(zxg)
     @test zxg.phase_ids[15] == (2, -1)
 end
 
@@ -186,7 +183,6 @@ end
     for e in [[1,2],[1,3],[1,4],[1,5],[1,6],[2,5],[2,6],[2,7],[2,8]]
         add_edge!(zxg, e[1], e[2])
     end
-    plot(zxg)
     replace!(Rule{:p3}(), zxg)
 
     @test nv(zxg) == 16 && ne(zxg) == 28

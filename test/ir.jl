@@ -51,7 +51,6 @@ pt_chain = convert_to_chain(pt_zxd)
 
 zxg = clifford_simplification(zxd)
 cl_chain = circuit_extraction(zxg)
-plot(zxg)
 
 zxg = full_reduction(zxd)
 fl_chain = circuit_extraction(zxg)
