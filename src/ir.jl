@@ -192,7 +192,6 @@ function push_spider_to_chain!(qc, q, ps, st)
             elseif ps == PiUnit(7//4)
                 push!(qc, Gate(AdjointOperation(T), Locations(q)))
             elseif ps != zero(PiUnit)
-                @show ps
                 if ps isa PiUnit
                     θ = ps * one(PiUnit)
                     θ = θ.ex
