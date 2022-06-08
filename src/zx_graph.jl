@@ -177,7 +177,8 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
             c_loc = ceil(column_loc(zxg, nb) - 2)
         end
     end
-    return c_loc
+    c_loc !== nothing && return c_loc
+    return 0
 end
 
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
@@ -285,8 +286,8 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     return false
 end
 
-get_outputs(zxg::ZXGraph) = get_outputs(zxg.master)
-get_inputs(zxg::ZXGraph) = get_inputs(zxg.master)
+get_outputs(zxg::ZXGraph) = zxg.outputs
+get_inputs(zxg::ZXGraph) = zxg.inputs
 
 # TODO: remove it?
 function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}

@@ -170,7 +170,7 @@ In the previous sections, we introduced how to use `ZXCalculus.jl` for ZX-diagra
 
 One can create a `ZXDiagram` by building up its `Multigraph` and other information. For example,
 ```julia
-using ZXCalculus, YaoPlots, LightGraphs
+using ZXCalculus, YaoPlots, Graphs
 g = Multigraph(6)
 add_edge!(g, 1, 2)
 add_edge!(g, 2, 3)

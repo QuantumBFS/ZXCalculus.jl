@@ -16,9 +16,9 @@ ZXCalculus.qubit_loc
 ZXCalculus.tcount(zxd::AbstractZXDiagram)
 spider_type(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
 ZXCalculus.phase(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
-LightGraphs.nv(zxd::ZXDiagram)
-LightGraphs.ne(::ZXDiagram)
-LightGraphs.neighbors(::ZXDiagram, v)
+Graphs.nv(zxd::ZXDiagram)
+Graphs.ne(::ZXDiagram)
+Graphs.neighbors(::ZXDiagram, v)
 ZXCalculus.is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
 ZXCalculus.add_spider!
 ZXCalculus.insert_spider!

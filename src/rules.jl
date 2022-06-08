@@ -16,7 +16,7 @@ Rule for `ZXDiagram`s:
 Rule for `ZXGraph`s:
 * `Rule{:lc}()`: local complementary rule
 * `Rule{:p1}()`: pivoting rule
-* `Rule{:pab}()`: rule for removing Paulis spiders adjancent to boundary spiders
+* `Rule{:pab}()`: rule for removing Pauli spiders adjancent to boundary spiders
 * `Rule{:p2}()`: rule p2
 * `Rule{:p3}()`: rule p3
 * `Rule{:id}()`: rule id
@@ -646,26 +646,37 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     end
     @inbounds if is_hadamard(zxg, v, v_bound)
         # TODO
-        insert_spider!(zxg, v, v_bound)
-        w = neighbors(zxg, v_bound)[1]
-        insert_spider!(zxg, w, v_bound, phase_v)
-        w = neighbors(zxg, v_bound)[1]
-        set_phase!(zxg, w, phase(zxg, v))
-        zxg.phase_ids[w] = zxg.phase_ids[v]
-        set_phase!(zxg, v, zero(P))
-        zxg.phase_ids[v] = (v, 1)
+        w = insert_spider!(zxg, v, v_bound)[1]
+
+        zxg.et[(v_bound, w)] = EdgeType.SIM
+        v_bound_master = v_bound
+        v_master = neighbors(zxg.master, v_bound_master)[1]
+        w_master = insert_spider!(zxg.master, v_bound_master, v_master,  SpiderType.Z)[1]
+        # @show w, w_master
+        zxg.phase_ids[w] = (w_master, 1)
+
+        # set_phase!(zxg, w, phase(zxg, v))
+        # zxg.phase_ids[w] = zxg.phase_ids[v]
+        # set_phase!(zxg, v, zero(P))
+        # zxg.phase_ids[v] = (v, 1)
     else
         # TODO
-        insert_spider!(zxg, v, v_bound)
-        w = neighbors(zxg, v_bound)[1]
-        insert_spider!(zxg, w, v_bound, phase_v)
-        w = neighbors(zxg, v_bound)[1]
-        set_phase!(zxg, w, phase(zxg, v))
-        zxg.phase_ids[w] = zxg.phase_ids[v]
-        set_phase!(zxg, v, zero(P))
-        zxg.phase_ids[v] = (v, 1)
-        rem_edge!(zxg, w, v_bound)
-        add_edge!(zxg, w, v_bound, EdgeType.SIM)
+        w = insert_spider!(zxg, v, v_bound)[1]
+        # insert_spider!(zxg, w, v_bound, phase_v)
+        # w = neighbors(zxg, v_bound)[1]
+        # set_phase!(zxg, w, phase(zxg, v))
+        # zxg.phase_ids[w] = zxg.phase_ids[v]
+        
+        v_bound_master = v_bound
+        v_master = neighbors(zxg.master, v_bound_master)[1]
+        w_master = insert_spider!(zxg.master, v_bound_master, v_master,  SpiderType.X)[1]
+        # @show w, w_master
+        zxg.phase_ids[w] = (w_master, 1)
+        
+        # set_phase!(zxg, v, zero(P))
+        # zxg.phase_ids[v] = (v, 1)
+        # rem_edge!(zxg, w, v_bound)
+        # add_edge!(zxg, w, v_bound, EdgeType.SIM)
     end
     return rewrite!(Rule{:p1}(), zxg, Match{T}([u, v]))
 end

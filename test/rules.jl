@@ -123,7 +123,7 @@ end
 
 @test length(match(Rule{:p1}(), zxg)) == 1
 replace!(Rule{:pab}(), zxg)
-@test nv(zxg) == 6 && ne(zxg) == 6
+@test nv(zxg) == 7 && ne(zxg) == 6
 
 g = Multigraph(14)
 for e in [[3,9],[4,10],[5,11],[6,12],[7,13],[8,14]]
