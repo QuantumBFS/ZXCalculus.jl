@@ -14,6 +14,9 @@ PiUnit(p::PiUnit) = p
 to_pi_unit(p) = PiUnit(p) / one(PiUnit)
 to_pi_unit(p::PiUnit) = p
 
+unwrap_pi_unit(p::PiUnit) = p.ex * pi
+unwrap_pi_unit(p::Number) = p
+
 function Base.show(io::IO, p::PiUnit)
     if p.ex isa Number
         print(io, "$(p.ex)⋅π")

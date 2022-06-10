@@ -47,4 +47,8 @@ end
     include("challenge.jl")
 end
 
+@testset "OMEinsum" begin
+    include("omeinsum/to_eincode.jl")
+end
+
 doctest(ZXCalculus)

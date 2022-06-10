@@ -40,4 +40,7 @@ include("ir.jl")
 
 include("deprecations.jl")
 
+using OMEinsum, OMEinsumContractionOrders
+include("omeinsum/to_eincode.jl")
+
 end # module
