@@ -1,15 +1,21 @@
 export to_eincode_indices, to_matrix
 
 Base.Matrix(zxd::ZXDiagram) = to_matrix(zxd)
+Base.Matrix(zxg::ZXGraph) = to_matrix(zxg)
 
-function to_matrix(zxd)
-    nin = sum((spider_type(zxd, v) in (SpiderType.In, SpiderType.Out)) for v in get_inputs(zxd))
-    nout = sum((spider_type(zxd, v) in (SpiderType.In, SpiderType.Out)) for v in get_outputs(zxd))
+to_matrix(zxg::ZXGraph; kwargs...) = to_matrix(ZXDiagram(zxg); kwargs...)
+function to_matrix(zxd::ZXDiagram; optimizer = GreedyMethod(), verbose = false)
+    nin = sum([(spider_type(zxd, v) in (SpiderType.In, SpiderType.Out)) for v in get_inputs(zxd)])
+    nout = sum([(spider_type(zxd, v) in (SpiderType.In, SpiderType.Out)) for v in get_outputs(zxd)])
     ec, ts = to_eincode(zxd)
-    m = ec(ts...)
-    return reshape(m, (1<<nin, 1<<nout))
+    verbose && println("Optimizing contraction orders...")
+    ec_opt = optimize_code(ec, uniformsize(ec, 2), optimizer);
+    verbose && println("Contracting...")
+    m = ec_opt(ts...)
+    return reshape(m, (1<<nout, 1<<nin))
 end
 
+to_eincode(zxg::ZXGraph) = to_eincode(ZXDiagram(zxg))
 function to_eincode(zxd::ZXDiagram{T, P}) where {T, P}
     vs = spiders(zxd)
     tensors = []
@@ -21,14 +27,14 @@ function to_eincode(zxd::ZXDiagram{T, P}) where {T, P}
             push!(tensors, to_eincode_tensor(zxd, v))
         end
     end
-    for i in get_inputs(zxd)
-        if spider_type(zxd, i) in (SpiderType.In, SpiderType.Out)
-            push!(iy, to_eincode_indices(zxd, i)[])
-        end
-    end
     for o in get_outputs(zxd)
         if spider_type(zxd, o) in (SpiderType.In, SpiderType.Out)
             push!(iy, to_eincode_indices(zxd, o)[])
+        end
+    end
+    for i in get_inputs(zxd)
+        if spider_type(zxd, i) in (SpiderType.In, SpiderType.Out)
+            push!(iy, to_eincode_indices(zxd, i)[])
         end
     end
     s = unwrap_scalar(scalar(zxd))
