@@ -106,6 +106,18 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
+function ZXDiagram(zxg::ZXGraph{T, P}) where {T, P}
+    zxd = ZXDiagram{T, P}(copy(zxg.mg), copy(zxg.st), copy(zxg.ps), copy(zxg.layout),
+        copy(zxg.scalar), copy(zxg.inputs), copy(zxg.outputs)
+    )
+    for e in collect(edges(zxd.mg))
+        v1 = src(e)
+        v2 = dst(e)
+        is_hadamard(zxg, v1, v2) && insert_spider!(zxd, v1, v2, SpiderType.H)
+    end
+    return zxd
+end
+
 Graphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 Graphs.nv(zxg::ZXGraph) = nv(zxg.mg)
 Graphs.ne(zxg::ZXGraph) = ne(zxg.mg)
@@ -126,7 +138,7 @@ end
 function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
-            if edge_type == EdgeType.HAD
+            if edge_type === EdgeType.HAD
                 set_phase!(zxg, v1, phase(zxg, v1)+one(PiUnit))
                 add_power!(zxg, -1)
             end
@@ -191,7 +203,7 @@ function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
     if has_edge(zxg, v1, v2)
         src = min(v1, v2)
         dst = max(v1, v2)
-        return zxg.et[(src, dst)] == EdgeType.HAD
+        return zxg.et[(src, dst)] === EdgeType.HAD
     end
     return false
 end
