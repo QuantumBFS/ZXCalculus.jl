@@ -4,67 +4,75 @@ using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
 using CompilerPluginTools
 
-chain = Chain()
-push_gate!(chain, Val(:Sdag), 1)
-push_gate!(chain, Val(:Z), 1)
-push_gate!(chain, Val(:H), 1)
-push_gate!(chain, Val(:S), 1)
-push_gate!(chain, Val(:S), 2)
-push_gate!(chain, Val(:H), 4)
-push_gate!(chain, Val(:CNOT), 3, 2)
-push_gate!(chain, Val(:CZ), 4, 1)
-push_gate!(chain, Val(:H), 2)
-push_gate!(chain, Val(:T), 2)
-push_gate!(chain, Val(:CNOT), 3, 2)
-push_gate!(chain, Val(:Tdag), 2)
-push_gate!(chain, Val(:CNOT), 1, 4)
-push_gate!(chain, Val(:H), 1)
-push_gate!(chain, Val(:T), 2)
-push_gate!(chain, Val(:S), 3)
-push_gate!(chain, Val(:H), 4)
-push_gate!(chain, Val(:T), 1)
-push_gate!(chain, Val(:T), 2)
-push_gate!(chain, Val(:T), 3)
-push_gate!(chain, Val(:X), 3)
-push_gate!(chain, Val(:H), 2)
-push_gate!(chain, Val(:H), 3)
-push_gate!(chain, Val(:Sdag), 4)
-push_gate!(chain, Val(:S), 3)
-push_gate!(chain, Val(:X), 4)
-push_gate!(chain, Val(:CNOT), 3, 2)
-push_gate!(chain, Val(:H), 1)
-push_gate!(chain, Val(:shift), 4, ZXCalculus.PiUnit(1//2))
-push_gate!(chain, Val(:Rx), 4, ZXCalculus.PiUnit(1//1))
-push_gate!(chain, Val(:Rx), 3, ZXCalculus.PiUnit(1//4))
-push_gate!(chain, Val(:Rx), 2, ZXCalculus.PiUnit(1//4))
-push_gate!(chain, Val(:S), 3)
+function test_chain()
+    chain = Chain()
+    push_gate!(chain, Val(:Sdag), 1)
+    push_gate!(chain, Val(:Z), 1)
+    push_gate!(chain, Val(:H), 1)
+    push_gate!(chain, Val(:S), 1)
+    push_gate!(chain, Val(:S), 2)
+    push_gate!(chain, Val(:H), 4)
+    push_gate!(chain, Val(:CNOT), 3, 2)
+    push_gate!(chain, Val(:CZ), 4, 1)
+    push_gate!(chain, Val(:H), 2)
+    push_gate!(chain, Val(:T), 2)
+    push_gate!(chain, Val(:CNOT), 3, 2)
+    push_gate!(chain, Val(:Tdag), 2)
+    push_gate!(chain, Val(:CNOT), 1, 4)
+    push_gate!(chain, Val(:H), 1)
+    push_gate!(chain, Val(:T), 2)
+    push_gate!(chain, Val(:S), 3)
+    push_gate!(chain, Val(:H), 4)
+    push_gate!(chain, Val(:T), 1)
+    push_gate!(chain, Val(:T), 2)
+    push_gate!(chain, Val(:T), 3)
+    push_gate!(chain, Val(:X), 3)
+    push_gate!(chain, Val(:H), 2)
+    push_gate!(chain, Val(:H), 3)
+    push_gate!(chain, Val(:Sdag), 4)
+    push_gate!(chain, Val(:S), 3)
+    push_gate!(chain, Val(:X), 4)
+    push_gate!(chain, Val(:CNOT), 3, 2)
+    push_gate!(chain, Val(:H), 1)
+    push_gate!(chain, Val(:shift), 4, ZXCalculus.PiUnit(1//2))
+    push_gate!(chain, Val(:Rx), 4, ZXCalculus.PiUnit(1//1))
+    push_gate!(chain, Val(:Rx), 3, ZXCalculus.PiUnit(1//4))
+    push_gate!(chain, Val(:Rx), 2, ZXCalculus.PiUnit(1//4))
+    push_gate!(chain, Val(:S), 3)
+    return chain
+end
 
+chain = test_chain()
 ir = @make_ircode begin
 end;
 bir = BlockIR(ir, 4, chain);
 zxd = convert_to_zxd(bir)
-convert_to_chain(zxd)
-pt_zxd = phase_teleportation(zxd)
-@test tcount(pt_zxd) <= tcount(zxd)
-pt_chain = convert_to_chain(pt_zxd)
-@test length(pt_chain) <= length(chain)
+M = Matrix(zxd)
+zxd_pt = phase_teleportation(zxd)
+M_pt = Matrix(zxd_pt)
+@test M ≈ M_pt
+@test tcount(zxd_pt) <= tcount(zxd)
+chain_pt = convert_to_chain(zxd_pt)
+@test length(chain_pt) <= length(chain)
 
-zxg = clifford_simplification(zxd)
-cl_chain = circuit_extraction(zxg)
+zxg_cl = clifford_simplification(zxd)
+chain_cl = circuit_extraction(zxg_cl)
+@test M ≈ Matrix(zxg_cl)
 
-zxg = full_reduction(zxd)
-fl_chain = circuit_extraction(zxg)
-ZXCalculus.generate_layout!(zxg)
-@test ZXCalculus.qubit_loc(zxg, 40) == 0//1
-ZXCalculus.spider_sequence(zxg)
+zxg_fl = full_reduction(zxd)
+chain_fl = circuit_extraction(zxg_fl)
+ZXCalculus.generate_layout!(zxg_fl)
+@test ZXCalculus.qubit_loc(zxg_fl, 40) == 0//1
+ZXCalculus.spider_sequence(zxg_fl)
+@test M ≈ Matrix(zxg_fl)
 
-pt_bir = phase_teleportation(bir);
-cl_bir = clifford_simplification(bir);
-fl_bir = full_reduction(bir);
+bir_pt = phase_teleportation(bir);
+bir_cl = clifford_simplification(bir);
+bir_fl = full_reduction(bir);
 
-@test length(pt_chain) == length(pt_bir.circuit)
-@test length(cl_chain) == length(cl_bir.circuit)
-@test length(fl_chain) == length(fl_bir.circuit)
+@test length(chain_pt) == length(bir_pt.circuit)
+@test length(chain_cl) == length(bir_cl.circuit)
+@test length(chain_fl) == length(bir_fl.circuit)
 
 @testset "issue#80" begin
     ir = @make_ircode begin
@@ -141,5 +149,7 @@ end
 
 circ = random_identity(5, 100);
 zxd = convert_to_zxd(circ)
+zxd_pt = phase_teleportation(zxd)
+@test Matrix(zxd) ≈ Matrix(zxd_pt)
 zxg = ZXGraph(zxd)
 zxg |> clifford_simplification |> full_reduction 

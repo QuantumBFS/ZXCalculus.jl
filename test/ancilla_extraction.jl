@@ -16,6 +16,7 @@ end
 zxd = gen_phase_gadget()
 zxg = full_reduction(zxd)
 anc_circ = ancilla_extraction(zxg)
+@test Matrix(zxd) ≈ Matrix(anc_circ)
 
 # plot(anc_circ)
 

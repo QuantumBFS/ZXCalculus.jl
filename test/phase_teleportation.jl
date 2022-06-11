@@ -1,7 +1,7 @@
 using Test
 using ZXCalculus
 
-function gen_cir()
+function phase_teleportation_test_circuit()
     cir = ZXDiagram(5)
     push_gate!(cir, Val{:X}(), 5, 1//1)
     push_gate!(cir, Val{:H}(), 5)
@@ -75,7 +75,8 @@ function gen_cir()
     return cir
 end
 
-cir = gen_cir()
+cir = phase_teleportation_test_circuit()
 @test tcount(cir) == 28
 cir2 = phase_teleportation(cir)
 @test tcount(cir2) == 8
+@test Matrix(cir) ≈ Matrix(cir2)
