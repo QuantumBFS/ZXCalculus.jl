@@ -12,6 +12,7 @@ using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
 
 export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
+export ZXWDiagram
 export Rule, Match
 
 export spider_type, phase, spiders, rem_spider!, rem_spiders!
@@ -28,6 +29,8 @@ include("abstract_zx_diagram.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")
+
+include("zxw_diagram.jl")
 
 include("rules.jl")
 include("simplify.jl")

@@ -1,5 +1,5 @@
 module SpiderType
-    @enum SType Z X H In Out
+    @enum SType Z X H W D In Out
 end  # module SpiderType
 
 """
@@ -21,7 +21,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
 
     function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
-        s::Scalar{P} = Scalar{P}(), 
+        s::Scalar{P} = Scalar{P}(),
         inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}()) where {T<:Integer, P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
