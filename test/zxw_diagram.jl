@@ -25,8 +25,30 @@ zxwd_dic = ZXWDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
 @test spider_type(zxwd_vec, 1) == SpiderType.W
 @test phase(zxwd_vec, 1) == Rational(0)
 
-@test (ZXCalculus.set_phase!(zxwd_vec, 1, 2 // 3) == false) &&
-      (phase(zxwd_vec, 1) == Rational(0))
+@test ZXCalculus.set_phase!(zxwd_vec, 1, 2 // 3) && (phase(zxwd_vec, 1) == Rational(0))
+@test !(ZXCalculus.set_phase!(zxwd_vec, 10, 2 // 3))
+
+@test nv(zxwd_vec) == 3 && ne(zxwd_vec) == 2
+@test rem_edge!(zxwd_vec, 2, 3)
+@test outneighbors(zxwd_vec, 2) == inneighbors(zxwd_vec, 2)
+
+@test add_edge!(zxwd_vec, 2, 3)
+@test neighbors(zxwd_vec, 2) == [1, 3]
+
+new_v = ZXCalculus.add_spider!(zxwd_vec, SpiderType.W, 1 // 2, [2, 3])
+@test phase(zxwd_vec, new_v) == Rational(0)
+
+@test_throws ErrorException("The vertex to connect does not exist.") ZXCalculus.add_spider!(
+    zxwd_vec,
+    SpiderType.W,
+    1 // 2,
+    [8, 7, 4],
+)
+
+# TODO: defer testing until layout is migrated
+# rem_spiders!(zxwd_vec, [1, 2, 3])
+# @test nv(zxwd_vec) == 0 && ne(zxwd_vec) == 0
+
 
 
 #TODO: Add test for construction of ZXWDiagram with empty circuit
