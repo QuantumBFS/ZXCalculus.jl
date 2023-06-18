@@ -258,16 +258,6 @@ function Base.show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     end
 end
 
-function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
-    ps = zxg.ps
-    for v in keys(ps)
-        while ps[v] < 0
-            ps[v] += 2
-        end
-        ps[v] = rem(ps[v], 2)
-    end
-end
-
 """
     is_interior(zxg::ZXGraph, v)
 

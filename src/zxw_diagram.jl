@@ -66,13 +66,3 @@ ZXWDiagram(
     layout,
 )
 
-# function round_phases!(zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
-#     ps = zxwd.ps
-#     for v in keys(ps)
-#         while ps[v] < 0
-#             ps[v] += 2
-#         end
-#         ps[v] = rem(ps[v], 2)
-#     end
-#     return
-# end
