@@ -2,8 +2,12 @@ using ZXCalculus, Graphs, Multigraphs, SparseArrays
 using Documenter
 using Test
 
-@testset "zxw_diagram.jl" begin
-    include("zxw_diagram.jl")
+# @testset "zxw_diagram.jl" begin
+#     include("zxw_diagram.jl")
+# end
+
+@testset "utils.jl" begin
+    include("utils.jl")
 end
 
 # @testset "scalar.jl" begin
@@ -17,7 +21,6 @@ end
 # @testset "zx_diagram.jl" begin
 #     include("zx_diagram.jl")
 # end
-
 
 # @testset "rules.jl" begin
 #     include("rules.jl")

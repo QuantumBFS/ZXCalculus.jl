@@ -303,22 +303,6 @@ function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType
     return vs
 end
 
-"""
-    round_phases!(zxd)
-
-Round phases between [0, 2π).
-"""
-function round_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
-    ps = zxd.ps
-    for v in keys(ps)
-        while ps[v] < 0
-            ps[v] += 2
-        end
-        ps[v] = rem(ps[v], 2)
-    end
-    return
-end
-
 spiders(zxd::ZXDiagram) = vertices(zxd.mg)
 qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
 function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
