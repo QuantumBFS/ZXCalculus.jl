@@ -6,9 +6,9 @@ using Test
     include("zxw_diagram.jl")
 end
 
-# @testset "utils.jl" begin
-#     include("utils.jl")
-# end
+@testset "utils.jl" begin
+    include("utils.jl")
+end
 
 # @testset "scalar.jl" begin
 #     include("scalar.jl")

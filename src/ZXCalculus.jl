@@ -10,7 +10,7 @@ using Graphs, Multigraphs
 using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
-export SpiderType, EdgeType, ExtSpiderType
+export SpiderType, EdgeType, ZXWSpiderType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
 export ZXWDiagram
 export Rule, Match

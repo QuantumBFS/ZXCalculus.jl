@@ -14,8 +14,6 @@ struct ZXWDiagram{T<:Integer,P} <: AbstractZXDiagram{T,P}
     st::Dict{T,ZXWSpiderType.SType}
     ps::Dict{T,P}
 
-    layout::ZXLayout{T}
-
     scalar::Scalar{P}
     inputs::Vector{T}
     outputs::Vector{T}
@@ -24,7 +22,6 @@ struct ZXWDiagram{T<:Integer,P} <: AbstractZXDiagram{T,P}
         mg::Multigraph{T},
         st::Dict{T,ZXWSpiderType.SType},
         ps::Dict{T,P},
-        layout::ZXLayout{T},
         s::Scalar{P} = Scalar{P}(),
         inputs::Vector{T} = Vector{T}(),
         outputs::Vector{T} = Vector{T}(),
@@ -33,20 +30,14 @@ struct ZXWDiagram{T<:Integer,P} <: AbstractZXDiagram{T,P}
         nv(mg) != length(st) && error("There should be a type for each spider!")
 
         if length(inputs) == 0
-            inputs = [v for v in vertices(mg) if st[v] == ZXWSpiderType.In]
-            if layout.nbits > 0
-                sort!(inputs, by = (v -> qubit_loc(layout, v)))
-            end
+            inputs = sort!([v for v in vertices(mg) if st[v] == ZXWSpiderType.In])
         end
 
         if length(outputs) == 0
-            outputs = [v for v in vertices(mg) if st[v] == ZXWSpiderType.Out]
-            if layout.nbits > 0
-                sort!(outputs, by = (v -> qubit_loc(layout, v)))
-            end
+            outputs = sort!([v for v in vertices(mg) if st[v] == ZXWSpiderType.Out])
         end
 
-        zxwd = new{T,P}(mg, st, ps, layout, s, inputs, outputs)
+        zxwd = new{T,P}(mg, st, ps, s, inputs, outputs)
         round_phases!(zxwd)
         return zxwd
 
@@ -57,37 +48,22 @@ end
     ZXWDiagram(
         mg::Multigraph{T},
         st::Dict{T,ZXWSpiderType.SType},
-        ps::Dict{T,P},
-        layout::ZXLayout{T} = ZXLayout{T}(),) where {T,P}
+        ps::Dict{T,P},) where {T,P}
 
     ZXWDiagram(
         mg::Multigraph{T},
         st::Vector{ZXWSpiderType.SType},
-        ps::Vector{P},
-        layout::ZXLayout{T} = ZXLayout{T}(),) where {T,P}
+        ps::Vector{P},) where {T,P}
 
-Construct a ZXW-diagram for a given multigraph, spider types, phases, and layout.
+Construct a ZXW-diagram for a given multigraph, spider types, and, phases.
 """
 
-ZXWDiagram(
-    mg::Multigraph{T},
-    st::Dict{T,ZXWSpiderType.SType},
-    ps::Dict{T,P},
-    layout::ZXLayout{T} = ZXLayout{T}(),
-) where {T,P} = ZXWDiagram{T,P}(mg, st, ps, layout)
+ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType.SType}, ps::Dict{T,P}) where {T,P} =
+    ZXWDiagram{T,P}(mg, st, ps)
 
 
-ZXWDiagram(
-    mg::Multigraph{T},
-    st::Vector{ZXWSpiderType.SType},
-    ps::Vector{P},
-    layout::ZXLayout{T} = ZXLayout{T}(),
-) where {T,P} = ZXWDiagram(
-    mg,
-    Dict(zip(sort!(vertices(mg)), st)),
-    Dict(zip(sort!(vertices(mg)), ps)),
-    layout,
-)
+ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType.SType}, ps::Vector{P}) where {T,P} =
+    ZXWDiagram(mg, Dict(zip(sort!(vertices(mg)), st)), Dict(zip(sort!(vertices(mg)), ps)))
 
 """
     ZXWDiagram(nbits)
@@ -99,19 +75,12 @@ function ZXWDiagram(nbits::T) where {T<:Integer}
     mg = Multigraph(2 * nbits)
     st = [ZXWSpiderType.In for _ = 1:2*nbits]
     ps = [Phase(0 // 1) for _ = 1:2*nbits]
-    spider_q = Dict{T,Rational{Int}}()
-    spider_col = Dict{T,Rational{Int}}()
 
     for i = 1:nbits
         add_edge!(mg, 2 * i - 1, 2 * i)
         @inbounds st[2*i] = ZXWSpiderType.Out
-        spider_q[2*i-1] = i
-        spider_col[2*i-1] = 2
-        spider_q[2*i] = i
-        spider_col[2*i] = 1
     end
-    layout = ZXLayout(nbits, spider_q, spider_col)
-    return ZXWDiagram(mg, st, ps, layout)
+    return ZXWDiagram(mg, st, ps)
 end
 
 
@@ -119,7 +88,6 @@ Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.mg),
     copy(zxwd.st),
     copy(zxwd.ps),
-    copy(zxwd.layout),
     copy(zxwd.scalar),
     copy(zxwd.inputs),
     copy(zxwd.outputs),
