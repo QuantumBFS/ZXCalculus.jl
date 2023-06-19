@@ -1,5 +1,5 @@
 module SpiderType
-    @enum SType Z X H In Out
+    @enum SType Z X H W D In Out
 end  # module SpiderType
 
 """
@@ -130,6 +130,201 @@ end
 
 Base.copy(zxd::ZXDiagram{T, P}) where {T, P} = ZXDiagram{T, P}(copy(zxd.mg), copy(zxd.st), copy(zxd.ps), copy(zxd.layout),
     deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd.inputs), copy(zxd.outputs))
+
+"""
+    spider_type(zxd, v)
+
+Returns the spider type of a spider.
+"""
+spider_type(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.st[v]
+
+"""
+    phase(zxd, v)
+
+Returns the phase of a spider. If the spider is not a Z or X spider, then return 0.
+"""
+phase(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = zxd.ps[v]
+
+
+"""
+    set_phase!(zxd, v, p)
+
+Set the phase of `v` in `zxd` to `p`.
+"""
+function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
+    if has_vertex(zxd.mg, v)
+        while p < 0
+            p += 2
+        end
+        p = rem(p, 2)
+        zxd.ps[v] = p
+        return true
+    end
+    return false
+end
+
+
+"""
+    nqubits(zxd)
+
+Returns the qubit number of a ZX-diagram.
+"""
+nqubits(zxd::ZXDiagram) = zxd.layout.nbits
+
+function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P}
+    st_v = spider_type(zxd, v)
+    if st_v == SpiderType.Z
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color = :green)
+    elseif st_v == SpiderType.X
+        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color = :red)
+    elseif st_v == SpiderType.H
+        printstyled(io, "S_$(v){H}"; color = :yellow)
+    elseif st_v == SpiderType.In
+        print(io, "S_$(v){input}")
+    elseif st_v == SpiderType.Out
+        print(io, "S_$(v){output}")
+    end
+end
+
+function Base.show(io::IO, zxd::ZXDiagram{T, P}) where {T<:Integer, P}
+    println(io, "ZX-diagram with $(nv(zxd.mg)) vertices and $(ne(zxd.mg)) multiple edges:")
+    for v1 in sort!(vertices(zxd.mg))
+        for v2 in neighbors(zxd.mg, v1)
+            if v2 >= v1
+                print(io, "(")
+                print_spider(io, zxd, v1)
+                print(io, " <-$(mul(zxd.mg, v1, v2))-> ")
+                print_spider(io, zxd, v2)
+                print(io, ")\n")
+            end
+        end
+    end
+end
+
+"""
+    nv(zxd)
+
+Returns the number of vertices (spiders) of a ZX-diagram.
+"""
+Graphs.nv(zxd::ZXDiagram) = nv(zxd.mg)
+
+"""
+    ne(zxd; count_mul = false)
+
+Returns the number of edges of a ZX-diagram. If `count_mul`, it will return the
+sum of multiplicities of all multiple edges. Otherwise, it will return the
+number of multiple edges.
+"""
+Graphs.ne(zxd::ZXDiagram; count_mul::Bool = false) = ne(zxd.mg, count_mul = count_mul)
+
+Graphs.outneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = outneighbors(zxd.mg, v, count_mul = count_mul)
+Graphs.inneighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = inneighbors(zxd.mg, v, count_mul = count_mul)
+
+Graphs.degree(zxd::ZXDiagram, v::Integer) = degree(zxd.mg, v)
+Graphs.indegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+Graphs.outdegree(zxd::ZXDiagram, v::Integer) = degree(zxd, v)
+
+"""
+    neighbors(zxd, v; count_mul = false)
+
+Returns a vector of vertices connected to `v`. If `count_mul`, there will be
+multiple copy for each vertex. Otherwise, each vertex will only appear once.
+"""
+Graphs.neighbors(zxd::ZXDiagram, v; count_mul::Bool = false) = neighbors(zxd.mg, v, count_mul = count_mul)
+function Graphs.rem_edge!(zxd::ZXDiagram, x...)
+    rem_edge!(zxd.mg, x...)
+end
+function Graphs.add_edge!(zxd::ZXDiagram, x...)
+    add_edge!(zxd.mg, x...)
+end
+
+"""
+    rem_spiders!(zxd, vs)
+
+Remove spiders indexed by `vs`.
+"""
+function rem_spiders!(zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T<:Integer, P}
+    if rem_vertices!(zxd.mg, vs)
+        for v in vs
+            delete!(zxd.ps, v)
+            delete!(zxd.st, v)
+            delete!(zxd.phase_ids, v)
+            rem_vertex!(zxd.layout, v)
+        end
+        return true
+    end
+    return false
+end
+
+"""
+    rem_spider!(zxd, v)
+
+Remove a spider indexed by `v`.
+"""
+rem_spider!(zxd::ZXDiagram{T, P}, v::T) where {T<:Integer, P} = rem_spiders!(zxd, [v])
+
+"""
+    add_spider!(zxd, spider_type, phase = 0, connect = [])
+
+Add a new spider which is of the type `spider_type` with phase `phase` and
+connected to the vertices `connect`.
+"""
+function add_spider!(zxd::ZXDiagram{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
+    v = add_vertex!(zxd.mg)[1]
+    set_phase!(zxd, v, phase)
+    zxd.st[v] = st
+    if st in (SpiderType.Z, SpiderType.X)
+        zxd.phase_ids[v] = (v, 1)
+    end
+    if all(has_vertex(zxd.mg, c) for c in connect)
+        for c in connect
+            add_edge!(zxd.mg, v, c)
+        end
+    end
+    return v
+end
+
+"""
+    insert_spider!(zxd, v1, v2, spider_type, phase = 0)
+
+Insert a spider of the type `spider_type` with phase = `phase`, between two
+vertices `v1` and `v2`. It will insert multiple times if the edge between
+`v1` and `v2` is a multiple edge. Also it will remove the original edge between
+`v1` and `v2`.
+"""
+function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType, phase::P = zero(P)) where {T<:Integer, P}
+    mt = mul(zxd.mg, v1, v2)
+    vs = Vector{T}(undef, mt)
+    for i = 1:mt
+        v = add_spider!(zxd, st, phase, [v1, v2])
+        @inbounds vs[i] = v
+        rem_edge!(zxd, v1, v2)
+    end
+    return vs
+end
+
+"""
+    round_phases!(zxd)
+
+Round phases between [0, 2π).
+"""
+function round_phases!(zxd::ZXDiagram{T, P}) where {T<:Integer, P}
+    ps = zxd.ps
+    for v in keys(ps)
+        while ps[v] < 0
+            ps[v] += 2
+        end
+        ps[v] = rem(ps[v], 2)
+    end
+    return
+end
+
+spiders(zxd::ZXDiagram) = vertices(zxd.mg)
+qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
+function column_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P}
+    c_loc = column_loc(zxd.layout, v)
+    return c_loc
+end
 
 """
     push_gate!(zxd, ::Val{M}, locs...[, phase]; autoconvert=true)
