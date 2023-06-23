@@ -5,6 +5,7 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
+using Expronicon.ADT: @adt
 using Graphs, Multigraphs
 
 using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
@@ -22,6 +23,7 @@ export rewrite!, simplify!, clifford_simplification, full_reduction,
     circuit_extraction, phase_teleportation
 export random_circuit
 
+include("parameter.jl")
 include("phase.jl")
 include("scalar.jl")
     

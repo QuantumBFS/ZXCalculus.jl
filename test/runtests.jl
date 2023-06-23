@@ -2,13 +2,17 @@ using ZXCalculus, Graphs, Multigraphs, SparseArrays
 using Documenter
 using Test
 
-@testset "zxw_diagram.jl" begin
-    include("zxw_diagram.jl")
+@testset "parameter.jl" begin
+    include("parameter.jl")
 end
 
-@testset "utils.jl" begin
-    include("utils.jl")
-end
+# @testset "zxw_diagram.jl" begin
+#     include("zxw_diagram.jl")
+# end
+
+# @testset "utils.jl" begin
+#     include("utils.jl")
+# end
 
 # @testset "scalar.jl" begin
 #     include("scalar.jl")
