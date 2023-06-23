@@ -31,3 +31,11 @@ function Parameter(x, type::String = "Factor")
 
     end
 end
+
+function Base.show(io::IO, p::Parameter)
+    @match p begin
+        PiUnit(_...) && if p.pu isa Number end => print(io, "$(p.pu)⋅π")
+        PiUnit(_...) && if !(p.pu isa Number) end => print(io, "PiUnit(($(p.pu))::$(p.pu_type))")
+        Factor(_...) => print(io, "$(p.f)")
+    end
+end

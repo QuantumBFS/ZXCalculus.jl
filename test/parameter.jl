@@ -27,3 +27,19 @@
     # in the future, might want to add support for Symbol for Factor
     @test_throws ErrorException Parameter(:a, "Factor")
 end
+
+@testset "utilities" begin
+
+    io = IOBuffer()
+    p1 = Parameter(1.0, "PiUnit")
+    show(io, p1)
+    @test String(take!(io)) == "1.0⋅π"
+
+    p2 = Parameter(:a, "PiUnit")
+    show(io, p2)
+    @test String(take!(io)) == "PiUnit((a)::Symbol)"
+
+    f1 = Parameter(1, "Factor")
+    show(io, f1)
+    @test String(take!(io)) == "1"
+end
