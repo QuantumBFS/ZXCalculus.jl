@@ -1,7 +1,3 @@
-# module ZXWSpiderType
-# @enum SType Z X H W D In Out
-# end # module for ZXW Spider Types
-
 @adt public ZXWSpiderType begin
 
     W
@@ -25,90 +21,94 @@
     end
 end
 
-# """
-#     ZXWDiagram{T, P}
 
-# This is the type for representing ZXW-diagrams.
-# """
+"""
+    ZXWDiagram{T, P}
 
-# struct ZXWDiagram{T<:Integer,P} <: AbstractZXDiagram{T,P}
-#     mg::Multigraph{T}
+This is the type for representing ZXW-diagrams.
+"""
 
-#     st::Dict{T,ZXWSpiderType}
+struct ZXWDiagram{T<:Integer,P}
+    mg::Multigraph{T}
 
-#     scalar::Scalar{P}
-#     inputs::Vector{T}
-#     outputs::Vector{T}
+    st::Dict{T,ZXWSpiderType}
 
-#     function ZXWDiagram{T,P}(
-#         mg::Multigraph{T},
-#         st::Dict{T,ZXWSpiderType},
-#         s::Scalar{P} = Scalar{P}(),
-#         inputs::Vector{T} = Vector{T}(),
-#         outputs::Vector{T} = Vector{T}(),
-#     ) where {T<:Integer,P}
-#         nv(mg) != length(st) && error("There should be a type for each spider!")
+    scalar::Scalar{P}
+    inputs::Vector{T}
+    outputs::Vector{T}
 
-#         if length(inputs) == 0
-#             inputs = sort!([v for v in vertices(mg) if st[v] == ZXWSpiderType.Input])
-#         end
+    function ZXWDiagram{T,P}(
+        mg::Multigraph{T},
+        st::Dict{T,ZXWSpiderType},
+        s::Scalar{P} = Scalar{P}(),
+        inputs::Vector{T} = Vector{T}(),
+        outputs::Vector{T} = Vector{T}(),
+    ) where {T<:Integer,P}
+        nv(mg) != length(st) && error("There should be a type for each spider!")
 
-#         if length(outputs) == 0
-#             outputs = sort!([v for v in vertices(mg) if st[v] == ZXWSpiderType.Input])
-#         end
+        if length(inputs) == 0
+            inputs = sort!([@match st[v] begin
+                Input(_) => v
+                _ => -1
+            end for v in vertices(mg)])
+            inputs = [i for i in inputs if i != -1]
+        end
 
-#         zxwd = new{T,P}(mg, st, ps, s, inputs, outputs)
-#         round_phases!(zxwd)
-#         return zxwd
+        if length(outputs) == 0
+            outputs = sort!([@match st[v] begin
+                Output(_) => v
+                _ => -1
+            end for v in vertices(mg)])
+            outputs = [i for i in outputs if i != -1]
+        end
 
-#     end
-# end
+        zxwd = new{T,P}(mg, st, s, inputs, outputs)
+        round_phases!(zxwd)
+        return zxwd
 
-# """
-#     ZXWDiagram(
-#         mg::Multigraph{T},
-#         st::Dict{T,ZXWSpiderType.SType},
-#         ps::Dict{T,P},) where {T,P}
+    end
+end
 
-#     ZXWDiagram(
-#         mg::Multigraph{T},
-#         st::Vector{ZXWSpiderType.SType},
-#         ps::Vector{P},) where {T,P}
+"""
+    ZXWDiagram(
+        mg::Multigraph{T},
+        st::Dict{T,ZXWSpiderType}) where {T}
 
-# Construct a ZXW-diagram for a given multigraph, spider types, and, phases.
-# """
+    ZXWDiagram(
+        mg::Multigraph{T},
+        st::Vector{ZXWSpiderType}) where {T}
 
-# ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType.SType}, ps::Dict{T,P}) where {T,P} =
-#     ZXWDiagram{T,P}(mg, st, ps)
+Construct a ZXW-diagram for a given multigraph, spider types, and, phases.
+"""
 
-
-# ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType.SType}, ps::Vector{P}) where {T,P} =
-#     ZXWDiagram(mg, Dict(zip(sort!(vertices(mg)), st)), Dict(zip(sort!(vertices(mg)), ps)))
-
-# """
-#     ZXWDiagram(nbits)
-
-# Construct a ZXWDiagram of empty circuit with `nbits` qubits.
-# """
-
-# function ZXWDiagram(nbits::T) where {T<:Integer}
-#     mg = Multigraph(2 * nbits)
-#     st = [ZXWSpiderType.In for _ = 1:2*nbits]
-#     ps = [Phase(0 // 1) for _ = 1:2*nbits]
-
-#     for i = 1:nbits
-#         add_edge!(mg, 2 * i - 1, 2 * i)
-#         @inbounds st[2*i] = ZXWSpiderType.Out
-#     end
-#     return ZXWDiagram(mg, st, ps)
-# end
+ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType}) where {T} =
+    ZXWDiagram{T,Number}(mg, st)
 
 
-# Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
-#     copy(zxwd.mg),
-#     copy(zxwd.st),
-#     copy(zxwd.ps),
-#     copy(zxwd.scalar),
-#     copy(zxwd.inputs),
-#     copy(zxwd.outputs),
-# )
+ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType}) where {T} =
+    ZXWDiagram{T,Number}(mg, Dict(zip(sort!(vertices(mg)), st)))
+
+"""
+    ZXWDiagram(nbits)
+
+Construct a ZXWDiagram of empty circuit with `nbits` qubits.
+"""
+
+function ZXWDiagram(nbits::T) where {T<:Integer}
+    mg = Multigraph(2 * nbits)
+    st = [i % 2 == 1 ? Input(div(i, 2) + 1) : Output(div(i, 2)) for i = 1:2*nbits]
+
+    for i = 1:nbits
+        add_edge!(mg, 2 * i - 1, 2 * i)
+    end
+    return ZXWDiagram(mg, st)
+end
+
+
+Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
+    copy(zxwd.mg),
+    copy(zxwd.st),
+    copy(zxwd.scalar),
+    copy(zxwd.inputs),
+    copy(zxwd.outputs),
+)
