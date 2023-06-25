@@ -17,6 +17,7 @@ export ZXWDiagram
 export Rule, Match
 
 export spider_type, phase, spiders, rem_spider!, rem_spiders!
+export parameter
 export push_gate!, pushfirst_gate!, tcount
 export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 

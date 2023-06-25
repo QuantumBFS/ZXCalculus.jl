@@ -6,245 +6,222 @@ Round phases between [0, 2π).
 function round_phases!(zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
     st = zxwd.st
     for v in keys(st)
-        st[v] = _round_phase(st[v])
+        st[v] = @match st[v] begin
+            Z(p) => Z(_round_phase(p))
+            X(p) => X(_round_phase(p))
+            _ => st[v]
+        end
     end
     return
 end
 
-function _round_phase(spy::ZXWSpiderType)
-    @match spy begin
-        Z(p) => @match p begin
-            PiUnit(_...) => Z(rem(rem(p, 2) + 2, 2))
-            _ => Z(p)
-        end
-
-        X(p) => @match p begin
-            PiUnit(_...) => X(rem(rem(p, 2) + 2, 2))
-            _ => X(p)
-        end
-        _ => spy
+function _round_phase(p::Parameter)
+    @match p begin
+        PiUnit(_...) => rem(rem(p, 2) + 2, 2)
+        _ => p
     end
 end
 
-# """
-#     spider_type(zxwd, v)
+"""
+    spider_type(zxwd, v)
 
-# Returns the spider type of a spider if it exists.
-# """
-# function spider_type(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
-#     if has_vertex(zxwd.mg, v)
-#         return zxwd.st[v]
-#     else
-#         error("Spider $v does not exist!")
-#     end
-# end
+Returns the spider type of a spider if it exists.
+"""
+function spider_type(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+    if has_vertex(zxwd.mg, v)
+        return zxwd.st[v]
+    else
+        error("Spider $v does not exist!")
+    end
+end
 
-# """
-#     phase(zxwd, v)
+"""
+    parameter(zxwd, v)
 
-# Returns the phase of a spider. If the spider is not a Z or X spider, then return 0.
-# """
-# function phase(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
-#     if spider_type(zxwd, v) ∈ (ZXWSpiderType.Z, ZXWSpiderType.X)
-#         return zxwd.ps[v]
-#     else
-#         return zero(P)
-#     end
-# end
+Returns the parameter of a spider. If the spider is not a Z or X spider, then return 0.
+"""
+function parameter(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+    @match spider_type(zxwd, v) begin
+        Z(p) => p
+        X(p) => p
+        Input(_) || Output(_) => error("Input and outputs doesn't have valid parameter")
+        _ => PiUnit(0, Int64)
+    end
+end
 
-# """
-#     set_phase!(zxwd, v, p)
+"""
+    set_phase!(zxwd, v, p)
 
-# Set the phase of `v` in `zxwd` to `p`. If `v` is not a Z or X spider, then do nothing.
-# If `v` is not in `zxwd`, then return false to indicate failure.
-# """
-# function set_phase!(zxwd::ZXWDiagram{T,P}, v::T, p::P) where {T,P}
+Set the phase of `v` in `zxwd` to `p`. If `v` is not a Z or X spider, then do nothing.
+If `v` is not in `zxwd`, then return false to indicate failure.
+"""
+function set_phase!(zxwd::ZXWDiagram{T,P}, v::T, p::Parameter) where {T,P}
+    if has_vertex(zxwd.mg, v)
+        zxwd.st[v] = @match zxwd.st[v] begin
+            Z(_) => Z(_round_phase(p))
+            X(_) => X(_round_phase(p))
+            _ => zxwd.st[v]
+        end
+        return true
+    end
+    return false
+end
 
-#     if has_vertex(zxwd.mg, v)
-#         if spider_type(zxwd, v) ∉ (ZXWSpiderType.Z, ZXWSpiderType.X)
-#             p = zero(P)
-#         end
-#         p = rem(rem(p, 2) + 2, 2)
-#         zxwd.ps[v] = p
-#         return true
-#     end
-#     return false
-# end
+"""
+    nqubits(zxwd)
 
-# """
-#     nqubits(zxwd)
+Returns the qubit number of a ZXW-diagram.
+"""
+nqubits(zxwd::ZXWDiagram{T,P}) where {T,P} = length(zxwd.inputs)
 
-# Returns the qubit number of a ZXW-diagram.
-# """
-# nqubits(zxwd::ZXWDiagram{T,P}) where {T,P} = length(zxwd.inputs)
+"""
+    print_spider(io, zxwd, v)
 
-# """
-#     print_spider(io, zxwd, v)
-
-# Print a spider to `io`.
-# """
-# function print_spider(io::IO, zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
-#     st_v = spider_type(zxwd, v)
-#     if st_v == ZXWSpiderType.Z
-#         printstyled(
-#             io,
-#             "S_$(v){phase = $(zxwd.ps[v])" * (zxwd.ps[v] isa Phase ? "}" : "⋅π}");
-#             color = :green,
-#         )
-#     elseif st_v == ZXWSpiderType.X
-#         printstyled(
-#             io,
-#             "S_$(v){phase = $(zxwd.ps[v])" * (zxwd.ps[v] isa Phase ? "}" : "⋅π}");
-#             color = :red,
-#         )
-#     elseif st_v == ZXWSpiderType.H
-#         printstyled(io, "S_$(v){H}"; color = :yellow)
-#     elseif st_v == ZXWSpiderType.W
-#         printstyled(io, "S_$(v){W}"; color = :black)
-#     elseif st_v == ZXWSpiderType.D
-#         printstyled(io, "S_$(v){D}"; color = :yellow)
-#     elseif st_v == ZXWSpiderType.In
-#         print(io, "S_$(v){input}")
-#     elseif st_v == ZXWSpiderType.Out
-#         print(io, "S_$(v){output}")
-#     end
-# end
+Print a spider to `io`.
+"""
+function print_spider(io::IO, zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+    @match zxwd.st[v] begin
+        Z(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :green)
+        X(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :red)
+        Input(q) => printstyled(io, "S_$(v){input = $(q)}"; color = :blue)
+        Output(q) => printstyled(io, "S_$(v){output = $(q)}"; color = :blue)
+        H => printstyled(io, "S_$(v){H}"; color = :yellow)
+        W => printstyled(io, "S_$(v){W}"; color = :black)
+        D => printstyled(io, "S_$(v){D}"; color = :magenta)
+        _ => print(io, "S_$(v)")
+    end
+end
 
 
-# function Base.show(io::IO, zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
-#     println(
-#         io,
-#         "$(typeof(zxwd)) with $(nv(zxwd.mg)) vertices and $(ne(zxwd.mg)) multiple edges:",
-#     )
-#     for v1 in sort!(vertices(zxwd.mg))
-#         for v2 in neighbors(zxwd.mg, v1)
-#             if v2 >= v1
-#                 print(io, "(")
-#                 print_spider(io, zxwd, v1)
-#                 print(io, " <-$(mul(zxwd.mg, v1, v2))-> ")
-#                 print_spider(io, zxwd, v2)
-#                 print(io, ")\n")
-#             end
-#         end
-#     end
-# end
+function Base.show(io::IO, zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
+    println(
+        io,
+        "$(typeof(zxwd)) with $(nv(zxwd.mg)) vertices and $(ne(zxwd.mg)) multiple edges:",
+    )
+    for v1 in sort!(vertices(zxwd.mg))
+        for v2 in neighbors(zxwd.mg, v1)
+            if v2 >= v1
+                print(io, "(")
+                print_spider(io, zxwd, v1)
+                print(io, " <-$(mul(zxwd.mg, v1, v2))-> ")
+                print_spider(io, zxwd, v2)
+                print(io, ")\n")
+            end
+        end
+    end
+end
 
 
-# """
-#     nv(zxwd)
+"""
+    nv(zxwd)
 
-# Returns the number of vertices (spiders) of a ZXW-diagram.
-# """
-# Graphs.nv(zxwd::ZXWDiagram) = nv(zxwd.mg)
+Returns the number of vertices (spiders) of a ZXW-diagram.
+"""
+Graphs.nv(zxwd::ZXWDiagram) = nv(zxwd.mg)
 
-# """
-#     ne(zxwd; count_mul = false)
+"""
+    ne(zxwd; count_mul = false)
 
-# Returns the number of edges of a ZXW-diagram. If `count_mul`, it will return the
-# sum of multiplicities of all multiple edges. Otherwise, it will return the
-# number of multiple edges.
-# """
-# Graphs.ne(zxwd::ZXWDiagram; count_mul::Bool = false) = ne(zxwd.mg, count_mul = count_mul)
+Returns the number of edges of a ZXW-diagram. If `count_mul`, it will return the
+sum of multiplicities of all multiple edges. Otherwise, it will return the
+number of multiple edges.
+"""
+Graphs.ne(zxwd::ZXWDiagram; count_mul::Bool = false) = ne(zxwd.mg, count_mul = count_mul)
 
-# Graphs.outneighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
-#     outneighbors(zxwd.mg, v, count_mul = count_mul)
-# Graphs.inneighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
-#     inneighbors(zxwd.mg, v, count_mul = count_mul)
-# Graphs.degree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd.mg, v)
-# Graphs.indegree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd, v)
-# Graphs.outdegree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd, v)
+Graphs.outneighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
+    outneighbors(zxwd.mg, v, count_mul = count_mul)
+Graphs.inneighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
+    inneighbors(zxwd.mg, v, count_mul = count_mul)
+Graphs.degree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd.mg, v)
+Graphs.indegree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd, v)
+Graphs.outdegree(zxwd::ZXWDiagram, v::Integer) = degree(zxwd, v)
 
-# """
-#     neighbors(zxwd, v; count_mul = false)
+"""
+    neighbors(zxwd, v; count_mul = false)
 
-# Returns a vector of vertices connected to `v`. If `count_mul`, there will be
-# multiple copy for each vertex. Otherwise, each vertex will only appear once.
-# """
-# Graphs.neighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
-#     neighbors(zxwd.mg, v, count_mul = count_mul)
-# function Graphs.rem_edge!(zxwd::ZXWDiagram, x...)
-#     rem_edge!(zxwd.mg, x...)
-# end
-# function Graphs.add_edge!(zxwd::ZXWDiagram, x...)
-#     add_edge!(zxwd.mg, x...)
-# end
+Returns a vector of vertices connected to `v`. If `count_mul`, there will be
+multiple copy for each vertex. Otherwise, each vertex will only appear once.
+"""
+Graphs.neighbors(zxwd::ZXWDiagram, v; count_mul::Bool = false) =
+    neighbors(zxwd.mg, v, count_mul = count_mul)
+function Graphs.rem_edge!(zxwd::ZXWDiagram, x...)
+    rem_edge!(zxwd.mg, x...)
+end
+function Graphs.add_edge!(zxwd::ZXWDiagram, x...)
+    add_edge!(zxwd.mg, x...)
+end
 
-# """
-#     rem_spiders!(zxwd, vs)
+"""
+    rem_spiders!(zxwd, vs)
 
-# Remove spiders indexed by `vs`.
-# """
-# function rem_spiders!(zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
-#     if rem_vertices!(zxwd.mg, vs)
-#         for v in vs
-#             delete!(zxwd.ps, v)
-#             delete!(zxwd.st, v)
-#         end
-#         return true
-#     end
-#     return false
-# end
+Remove spiders indexed by `vs`.
+"""
+function rem_spiders!(zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
+    if rem_vertices!(zxwd.mg, vs)
+        for v in vs
+            delete!(zxwd.st, v)
+        end
+        return true
+    end
+    return false
+end
 
-# """
-#     rem_spider!(zxwd, v)
+"""
+    rem_spider!(zxwd, v)
 
-# Remove a spider indexed by `v`.
-# """
-# rem_spider!(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zxwd, [v])
+Remove a spider indexed by `v`.
+"""
+rem_spider!(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zxwd, [v])
 
-# """
-#     add_spider!(zxwd, spider_type, phase = 0, connect = [])
+"""
+    add_spider!(zxwd, spider, connect = [])
 
-# Add a new spider which is of the type `spider_type` with phase `phase` and
-# connected to the vertices `connect`.
-# """
-# function add_spider!(
-#     zxwd::ZXWDiagram{T,P},
-#     st::ZXWSpiderType.SType,
-#     phase::P = zero(P),
-#     connect::Vector{T} = T[],
-# ) where {T<:Integer,P}
-#     if any(!has_vertex(zxwd.mg, c) for c in connect)
-#         error("The vertex to connect does not exist.")
-#     end
+Add a new spider `spider` with appropriate parameter
+connected to the vertices `connect`. """
+function add_spider!(
+    zxwd::ZXWDiagram{T,P},
+    spider::ZXWSpiderType,
+    connect::Vector{T} = T[],
+) where {T<:Integer,P}
+    if any(!has_vertex(zxwd.mg, c) for c in connect)
+        error("The vertex to connect does not exist.")
+    end
 
-#     v = add_vertex!(zxwd.mg)[1]
-#     zxwd.st[v] = st # have to update before set_phase!
-#     set_phase!(zxwd, v, phase)
+    v = add_vertex!(zxwd.mg)[1]
+    zxwd.st[v] = spider
 
-#     for c in connect
-#         add_edge!(zxwd.mg, v, c)
-#     end
+    for c in connect
+        add_edge!(zxwd.mg, v, c)
+    end
 
-#     return v
-# end
+    return v
+end
 
-# """
-#     insert_spider!(zxwd, v1, v2, spider_type, phase = 0)
+"""
+    insert_spider!(zxwd, v1, v2, spider)
 
-# Insert a spider of the type `spider_type` with phase = `phase`, between two
-# vertices `v1` and `v2`. It will insert multiple times if the edge between
-# `v1` and `v2` is a multiple edge. Also it will remove the original edge between
-# `v1` and `v2`.
-# """
-# function insert_spider!(
-#     zxwd::ZXWDiagram{T,P},
-#     v1::T,
-#     v2::T,
-#     st::ZXWSpiderType.SType,
-#     phase::P = zero(P),
-# ) where {T<:Integer,P}
-#     mt = mul(zxwd.mg, v1, v2)
-#     vs = Vector{T}(undef, mt)
-#     for i = 1:mt
-#         v = add_spider!(zxwd, st, phase, [v1, v2])
-#         @inbounds vs[i] = v
-#         rem_edge!(zxwd, v1, v2)
-#     end
-#     return vs
-# end
+Insert a spider `spider` with appropriate parameter, between two
+vertices `v1` and `v2`. It will insert multiple times if the edge between
+`v1` and `v2` is a multiple edge. Also it will remove the original edge between
+`v1` and `v2`.
+"""
+function insert_spider!(
+    zxwd::ZXWDiagram{T,P},
+    v1::T,
+    v2::T,
+    spider::ZXWSpiderType,
+) where {T<:Integer,P}
+    mt = mul(zxwd.mg, v1, v2)
+    vs = Vector{T}(undef, mt)
+    for i = 1:mt
+        v = add_spider!(zxwd, spider, [v1, v2])
+        @inbounds vs[i] = v
+        rem_edge!(zxwd, v1, v2)
+    end
+    return vs
+end
 
-# spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
+spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 
 # """
 #     push_gate!(zxwd, ::Val{M}, locs...[, phase]; autoconvert=true)
