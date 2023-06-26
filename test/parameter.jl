@@ -5,8 +5,11 @@ using Base: CodegenParams
     p2 = Parameter.PiUnit(0.5, Float64)
     @test p2.pu == 0.5 && p2.pu_type == Float64
 
+
     f1 = Parameter.Factor()
     @test f1.f == 1.0
+
+
     f2 = Parameter.Factor(4.0 * im)
     @test f2.f == 4.0 * im
 
@@ -54,6 +57,11 @@ using Base: CodegenParams
     @test !Base.iseven(Parameter(-1))
     @test Base.iseven(Parameter(2, "PiUnit"))
     @test !Base.iseven(Parameter(1, "PiUnit"))
+
+    p_cp = copy(p2)
+    @test p_cp.pu == p2.pu && p_cp.pu_type == p2.pu_type
+    f_cp = copy(f2)
+    @test f_cp.f == f2.f
 end
 
 @testset "io" begin

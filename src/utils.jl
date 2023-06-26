@@ -3,7 +3,7 @@
 
 Round phases between [0, 2π).
 """
-function round_phases!(zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
+function round_phases!(zxwd::ZXWDiagram{T}) where {T<:Integer}
     st = zxwd.st
     for v in keys(st)
         st[v] = @match st[v] begin
@@ -27,7 +27,7 @@ end
 
 Returns the spider type of a spider if it exists.
 """
-function spider_type(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+function spider_type(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
     if has_vertex(zxwd.mg, v)
         return zxwd.st[v]
     else
@@ -40,7 +40,7 @@ end
 
 Returns the parameter of a spider. If the spider is not a Z or X spider, then return 0.
 """
-function parameter(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+function parameter(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
     @match spider_type(zxwd, v) begin
         Z(p) => p
         X(p) => p
@@ -55,7 +55,7 @@ end
 Set the phase of `v` in `zxwd` to `p`. If `v` is not a Z or X spider, then do nothing.
 If `v` is not in `zxwd`, then return false to indicate failure.
 """
-function set_phase!(zxwd::ZXWDiagram{T,P}, v::T, p::Parameter) where {T,P}
+function set_phase!(zxwd::ZXWDiagram{T}, v::T, p::Parameter) where {T}
     if has_vertex(zxwd.mg, v)
         zxwd.st[v] = @match zxwd.st[v] begin
             Z(_) => Z(_round_phase(p))
@@ -72,14 +72,34 @@ end
 
 Returns the qubit number of a ZXW-diagram.
 """
-nqubits(zxwd::ZXWDiagram{T,P}) where {T,P} = length(zxwd.inputs)
+nqubits(zxwd::ZXWDiagram{T}) where {T} = length(zxwd.inputs)
+
+"""
+    nin(zxwd)
+Returns the number of inputs of a ZXW-diagram.
+"""
+
+nin(zxwd::ZXWDiagram{T}) where {T} = sum([@match spy begin
+    Input(_) => 1
+    _ => 0
+end for spy in values(zxwd.st)])
+
+
+"""
+    nout(zxwd)
+Returns the number of outputs of a ZXW-diagram
+"""
+nout(zxwd::ZXWDiagram{T}) where {T} = sum([@match spy begin
+    Output(_) => 1
+    _ => 0
+end for spy in values(zxwd.st)])
 
 """
     print_spider(io, zxwd, v)
 
 Print a spider to `io`.
 """
-function print_spider(io::IO, zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
+function print_spider(io::IO, zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
     @match zxwd.st[v] begin
         Z(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :green)
         X(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :red)
@@ -93,7 +113,7 @@ function print_spider(io::IO, zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
 end
 
 
-function Base.show(io::IO, zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
+function Base.show(io::IO, zxwd::ZXWDiagram{T}) where {T<:Integer}
     println(
         io,
         "$(typeof(zxwd)) with $(nv(zxwd.mg)) vertices and $(ne(zxwd.mg)) multiple edges:",
@@ -156,7 +176,7 @@ end
 
 Remove spiders indexed by `vs`.
 """
-function rem_spiders!(zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
+function rem_spiders!(zxwd::ZXWDiagram{T}, vs::Vector{T}) where {T<:Integer}
     if rem_vertices!(zxwd.mg, vs)
         for v in vs
             delete!(zxwd.st, v)
@@ -171,7 +191,7 @@ end
 
 Remove a spider indexed by `v`.
 """
-rem_spider!(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zxwd, [v])
+rem_spider!(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer} = rem_spiders!(zxwd, [v])
 
 """
     add_spider!(zxwd, spider, connect = [])
@@ -179,10 +199,10 @@ rem_spider!(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zxw
 Add a new spider `spider` with appropriate parameter
 connected to the vertices `connect`. """
 function add_spider!(
-    zxwd::ZXWDiagram{T,P},
+    zxwd::ZXWDiagram{T},
     spider::ZXWSpiderType,
     connect::Vector{T} = T[],
-) where {T<:Integer,P}
+) where {T<:Integer}
     if any(!has_vertex(zxwd.mg, c) for c in connect)
         error("The vertex to connect does not exist.")
     end
@@ -206,11 +226,11 @@ vertices `v1` and `v2`. It will insert multiple times if the edge between
 `v1` and `v2`.
 """
 function insert_spider!(
-    zxwd::ZXWDiagram{T,P},
+    zxwd::ZXWDiagram{T},
     v1::T,
     v2::T,
     spider::ZXWSpiderType,
-) where {T<:Integer,P}
+) where {T<:Integer}
     mt = mul(zxwd.mg, v1, v2)
     vs = Vector{T}(undef, mt)
     for i = 1:mt
@@ -222,6 +242,7 @@ function insert_spider!(
 end
 
 spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
+scalar(zxwd::ZXWDiagram) = zxwd.scalar
 
 # """
 #     push_gate!(zxwd, ::Val{M}, locs...[, phase]; autoconvert=true)
@@ -232,12 +253,12 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 # If `autoconvert` is `false`, the input `phase` should be a rational numbers.
 # """
 # function push_gate!(
-#     zxwd::ZXWDiagram{T,P},
+#     zxwd::ZXWDiagram{T},
 #     ::Val{:Z},
 #     loc::T,
 #     phase = zero(P);
 #     autoconvert::Bool = true,
-# ) where {T,P}
+# ) where {T}
 #     @inbounds out_id = get_outputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, out_id)[1]
 #     rphase = autoconvert ? safe_convert(P, phase) : phase
@@ -246,12 +267,12 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 # end
 
 # function push_gate!(
-#     zxwd::ZXWDiagram{T,P},
+#     zxwd::ZXWDiagram{T},
 #     ::Val{:X},
 #     loc::T,
 #     phase = zero(P);
 #     autoconvert::Bool = true,
-# ) where {T,P}
+# ) where {T}
 #     @inbounds out_id = get_outputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, out_id)[1]
 #     rphase = autoconvert ? safe_convert(P, phase) : phase
@@ -259,14 +280,14 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 #     return zxwd
 # end
 
-# function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
+# function push_gate!(zxwd::ZXWDiagram{T}, ::Val{:H}, loc::T) where {T}
 #     @inbounds out_id = get_outputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, out_id)[1]
 #     insert_spider!(zxwd, bound_id, out_id, ZXWSpiderType.H)
 #     return zxwd
 # end
 
-# function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:SWAP}, locs::Vector{T}) where {T,P}
+# function push_gate!(zxwd::ZXWDiagram{T}, ::Val{:SWAP}, locs::Vector{T}) where {T}
 #     q1, q2 = locs
 #     push_gate!(zxwd, Val{:Z}(), q1)
 #     push_gate!(zxwd, Val{:Z}(), q2)
@@ -280,7 +301,7 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 #     return zxwd
 # end
 
-# function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T,P}
+# function push_gate!(zxwd::ZXWDiagram{T}, ::Val{:CNOT}, loc::T, ctrl::T) where {T}
 #     push_gate!(zxwd, Val{:Z}(), ctrl)
 #     push_gate!(zxwd, Val{:X}(), loc)
 #     @inbounds v1, v2 = (sort!(spiders(zxwd)))[end-1:end]
@@ -289,7 +310,7 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 #     return zxwd
 # end
 
-# function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CZ}, loc::T, ctrl::T) where {T,P}
+# function push_gate!(zxwd::ZXWDiagram{T}, ::Val{:CZ}, loc::T, ctrl::T) where {T}
 #     push_gate!(zxwd, Val{:Z}(), ctrl)
 #     push_gate!(zxwd, Val{:Z}(), loc)
 #     @inbounds v1, v2 = (sort!(spiders(zxwd)))[end-1:end]
@@ -307,11 +328,11 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 # rotation `M` gate with angle `phase * π`.
 # """
 # function pushfirst_gate!(
-#     zxwd::ZXWDiagram{T,P},
+#     zxwd::ZXWDiagram{T},
 #     ::Val{:Z},
 #     loc::T,
 #     phase::P = zero(P),
-# ) where {T,P}
+# ) where {T}
 #     @inbounds in_id = get_inputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, in_id)[1]
 #     insert_spider!(zxwd, in_id, bound_id, ZXWSpiderType.Z, phase)
@@ -319,25 +340,25 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 # end
 
 # function pushfirst_gate!(
-#     zxwd::ZXWDiagram{T,P},
+#     zxwd::ZXWDiagram{T},
 #     ::Val{:X},
 #     loc::T,
 #     phase::P = zero(P),
-# ) where {T,P}
+# ) where {T}
 #     @inbounds in_id = get_inputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, in_id)[1]
 #     insert_spider!(zxwd, in_id, bound_id, ZXWSpiderType.X, phase)
 #     return zxwd
 # end
 
-# function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
+# function pushfirst_gate!(zxwd::ZXWDiagram{T}, ::Val{:H}, loc::T) where {T}
 #     @inbounds in_id = get_inputs(zxwd)[loc]
 #     @inbounds bound_id = neighbors(zxwd, in_id)[1]
 #     insert_spider!(zxwd, in_id, bound_id, ZXWSpiderType.H)
 #     return zxwd
 # end
 
-# function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:SWAP}, locs::Vector{T}) where {T,P}
+# function pushfirst_gate!(zxwd::ZXWDiagram{T}, ::Val{:SWAP}, locs::Vector{T}) where {T}
 #     q1, q2 = locs
 #     pushfirst_gate!(zxwd, Val{:Z}(), q1)
 #     pushfirst_gate!(zxwd, Val{:Z}(), q2)
@@ -351,7 +372,7 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 #     return zxwd
 # end
 
-# function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CNOT}, loc::T, ctrl::T) where {T,P}
+# function pushfirst_gate!(zxwd::ZXWDiagram{T}, ::Val{:CNOT}, loc::T, ctrl::T) where {T}
 #     pushfirst_gate!(zxwd, Val{:Z}(), ctrl)
 #     pushfirst_gate!(zxwd, Val{:X}(), loc)
 #     @inbounds v1, v2 = (sort!(spiders(zxwd)))[end-1:end]
@@ -360,7 +381,7 @@ spiders(zxwd::ZXWDiagram) = vertices(zxwd.mg)
 #     return zxwd
 # end
 
-# function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CZ}, loc::T, ctrl::T) where {T,P}
+# function pushfirst_gate!(zxwd::ZXWDiagram{T}, ::Val{:CZ}, loc::T, ctrl::T) where {T}
 #     pushfirst_gate!(zxwd, Val{:Z}(), ctrl)
 #     pushfirst_gate!(zxwd, Val{:Z}(), loc)
 #     @inbounds v1, v2 = (sort!(spiders(zxwd)))[end-1:end]

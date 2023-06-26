@@ -1,5 +1,6 @@
 module ZXCalculus
 
+using OMEinsum
 using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
@@ -16,7 +17,7 @@ export AbstractZXDiagram, ZXDiagram, ZXGraph
 export ZXWDiagram
 export Rule, Match
 
-export spider_type, phase, spiders, rem_spider!, rem_spiders!
+export spider_type, phase, spiders, rem_spider!, rem_spiders!, scalar
 export parameter
 export push_gate!, pushfirst_gate!, tcount
 export convert_to_chain, convert_to_zxd
@@ -27,13 +28,14 @@ export random_circuit
 include("parameter.jl")
 include("phase.jl")
 include("scalar.jl")
-    
+
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")
 
 include("zxw_diagram.jl")
+include("to_eincode.jl")
 
 include("utils.jl")
 

@@ -43,6 +43,8 @@ end
     @test !ZXCalculus.set_phase!(zxwd, 10, PiUnit(2 // 3, Rational))
 
     @test ZXCalculus.nqubits(zxwd) == 3
+    @test ZXCalculus.nin(zxwd) == 3 && ZXCalculus.nout(zxwd) == 3
+    @test scalar(zxwd) == Factor(1.0)
     @test nv(zxwd) == 6 && ne(zxwd) == 3
 
     @test rem_edge!(zxwd, 5, 6)

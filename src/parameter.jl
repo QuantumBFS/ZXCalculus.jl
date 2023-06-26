@@ -33,6 +33,11 @@ function Parameter(x, type::String = "Factor")
     end
 end
 
+Base.copy(p::Parameter) = @match p begin
+    PiUnit(pu,pu_type) => PiUnit(pu, pu_type)
+    Factor(f) => Factor(f)
+end
+
 function Base.show(io::IO, p::Parameter)
     @match p begin
         PiUnit(pu, _) && if pu isa Number
