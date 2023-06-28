@@ -6,7 +6,7 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using Expronicon.ADT: @adt
+using Expronicon.ADT: @adt, variant_type
 using Graphs, Multigraphs
 
 using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
@@ -34,10 +34,10 @@ include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")
 
-include("zxw_diagram.jl")
-include("to_eincode.jl")
+# include("zxw_diagram.jl")
+# include("to_eincode.jl")
 
-include("utils.jl")
+# include("utils.jl")
 
 include("rules.jl")
 include("simplify.jl")

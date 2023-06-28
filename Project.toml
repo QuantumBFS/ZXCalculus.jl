@@ -15,13 +15,13 @@ YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 
 [compat]
-Expronicon = "0.10.0"
+Expronicon = "0.10.3"
 Graphs = "1"
 MLStyle = "0.4"
 Multigraphs = "0.3"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
-julia = "1.6, 1.7"
+julia = ">= 1.6"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
