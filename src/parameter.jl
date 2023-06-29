@@ -75,12 +75,17 @@ Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 # if cause trouble, will change
 Base.isless(p1::Parameter, p2::Number) = p1.pu isa Number && p1.pu < p2
 
-# Base.convert(::Type{Parameter}, p::T) where {T} = @match p begin
-#     (pu, type::String) => Parameter(pu, type)
-#     PiUnit(_...) => p
-#     Factor(_...) => p
-#     _ => error("Invalid input '$(p)' of type $(typeof(p)) for ADT converter")
-# end
+Base.convert(::Type{Parameter}, p::T) where T = @match p begin
+    ("PiUnit", pu) => Parameter(Val(:PiUnit), pu)
+    ("Factor", f) => Parameter(Val(:Factor), f)
+    PiUnit(_...) => p
+    Factor(_...) => p
+    _ => error("Invalid input '$(p)' of type $(typeof(p)) for ADT: Parameter")
+end
+
+Base.convert(::Type{Factor}, p) = @match p begin
+    _ => Parameter(Val(:Factor), p)
+end
 
 # Base.zero(p::Parameter) = @match p begin
 #     PiUnit(_...) => Parameter(0.0, "PiUnit")

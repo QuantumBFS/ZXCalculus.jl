@@ -1,4 +1,5 @@
 using Base: CodegenParams
+
 @testset "Constructor" begin
     p1 = Parameter(Val(:PiUnit))
     @test p1.pu == 0.0 && p1.pu_type == Float64
@@ -24,11 +25,10 @@ using Base: CodegenParams
     p6 = Parameter(Val(:PiUnit), Expr(:call, :+, :a, :b))
     @test p6.pu == Expr(:call, :+, :a, :b) && p6.pu_type == Expr
 
-    # @test p2 == Base.convert(Parameter, p2)
-    # @test Base.convert(Parameter, (0.5, "PiUnit")) == p2
-    # @test f2 == Base.convert(Parameter, f2)
-    # @test Base.convert(Parameter, (4.0 * im, "Factor")) == f2
-    # @test_throws ErrorException Base.convert(Parameter, 0.5)
+    @test p2 == Base.convert(Parameter, p2)
+    @test Base.convert(Parameter, ("PiUnit", 0.5)) == p2
+    @test f2 == Base.convert(Parameter, f2)
+    @test Base.convert(Parameter, ("Factor", 4.0 * im)) == f2
 
     # @test p3 == one(p3)
     # @test p1 == zero(p3)
