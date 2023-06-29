@@ -106,94 +106,48 @@ end
     @test p1 + p2 == Parameter(Val(:PiUnit), 3.0)
     @test p1 + 2 == Parameter(Val(:PiUnit), 3.0)
     @test 2 + p1 == Parameter(Val(:PiUnit), 3.0)
-    @test 2 + f2 == Parameter(Val(:Factor), 5.0)
-    @test f2 + 2 == Parameter(Val(:Factor), 5.0)
+    @test 2 + f2 == Parameter(Val(:Factor), 4.5)
+    @test f2 + 2 == Parameter(Val(:Factor), 4.5)
     p13 = p1 + p3
     @test p13.pu == Expr(:call, :+, 1.0, :a) && p13.pu_type == Expr
     p34 = p3 + p4
     @test p34.pu == Expr(:call, :+, :a, :b) && p34.pu_type == Expr
 
     @test p2 + f1 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
+    @test f1 + p2 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
 
 end
 
-# @testset "subtraction" begin
-#     p1 = Parameter(1.0, "PiUnit")
-#     p2 = Parameter(2, "PiUnit")
-#     p3 = Parameter(:a, "PiUnit")
-#     p4 = Parameter(:b, "PiUnit")
-#     f1 = Parameter(1, "Factor")
-#     f2 = Parameter(2.5, "Factor")
+@testset "subtraction" begin
+    p1 = Parameter(Val(:PiUnit), 1.0)
+    p2 = Parameter(Val(:PiUnit), 2)
+    p3 = Parameter(Val(:PiUnit), :a)
+    p4 = Parameter(Val(:PiUnit), :b)
+    f1 = Parameter(Val(:Factor), 1)
+    f2 = Parameter(Val(:Factor), 2.5)
 
 
-#     @test p1 - p2 == Parameter(-1.0, "PiUnit")
-#     @test p1 - 2 == Parameter(-1.0, "PiUnit")
-#     @test 2 - p1 == Parameter(1.0, "PiUnit")
-#     @test 2 - f2 == Parameter(-0.5, "Factor")
-#     @test f2 - 2 == Parameter(0.5, "Factor")
-#     p13 = p1 - p3
-#     @test p13.pu == Expr(:call, :-, 1.0, :a) && p13.pu_type == Expr
-#     p34 = p3 - p4
-#     @test p34.pu == Expr(:call, :-, :a, :b) && p34.pu_type == Expr
+    @test p1 - p2 == Parameter(Val(:PiUnit), -1.0)
+    @test p1 - 2 == Parameter(Val(:PiUnit), -1.0)
+    @test 2 - p1 == Parameter(Val(:PiUnit), 1.0)
+    @test 2 - f2 == Parameter(Val(:Factor), -0.5)
+    @test f2 - 2 == Parameter(Val(:Factor), 0.5)
+    p13 = p1 - p3
+    @test p13.pu == Expr(:call, :-, 1.0, :a) && p13.pu_type == Expr
+    p34 = p3 - p4
+    @test p34.pu == Expr(:call, :-, :a, :b) && p34.pu_type == Expr
 
-#     @test p2 - f1 == Parameter(exp(im * 2 * π) - 1, "Factor")
-# end
+    @test p2 - f1 == Parameter(Val(:Factor), exp(im * 2 * π) - 1)
+    @test f1 - p2 == Parameter(Val(:Factor), 1 - exp(im * 2 * π))
+end
 
+@testset "misc" begin
+    p1 = Parameter(Val(:PiUnit), 15.0)
+    p2 = Parameter(Val(:PiUnit), :a)
+    @test Base.rem(p1, 12) == Parameter(Val(:PiUnit), 3.0)
+    @test Base.rem(p2, 12) == Parameter(Val(:PiUnit), :a)
 
-# @testset "multiplication" begin
-#     p1 = Parameter(2.5, "PiUnit")
-#     p2 = Parameter(3, "PiUnit")
-#     p3 = Parameter(:c, "PiUnit")
-#     p4 = Parameter(:d, "PiUnit")
+    f1 = Parameter(Val(:Factor), 13)
+    @test Base.rem(f1, 12) == Parameter(Val(:Factor), 1)
 
-#     f1 = Parameter(2, "Factor")
-#     f2 = Parameter(3 * im, "Factor")
-
-#     @test p1 * p2 == Parameter(7.5, "PiUnit")
-#     @test p3 * p4 == Parameter(Expr(:call, :*, :c, :d), "PiUnit")
-
-#     @test f1 * f2 == Parameter(6im, "Factor")
-
-#     @test p1 * f1 == Parameter(exp(im * 2.5 * π) * 2, "Factor")
-#     @test f1 * p1 == Parameter(exp(im * 2.5 * π) * 2, "Factor")
-
-#     @test p2 * 4 == Parameter(12, "PiUnit")
-#     @test f1 * 2 == Parameter(4, "Factor")
-
-#     @test p1 * 2 == 2 * p1
-# end
-
-
-# @testset "division" begin
-#     p1 = Parameter(3.0, "PiUnit")
-#     p2 = Parameter(3, "PiUnit")
-#     p3 = Parameter(:c, "PiUnit")
-#     p4 = Parameter(:d, "PiUnit")
-
-#     f1 = Parameter(4, "Factor")
-#     f2 = Parameter(3 * im, "Factor")
-#     @test p1 / p2 == Parameter(1.0, "PiUnit")
-#     @test p3 / p4 == Parameter(Expr(:call, :/, :c, :d), "PiUnit")
-
-#     @test f1 / f2 == Parameter(4 / (3 * im), "Factor")
-
-#     @test p1 / f1 == Parameter(exp(im * 3 * π) / 4, "Factor")
-#     @test f1 / p1 == Parameter(4 / exp(im * 3 * π), "Factor")
-
-#     @test 5 / p1 == Parameter(5 / 3.0, "PiUnit")
-
-#     @test 33 / f2 == Parameter(33 / (3 * im), "Factor")
-
-#     @test p1 / 2 == Parameter(1.5, "PiUnit")
-# end
-
-# @testset "misc" begin
-#     p1 = Parameter(15.0, "PiUnit")
-#     p2 = Parameter(:a, "PiUnit")
-#     @test Base.rem(p1, 12) == Parameter(3.0, "PiUnit")
-#     @test Base.rem(p2, 12) == Parameter(:a, "PiUnit")
-
-#     f1 = Parameter(13)
-#     @test Base.rem(f1, 12) == Parameter(1)
-
-# end
+end

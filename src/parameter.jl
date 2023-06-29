@@ -77,16 +77,13 @@ Base.isless(p1::Parameter, p2::Number) = @match p1 begin
     PiUnit(_...) => p1.pu isa Number && p1.pu < p2
     _ => p1.f < p2
 end
+
 Base.convert(::Type{Parameter}, p::T) where {T} = @match p begin
     ("PiUnit", pu) => Parameter(Val(:PiUnit), pu)
     ("Factor", f) => Parameter(Val(:Factor), f)
     PiUnit(_...) => p
     Factor(_...) => p
     _ => error("Invalid input '$(p)' of type $(typeof(p)) for ADT: Parameter")
-end
-
-Base.convert(::Type{Factor}, p) = @match p begin
-    _ => Parameter(Val(:Factor), p)
 end
 
 Base.zero(p::Parameter) = @match p begin
@@ -114,10 +111,11 @@ function add_param(p1, p2)
         end => Parameter(Val(:PiUnit), pu1 + pu2)
         (PiUnit(pu1, _), PiUnit(pu2, _)) && if !(pu1 isa Number) || !(pu2 isa Number)
         end => Parameter(Val(:PiUnit), Expr(:call, :+, pu1, pu2))
-        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 * f2)
+        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 + f2)
         (PiUnit(pu1, _), Factor(f2, _)) => Parameter(Val(:Factor), exp(im * pu1 * π) * f2)
-        (PiUnit(_...), _) => p1 + Parameter(Val(:PiUnit), p2)
-        (Factor(_...), ::Number) => p1 + Parameter(Val(:Factor), p2)
+        (Factor(f1, _), PiUnit(pu2, _)) => Parameter(Val(:Factor), exp(im * pu2 * π) * f1)
+        (PiUnit(_...), _) => Parameter(Val(:PiUnit), p1.pu + p2)
+        (Factor(_...), ::Number) => Parameter(Val(:Factor), p1.f + p2)
         _ => error(
             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: +",
         )
@@ -130,85 +128,38 @@ Base.:(+)(p1::Parameter, p2::Parameter) = add_param(p1, p2)
 Base.:(+)(p1::Parameter, p2::Number) = add_param(p1, p2)
 Base.:(+)(p1::Number, p2::Parameter) = add_param(p2, p1)
 
-# function subt_param(p1, p2)
-#     @match (p1, p2) begin
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) && if pu1 isa Number && pu2 isa Number
-#         end => PiUnit(pu1 - pu2, pu_t1)
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
-#             if !(pu1 isa Number) || !(pu2 isa Number)
-#             end => PiUnit(Expr(:call, :-, pu1, pu2), Expr)
-#         (Factor(f1), Factor(f2)) => Factor(f1 - f2)
-#         (PiUnit(_...), Factor(_...)) => Parameter(exp(im * p1.pu * π) - p2, "Factor")
-#         (Factor(_...), PiUnit(_...)) => Parameter(exp(im * p2.pu * π) - p1, "Factor")
-#         (_, PiUnit(_...)) => Parameter(p1, "PiUnit") - p2
-#         (::Number, Factor(_...)) => Parameter(p1, "Factor") - p2
-#         _ => error(
-#             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: -",
-#         )
+function subt_param(p1, p2)
+    @match (p1, p2) begin
+        (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) && if pu1 isa Number && pu2 isa Number
+        end => Parameter(Val(:PiUnit), pu1 - pu2)
+        (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
+            if !(pu1 isa Number) || !(pu2 isa Number)
+            end => Parameter(Val(:PiUnit), Expr(:call, :-, pu1, pu2))
+        (Factor(f1, _), Factor(f2, _)) => Factor(f1 - f2)
+        (PiUnit(_...), Factor(_...)) => Parameter(Val(:Factor), exp(im * p1.pu * π) - p2.f)
+        (Factor(_...), PiUnit(_...)) => Parameter(Val(:Factor), p1.f - exp(im * p2.pu * π))
+        (_, PiUnit(_...)) => Parameter(Val(:PiUnit), p1 - p2.pu)
+        (::Number, Factor(_...)) => Parameter(Val(:Factor), p1 - p2.f)
+        _ => error(
+            "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: -",
+        )
 
-#     end
-# end
+    end
+end
 
-# Base.:(-)(p1::Parameter, p2::Parameter) = subt_param(p1, p2)
-# Base.:(-)(p1::Number, p2::Parameter) = subt_param(p1, p2)
-# Base.:(-)(p1::Parameter, p2::Number) = add_param(p1, -p2)
+Base.:(-)(p1::Parameter, p2::Parameter) = subt_param(p1, p2)
+Base.:(-)(p1::Number, p2::Parameter) = subt_param(p1, p2)
+Base.:(-)(p1::Parameter, p2::Number) = add_param(p1, -p2)
 
-
-# function mul_param(p1, p2)
-#     @match (p1, p2) begin
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) && if pu1 isa Number && pu2 isa Number
-#         end => PiUnit(pu1 * pu2, pu_t1)
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
-#             if !(pu1 isa Number) || !(pu2 isa Number)
-#             end => PiUnit(Expr(:call, :*, pu1, pu2), Expr)
-#         (Factor(f1), Factor(f2)) => Factor(f1 * f2)
-#         (PiUnit(_...), Factor(_...)) => Parameter(exp(im * p1.pu * π) * p2, "Factor")
-#         (Factor(_...), PiUnit(_...)) => Parameter(exp(im * p2.pu * π) * p1, "Factor")
-#         (PiUnit(_...), _) => p1 * Parameter(p2, "PiUnit")
-#         (Factor(_...), ::Number) => p1 * Parameter(p2, "Factor")
-#         _ => error(
-#             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: *",
-#         )
-#     end
-# end
-
-# Base.:(*)(p1::Parameter, p2::Parameter) = mul_param(p1, p2)
-# Base.:(*)(p1::Parameter, p2::Number) = mul_param(p1, p2)
-# Base.:(*)(p1::Number, p2::Parameter) = mul_param(p2, p1)
-
-
-# function div_param(p1, p2)
-#     @match (p1, p2) begin
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) && if pu1 isa Number && pu2 isa Number
-#         end => PiUnit(pu1 / pu2, pu_t1)
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
-#             if !(pu1 isa Number) || !(pu2 isa Number)
-#             end => PiUnit(Expr(:call, :/, pu1, pu2), Expr)
-#         (Factor(f1), Factor(f2)) => Factor(f1 / f2)
-#         (PiUnit(_...), Factor(_...)) => Parameter(exp(im * p1.pu * π) / p2, "Factor")
-#         (Factor(_...), PiUnit(_...)) => Parameter(p1 / exp(im * p2.pu * π), "Factor")
-#         (_, PiUnit(_...)) => Parameter(p1, "PiUnit") / p2
-#         (::Number, Factor(_...)) => Parameter(p1, "Factor") / p2
-#         _ => error(
-#             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: /",
-#         )
-
-#     end
-# end
-
-# Base.:(/)(p1::Parameter, p2::Parameter) = div_param(p1, p2)
-# Base.:(/)(p1::Number, p2::Parameter) = div_param(p1, p2)
-# Base.:(/)(p1::Parameter, p2::Number) = mul_param(p1, 1 / p2)
-
-# function Base.rem(p::Parameter, d::Number)
-#     @match p begin
-#         PiUnit(pu, pu_t) && if pu isa Number
-#         end => PiUnit(rem(pu, d), pu_t)
-#         PiUnit(pu, pu_t) && if !(pu isa Number)
-#         end => p
-#         Factor(f) => Factor(rem(f, d))
-#         _ => error(
-#             "Invalid input '$(p)' of type $(typeof(p)) and '$(d)' of type $(typeof(d)) for ADT: rem",
-#         )
-#     end
-# end
+function Base.rem(p::Parameter, d::Number)
+    @match p begin
+        PiUnit(pu, pu_t) && if pu isa Number
+        end => Parameter(Val(:PiUnit), rem(pu, d))
+        PiUnit(pu, pu_t) && if !(pu isa Number)
+        end => p
+        Factor(f, _) => Parameter(Val(:Factor), rem(f, d))
+        _ => error(
+            "Invalid input '$(p)' of type $(typeof(p)) and '$(d)' of type $(typeof(d)) for ADT: rem",
+        )
+    end
+end
