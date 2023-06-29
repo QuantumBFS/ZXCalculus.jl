@@ -73,9 +73,11 @@ Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 # following the same convention in Phase.jl implementation
 # comparison have inconsistent, we are comparing phases to numbers
 # if cause trouble, will change
-Base.isless(p1::Parameter, p2::Number) = p1.pu isa Number && p1.pu < p2
-
-Base.convert(::Type{Parameter}, p::T) where T = @match p begin
+Base.isless(p1::Parameter, p2::Number) = @match p1 begin
+    PiUnit(_...) => p1.pu isa Number && p1.pu < p2
+    _ => p1.f < p2
+end
+Base.convert(::Type{Parameter}, p::T) where {T} = @match p begin
     ("PiUnit", pu) => Parameter(Val(:PiUnit), pu)
     ("Factor", f) => Parameter(Val(:Factor), f)
     PiUnit(_...) => p
@@ -87,50 +89,46 @@ Base.convert(::Type{Factor}, p) = @match p begin
     _ => Parameter(Val(:Factor), p)
 end
 
-# Base.zero(p::Parameter) = @match p begin
-#     PiUnit(_...) => Parameter(0.0, "PiUnit")
-#     Factor(_...) => Parameter(0.0) # change to make sure it's equal to the value above
-# end
+Base.zero(p::Parameter) = @match p begin
+    PiUnit(_...) => Parameter(Val(:PiUnit), zero(Float64))
+    Factor(_...) => Parameter(Val(:Factor), one(ComplexF64))
+end
 
-# Base.one(p::Parameter) = @match p begin
-#     PiUnit(_...) => Parameter(1.0, "PiUnit")
-#     Factor(_...) => Parameter(1.0)
-# end
+Base.one(p::Parameter) = @match p begin
+    PiUnit(_...) => Parameter(Val(:PiUnit), 1.0)
+    Factor(_...) => Parameter(Val(:Factor), exp(im * 1.0 * π))
+end
 
-# # Base.zero(::Type{Parameter.PiUnit}) = Parameter(0.0, "PiUnit")
-# # Base.zero(::Type{Parameter.Factor}) = Parameter(0.0)
+Base.zero(::Type{Parameter}) = Parameter(Val(:PiUnit), 0.0)
 
-# # Base.one(::Type{Parameter.PiUnit}) = Parameter(1.0, "PiUnit")
-# # Base.one(::Type{Parameter.Factor}) = Parameter(1.0)
+Base.one(::Type{Parameter}) = Parameter(Val(:PiUnit), 1.0)
 
-# Base.iseven(p::Parameter) = @match p begin
-#     PiUnit(_...) => (p.pu isa Number) && (-1)^p.pu > 0
-#     Factor(_...) => (-1)^p.f > 0
-# end
+Base.iseven(p::Parameter) = @match p begin
+    PiUnit(_...) => (p.pu isa Number) && (-1)^p.pu > 0
+    Factor(_...) => p.f ≈ 1.0 # making meaning the same, upto machine precision
+end
 
-# function add_param(p1, p2)
-#     @match (p1, p2) begin
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) && if pu1 isa Number && pu2 isa Number
-#         end => PiUnit(pu1 + pu2, pu_t1)
-#         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
-#             if !(pu1 isa Number) || !(pu2 isa Number)
-#             end => PiUnit(Expr(:call, :+, pu1, pu2), Expr)
-#         (Factor(f1), Factor(f2)) => Factor(f1 + f2)
-#         (PiUnit(_...), Factor(_...)) => Parameter(exp(im * p1.pu * π) + p2, "Factor")
-
-#         (PiUnit(_...), _) => p1 + Parameter(p2, "PiUnit")
-#         (Factor(_...), ::Number) => p1 + Parameter(p2, "Factor")
-#         _ => error(
-#             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: +",
-#         )
+function add_param(p1, p2)
+    @match (p1, p2) begin
+        (PiUnit(pu1, _), PiUnit(pu2, _)) && if pu1 isa Number && pu2 isa Number
+        end => Parameter(Val(:PiUnit), pu1 + pu2)
+        (PiUnit(pu1, _), PiUnit(pu2, _)) && if !(pu1 isa Number) || !(pu2 isa Number)
+        end => Parameter(Val(:PiUnit), Expr(:call, :+, pu1, pu2))
+        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 * f2)
+        (PiUnit(pu1, _), Factor(f2, _)) => Parameter(Val(:Factor), exp(im * pu1 * π) * f2)
+        (PiUnit(_...), _) => p1 + Parameter(Val(:PiUnit), p2)
+        (Factor(_...), ::Number) => p1 + Parameter(Val(:Factor), p2)
+        _ => error(
+            "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: +",
+        )
 
 
-#     end
-# end
+    end
+end
 
-# Base.:(+)(p1::Parameter, p2::Parameter) = add_param(p1, p2)
-# Base.:(+)(p1::Parameter, p2::Number) = add_param(p1, p2)
-# Base.:(+)(p1::Number, p2::Parameter) = add_param(p2, p1)
+Base.:(+)(p1::Parameter, p2::Parameter) = add_param(p1, p2)
+Base.:(+)(p1::Parameter, p2::Number) = add_param(p1, p2)
+Base.:(+)(p1::Number, p2::Parameter) = add_param(p2, p1)
 
 # function subt_param(p1, p2)
 #     @match (p1, p2) begin

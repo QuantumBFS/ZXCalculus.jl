@@ -30,25 +30,23 @@ using Base: CodegenParams
     @test f2 == Base.convert(Parameter, f2)
     @test Base.convert(Parameter, ("Factor", 4.0 * im)) == f2
 
-    # @test p3 == one(p3)
-    # @test p1 == zero(p3)
-    # @test f3 == one(f3)
-    # @test Parameter(0) == zero(f3)
+    @test p1 == zero(p2)
+    @test p1 == zero(f3)
+    @test one(p2).pu == 1.0
+    @test one(f3).f == exp(im * 1.0 * π)
 
-    # # @test p1 == zero(::Type{Parameter.PiUnit})
-    # # @test p3 == one(::Type{Parameter.PiUnit})
-    # # @test f3 == one(::Type{Parameter.Factor})
-    # # @test Parameter(0) == zero(::Type{Parameter.Factor})
+    @test zero(Parameter).pu == 0.0
+    @test one(Parameter).pu == 1.0
 
-    # @test Base.iseven(Parameter(-2))
-    # @test !Base.iseven(Parameter(-1))
-    # @test Base.iseven(Parameter(2, "PiUnit"))
-    # @test !Base.iseven(Parameter(1, "PiUnit"))
+    @test Base.iseven(Parameter(Val(:PiUnit), 2))
+    @test !Base.iseven(Parameter(Val(:PiUnit), 1))
+    @test Base.iseven(Parameter(Val(:Factor), 1.0))
+    @test !Base.iseven(Parameter(Val(:Factor), 1.00001))
 
-    # p_cp = copy(p2)
-    # @test p_cp.pu == p2.pu && p_cp.pu_type == p2.pu_type
-    # f_cp = copy(f2)
-    # @test f_cp.f == f2.f
+    p_cp = copy(p2)
+    @test p_cp.pu == p2.pu && p_cp.pu_type == p2.pu_type
+    f_cp = copy(f2)
+    @test f_cp.f == f2.f
 end
 
 @testset "io" begin
@@ -91,32 +89,33 @@ end
 
     @test p1 < 3.0
     @test !(p3 < 4.0)
+    @test f1 < 20
 end
 
 
 
 
-# @testset "addition" begin
-#     p1 = Parameter(1.0, "PiUnit")
-#     p2 = Parameter(2, "PiUnit")
-#     p3 = Parameter(:a, "PiUnit")
-#     p4 = Parameter(:b, "PiUnit")
-#     f1 = Parameter(1, "Factor")
-#     f2 = Parameter(2.5, "Factor")
+@testset "addition" begin
+    p1 = Parameter(Val(:PiUnit), 1.0)
+    p2 = Parameter(Val(:PiUnit), 2)
+    p3 = Parameter(Val(:PiUnit), :a)
+    p4 = Parameter(Val(:PiUnit), :b)
+    f1 = Parameter(Val(:Factor), 1)
+    f2 = Parameter(Val(:Factor), 2.5)
 
-#     @test p1 + p2 == Parameter(3.0, "PiUnit")
-#     @test p1 + 2 == Parameter(3.0, "PiUnit")
-#     @test 2 + p1 == Parameter(3.0, "PiUnit")
-#     @test 2 + f2 == Parameter(4.5, "Factor")
-#     @test f2 + 2 == Parameter(4.5, "Factor")
-#     p13 = p1 + p3
-#     @test p13.pu == Expr(:call, :+, 1.0, :a) && p13.pu_type == Expr
-#     p34 = p3 + p4
-#     @test p34.pu == Expr(:call, :+, :a, :b) && p34.pu_type == Expr
+    @test p1 + p2 == Parameter(Val(:PiUnit), 3.0)
+    @test p1 + 2 == Parameter(Val(:PiUnit), 3.0)
+    @test 2 + p1 == Parameter(Val(:PiUnit), 3.0)
+    @test 2 + f2 == Parameter(Val(:Factor), 5.0)
+    @test f2 + 2 == Parameter(Val(:Factor), 5.0)
+    p13 = p1 + p3
+    @test p13.pu == Expr(:call, :+, 1.0, :a) && p13.pu_type == Expr
+    p34 = p3 + p4
+    @test p34.pu == Expr(:call, :+, :a, :b) && p34.pu_type == Expr
 
-#     @test p2 + f1 == Parameter(exp(im * 2 * π) + 1, "Factor")
+    @test p2 + f1 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
 
-# end
+end
 
 # @testset "subtraction" begin
 #     p1 = Parameter(1.0, "PiUnit")
