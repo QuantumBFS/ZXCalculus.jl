@@ -103,3 +103,23 @@ end
     # einsum contraction should return all zero
 
 end
+
+@testset "gate insertion" begin
+
+    zxwd = ZXWDiagram(2)
+
+    pushfirst_gate!(zxwd, Val(:X), 1)
+    pushfirst_gate!(zxwd, Val(:H), 1)
+    pushfirst_gate!(zxwd, Val(:CNOT), 2, 1)
+    pushfirst_gate!(zxwd, Val(:CZ), 1, 2)
+    pushfirst_gate!(zxwd, Val(:SWAP), [2, 1])
+
+    push_gate!(zxwd, Val(:X), 1, 0.5)
+    @test zxwd.st[16] == X(Parameter(Val(:PiUnit), 1 // 2))
+    push_gate!(zxwd, Val(:Z), 2, -0.5)
+    @test zxwd.st[17] == Z(Parameter(Val(:PiUnit), -1 // 2))
+    push_gate!(zxwd, Val(:Z), 1)
+    @test zxwd.st[18] == Z(Parameter(Val(:PiUnit), 0 // 1))
+    push_gate!(zxwd, Val(:H), 2)
+    @test zxwd.st[19] == H
+end

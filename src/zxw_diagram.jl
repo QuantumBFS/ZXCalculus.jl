@@ -81,12 +81,12 @@ end
 Construct a ZXW-diagram for a given multigraph, spider types, and, phases.
 """
 
-ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType}) where {T} =
-    ZXWDiagram{T,Number}(mg, st)
+ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType}, P::Type = Rational) where {T} =
+    ZXWDiagram{T,P}(mg, st)
 
 
-ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType}) where {T} =
-    ZXWDiagram{T,Number}(mg, Dict(zip(sort!(vertices(mg)), st)))
+ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType}, P::Type = Rational) where {T} =
+    ZXWDiagram{T,P}(mg, Dict(zip(sort!(vertices(mg)), st)))
 
 """
     ZXWDiagram(nbits)
