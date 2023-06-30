@@ -23,27 +23,27 @@ end
 
 
 """
-    ZXWDiagram{T}
+    ZXWDiagram{T, P}
 
 This is the type for representing ZXW-diagrams.
 """
 
-struct ZXWDiagram{T<:Integer}
+struct ZXWDiagram{T<:Integer,P}
     mg::Multigraph{T}
 
     st::Dict{T,ZXWSpiderType}
 
-    scalar::Parameter
+    scalar::Scalar{P}
     inputs::Vector{T}
     outputs::Vector{T}
 
-    function ZXWDiagram{T}(
+    function ZXWDiagram{T,P}(
         mg::Multigraph{T},
         st::Dict{T,ZXWSpiderType},
-        s::Parameter = Parameter(1.0,"Factor"),
+        s::Scalar{P} = Scalar{P}(),
         inputs::Vector{T} = Vector{T}(),
         outputs::Vector{T} = Vector{T}(),
-    ) where {T<:Integer}
+    ) where {T<:Integer,P}
         nv(mg) != length(st) && error("There should be a type for each spider!")
 
         if length(inputs) == 0
@@ -62,7 +62,7 @@ struct ZXWDiagram{T<:Integer}
             outputs = [i for i in outputs if i != -1]
         end
 
-        zxwd = new{T}(mg, st, s, inputs, outputs)
+        zxwd = new{T,P}(mg, st, s, inputs, outputs)
         round_phases!(zxwd)
         return zxwd
 
@@ -82,11 +82,11 @@ Construct a ZXW-diagram for a given multigraph, spider types, and, phases.
 """
 
 ZXWDiagram(mg::Multigraph{T}, st::Dict{T,ZXWSpiderType}) where {T} =
-    ZXWDiagram{T}(mg, st)
+    ZXWDiagram{T,Number}(mg, st)
 
 
 ZXWDiagram(mg::Multigraph{T}, st::Vector{ZXWSpiderType}) where {T} =
-    ZXWDiagram{T}(mg, Dict(zip(sort!(vertices(mg)), st)))
+    ZXWDiagram{T,Number}(mg, Dict(zip(sort!(vertices(mg)), st)))
 
 """
     ZXWDiagram(nbits)
@@ -105,12 +105,10 @@ function ZXWDiagram(nbits::T) where {T<:Integer}
 end
 
 
-function Base.copy(zxwd::ZXWDiagram{T}) where {T}
-    ZXWDiagram{T}(
+Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.mg),
     copy(zxwd.st),
     copy(zxwd.scalar),
     copy(zxwd.inputs),
     copy(zxwd.outputs),
 )
-end

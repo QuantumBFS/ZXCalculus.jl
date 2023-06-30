@@ -3,28 +3,29 @@ using MLStyle: @match
 
 @testset "Phase rounding" begin
     st = Dict(
-        1 => Z(Parameter(-1, "PiUnit")),
-        2 => Z(Parameter(-100 // 3, "PiUnit")),
-        3 => X(Parameter(1.5, "PiUnit")),
-        4 => X(Parameter(2 // 3, "PiUnit")),
+        1 => Z(Parameter(Val(:PiUnit), -1)),
+        2 => Z(Parameter(Val(:PiUnit), -100 // 3)),
+        3 => X(Parameter(Val(:PiUnit), 1.5)),
+        4 => X(Parameter(Val(:PiUnit), 2 // 3)),
     )
 
     zxwd = ZXWDiagram(Multigraph(zeros(Int, 4, 4)), st)
 
 
     st_rounded = Dict(
-        1 => Z(Parameter(1, "PiUnit")),
-        2 => Z(Parameter(2 // 3, "PiUnit")),
-        3 => X(Parameter(1.5, "PiUnit")),
-        4 => X(Parameter(2 // 3, "PiUnit")),
+        1 => Z(Parameter(Val(:PiUnit), 1)),
+        2 => Z(Parameter(Val(:PiUnit), 2 // 3)),
+        3 => X(Parameter(Val(:PiUnit), 1.5)),
+        4 => X(Parameter(Val(:PiUnit), 2 // 3)),
     )
 
     round_phases!(zxwd)
     @test zxwd.st == st_rounded
-    @test _round_phase(Parameter(-7, "PiUnit")) == Parameter(1, "PiUnit")
-    @test _round_phase(Parameter(1, "PiUnit")) == Parameter(1, "PiUnit")
-    @test _round_phase(Parameter(2, "PiUnit")) == Parameter(0, "PiUnit")
-    @test _round_phase(Parameter(1.5, "Factor")) == Parameter(1.5, "Factor")
+    @test _round_phase(Parameter(Val(:PiUnit), -7)) == Parameter(Val(:PiUnit), 1)
+    @test _round_phase(Parameter(Val(:PiUnit), 1)) == Parameter(Val(:PiUnit), 1)
+    @test _round_phase(Parameter(Val(:PiUnit), 2)) == Parameter(Val(:PiUnit), 0)
+    @test _round_phase(Parameter(Val(:Factor), exp(im * 1.5 * π))) ==
+          Parameter(Val(:Factor), exp(im * 1.5 * π))
 end
 
 @testset "ZXWDiagram Utilities" begin
@@ -39,12 +40,12 @@ end
     @test_throws ErrorException("Spider 10 does not exist!") spider_type(zxwd, 10)
 
     @test_throws ErrorException parameter(zxwd, 1)
-    @test ZXCalculus.set_phase!(zxwd, 1, PiUnit(2 // 3, Rational))
-    @test !ZXCalculus.set_phase!(zxwd, 10, PiUnit(2 // 3, Rational))
+    @test ZXCalculus.set_phase!(zxwd, 1, Parameter(Val(:PiUnit), 2 // 3))
+    @test !ZXCalculus.set_phase!(zxwd, 10, Parameter(Val(:PiUnit), 2 // 3))
 
     @test ZXCalculus.nqubits(zxwd) == 3
     @test ZXCalculus.nin(zxwd) == 3 && ZXCalculus.nout(zxwd) == 3
-    @test scalar(zxwd) == Factor(1.0)
+    @test scalar(zxwd) == ZXCalculus.Scalar{Number}()
     @test nv(zxwd) == 6 && ne(zxwd) == 3
 
     @test rem_edge!(zxwd, 5, 6)
@@ -68,16 +69,16 @@ end
         W => true
         _ => false
     end
-    @test parameter(zxwd, new_v) == PiUnit(0, Int64)
+    @test parameter(zxwd, new_v) == Parameter(Val(:PiUnit), 0)
 
-    new_v2 = ZXCalculus.add_spider!(zxwd, Z(PiUnit(1 // 2, Rational)), [2, 3])
+    new_v2 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1 // 2)), [2, 3])
 
     @test @match zxwd.st[new_v] begin
         Z => true
         _ => false
     end
-    @test ZXCalculus.set_phase!(zxwd, new_v2, PiUnit(3 // 2, Rational)) &&
-          parameter(zxwd, new_v2) == PiUnit(3 // 2, Rational)
+    @test ZXCalculus.set_phase!(zxwd, new_v2, Parameter(Val(:PiUnit), 3 // 2)) &&
+          parameter(zxwd, new_v2) == Parameter(Val(:PiUnit), 3 // 2)
 
     io = IOBuffer()
 
@@ -87,7 +88,7 @@ end
     print_spider(io, zxwd, new_v2)
     @test String(take!(io)) == "S_8{phase = 3//2⋅π}"
 
-    new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(1, "Factor")), [2, 3])
+    new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
     print_spider(io, zxwd, new_v3)
     @test String(take!(io)) == "S_9{phase = 1}"
 

@@ -3,7 +3,7 @@
 
 Round phases between [0, 2π).
 """
-function round_phases!(zxwd::ZXWDiagram{T}) where {T<:Integer}
+function round_phases!(zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
     st = zxwd.st
     for v in keys(st)
         st[v] = @match st[v] begin
@@ -27,7 +27,7 @@ end
 
 Returns the spider type of a spider if it exists.
 """
-function spider_type(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
+function spider_type(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
     if has_vertex(zxwd.mg, v)
         return zxwd.st[v]
     else
@@ -40,12 +40,12 @@ end
 
 Returns the parameter of a spider. If the spider is not a Z or X spider, then return 0.
 """
-function parameter(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
+function parameter(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
     @match spider_type(zxwd, v) begin
         Z(p) => p
         X(p) => p
         Input(_) || Output(_) => error("Input and outputs doesn't have valid parameter")
-        _ => PiUnit(0, Int64)
+        _ => Parameter(Val(:PiUnit), 0)
     end
 end
 
@@ -55,7 +55,7 @@ end
 Set the phase of `v` in `zxwd` to `p`. If `v` is not a Z or X spider, then do nothing.
 If `v` is not in `zxwd`, then return false to indicate failure.
 """
-function set_phase!(zxwd::ZXWDiagram{T}, v::T, p::Parameter) where {T}
+function set_phase!(zxwd::ZXWDiagram{T,P}, v::T, p::Parameter) where {T,P}
     if has_vertex(zxwd.mg, v)
         zxwd.st[v] = @match zxwd.st[v] begin
             Z(_) => Z(_round_phase(p))
@@ -72,14 +72,14 @@ end
 
 Returns the qubit number of a ZXW-diagram.
 """
-nqubits(zxwd::ZXWDiagram{T}) where {T} = length(zxwd.inputs)
+nqubits(zxwd::ZXWDiagram{T,P}) where {T,P} = length(zxwd.inputs)
 
 """
     nin(zxwd)
 Returns the number of inputs of a ZXW-diagram.
 """
 
-nin(zxwd::ZXWDiagram{T}) where {T} = sum([@match spy begin
+nin(zxwd::ZXWDiagram{T,P}) where {T,P} = sum([@match spy begin
     Input(_) => 1
     _ => 0
 end for spy in values(zxwd.st)])
@@ -89,7 +89,7 @@ end for spy in values(zxwd.st)])
     nout(zxwd)
 Returns the number of outputs of a ZXW-diagram
 """
-nout(zxwd::ZXWDiagram{T}) where {T} = sum([@match spy begin
+nout(zxwd::ZXWDiagram{T,P}) where {T,P} = sum([@match spy begin
     Output(_) => 1
     _ => 0
 end for spy in values(zxwd.st)])
@@ -99,7 +99,7 @@ end for spy in values(zxwd.st)])
 
 Print a spider to `io`.
 """
-function print_spider(io::IO, zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
+function print_spider(io::IO, zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
     @match zxwd.st[v] begin
         Z(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :green)
         X(p) => printstyled(io, "S_$(v){phase = $(p)}"; color = :red)
@@ -113,7 +113,7 @@ function print_spider(io::IO, zxwd::ZXWDiagram{T}, v::T) where {T<:Integer}
 end
 
 
-function Base.show(io::IO, zxwd::ZXWDiagram{T}) where {T<:Integer}
+function Base.show(io::IO, zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
     println(
         io,
         "$(typeof(zxwd)) with $(nv(zxwd.mg)) vertices and $(ne(zxwd.mg)) multiple edges:",
@@ -176,7 +176,7 @@ end
 
 Remove spiders indexed by `vs`.
 """
-function rem_spiders!(zxwd::ZXWDiagram{T}, vs::Vector{T}) where {T<:Integer}
+function rem_spiders!(zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
     if rem_vertices!(zxwd.mg, vs)
         for v in vs
             delete!(zxwd.st, v)
@@ -191,7 +191,7 @@ end
 
 Remove a spider indexed by `v`.
 """
-rem_spider!(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer} = rem_spiders!(zxwd, [v])
+rem_spider!(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zxwd, [v])
 
 """
     add_spider!(zxwd, spider, connect = [])
@@ -199,10 +199,10 @@ rem_spider!(zxwd::ZXWDiagram{T}, v::T) where {T<:Integer} = rem_spiders!(zxwd, [
 Add a new spider `spider` with appropriate parameter
 connected to the vertices `connect`. """
 function add_spider!(
-    zxwd::ZXWDiagram{T},
+    zxwd::ZXWDiagram{T,P},
     spider::ZXWSpiderType,
     connect::Vector{T} = T[],
-) where {T<:Integer}
+) where {T<:Integer,P}
     if any(!has_vertex(zxwd.mg, c) for c in connect)
         error("The vertex to connect does not exist.")
     end
@@ -226,11 +226,11 @@ vertices `v1` and `v2`. It will insert multiple times if the edge between
 `v1` and `v2`.
 """
 function insert_spider!(
-    zxwd::ZXWDiagram{T},
+    zxwd::ZXWDiagram{T,P},
     v1::T,
     v2::T,
     spider::ZXWSpiderType,
-) where {T<:Integer}
+) where {T<:Integer,P}
     mt = mul(zxwd.mg, v1, v2)
     vs = Vector{T}(undef, mt)
     for i = 1:mt
