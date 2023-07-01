@@ -104,3 +104,6 @@ Base.one(::Phase) = Phase(1//1)
 Base.one(::Type{Phase}) = Phase(1//1)
 
 Base.iseven(p::Phase) = (p.ex isa Number) && (-1)^p.ex > 0
+
+unwrap_phase(p::Phase) = p.ex * π
+unwrap_phase(p::Number) = p

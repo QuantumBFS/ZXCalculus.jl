@@ -9,7 +9,7 @@ function to_matrix(zxwd::ZXWDiagram; optimizer = GreedyMethod(), verbose = false
     return reshape(m, (1 << nin(zxwd), 1 << nout(zxwd)))
 end
 
-function to_eincode(zxwd::ZXWDiagram{T}) where {T}
+function to_eincode(zxwd::ZXWDiagram{T,P}) where {T,P}
     tensors = []
     ixs = Vector{Tuple{T,T,T}}[]
     iy = Tuple{T,T,T}[]
@@ -33,18 +33,13 @@ function to_eincode(zxwd::ZXWDiagram{T}) where {T}
 
     scalar_tensor = zeros(ComplexF64, ())
 
-    scalar_tensor[] = @match scalar(zxwd) begin
-        Factor(f) => f
-        PiUnit(pu, _) => exp(im * pu * π)
-        _ => error("Invalid parameter type for scalar")
-    end
-
+    scalar_tensor[] = ZXCalculus.unwrap_scalar(scalar(zxwd))
     push!(ixs, [])
     push!(tensors, scalar_tensor)
     return EinCode(ixs, iy), tensors
 end
 
-function to_eincode_indices(zxwd::ZXWDiagram{T}, v) where {T}
+function to_eincode_indices(zxwd::ZXWDiagram{T,P}, v) where {T,P}
     nbs = neighbors(zxwd, v; count_mul = true)
     ids = Tuple{T,T,T}[]
     isempty(nbs) && return ids
@@ -71,7 +66,7 @@ function z_tensor(n::Int, α::Parameter)
     shape = (fill(2, n)...,)
     factor = @match α begin
         PiUnit(pu, _) => exp(im * pu * π)
-        Factor(f) => f
+        Factor(f, _) => f
         _ => error("Invalid parameter type for Z-spider")
     end
     out = zeros(typeof(factor), shape...)
@@ -86,7 +81,7 @@ function x_tensor(n::Int, α::Parameter)
     shape = (fill(2, n)...,)
     factor = @match α begin
         PiUnit(pu, _) => exp(im * pu * π)
-        Factor(f) => f
+        Factor(f,_) => f
         _ => error("Invalid parameter type for X-spider")
     end
     return reshape(reduce(kron, fill(pos, n)) + factor * reduce(kron, fill(neg, n)), shape)
@@ -109,5 +104,5 @@ end
 
 function d_tensor(n::Int)
     n == 2 || error("A D-box can only has arity 2")
-    return ComplexF64[0 1; 1 1]
+    return ComplexF64[1 1; 1 0] # D = T * X
 end

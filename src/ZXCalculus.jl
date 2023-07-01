@@ -35,7 +35,7 @@ include("zx_diagram.jl")
 include("zx_graph.jl")
 
 include("zxw_diagram.jl")
-# include("to_eincode.jl")
+include("to_eincode.jl")
 
 include("utils.jl")
 
