@@ -142,4 +142,4 @@ end
 circ = random_identity(5, 50);
 zxd = convert_to_zxd(circ)
 zxg = ZXGraph(zxd)
-zxg |> clifford_simplification |> full_reduction 
+zxg |> clifford_simplification |> full_reduction
