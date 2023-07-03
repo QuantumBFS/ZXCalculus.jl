@@ -109,8 +109,9 @@ function add_param(p1, p2)
     @match (p1, p2) begin
         (PiUnit(pu1, _), PiUnit(pu2, _)) && if pu1 isa Number && pu2 isa Number
         end => Parameter(Val(:PiUnit), pu1 + pu2)
-        (PiUnit(pu1, _), PiUnit(pu2, _)) && if !(pu1 isa Number) || !(pu2 isa Number)
-        end => Parameter(Val(:PiUnit), Expr(:call, :+, pu1, pu2))
+        (PiUnit(pu1, pu1_t), PiUnit(pu2, pu2_t)) &&
+            if !(pu1 isa Number) || !(pu2 isa Number)
+            end => PiUnit(Expr(:call, :+, pu1, pu2), Base.promote_op(+, pu1_t, pu2_t))
         (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 + f2)
         (PiUnit(pu1, _), Factor(f2, _)) => Parameter(Val(:Factor), exp(im * pu1 * π) * f2)
         (Factor(f1, _), PiUnit(pu2, _)) => Parameter(Val(:Factor), exp(im * pu2 * π) * f1)
@@ -134,8 +135,8 @@ function subt_param(p1, p2)
         end => Parameter(Val(:PiUnit), pu1 - pu2)
         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
             if !(pu1 isa Number) || !(pu2 isa Number)
-            end => Parameter(Val(:PiUnit), Expr(:call, :-, pu1, pu2))
-        (Factor(f1, _), Factor(f2, _)) => Factor(f1 - f2)
+            end => PiUnit(Expr(:call, :-, pu1, pu2), Base.promote_op(-, pu_t1, pu_t2))
+        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 - f2)
         (PiUnit(_...), Factor(_...)) => Parameter(Val(:Factor), exp(im * p1.pu * π) - p2.f)
         (Factor(_...), PiUnit(_...)) => Parameter(Val(:Factor), p1.f - exp(im * p2.pu * π))
         (_, PiUnit(_...)) => Parameter(Val(:PiUnit), p1 - p2.pu)
