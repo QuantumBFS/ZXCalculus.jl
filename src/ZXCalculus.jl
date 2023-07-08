@@ -16,6 +16,7 @@ export SpiderType, EdgeType, ZXWSpiderType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
 export ZXWDiagram
 export Rule, Match
+export ZXWRule
 
 export spider_type, phase, spiders, rem_spider!, rem_spiders!, scalar
 export parameter
@@ -40,6 +41,7 @@ include("to_eincode.jl")
 include("utils.jl")
 
 include("rules.jl")
+include("zxw_rules.jl")
 include("simplify.jl")
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")
