@@ -7,6 +7,10 @@ using Test
     include("zxw_rules.jl")
 end
 
+@testset "diff.jl" begin
+    include("diff.jl")
+end
+
 # @testset "parameter.jl" begin
 #     include("parameter.jl")
 # end
