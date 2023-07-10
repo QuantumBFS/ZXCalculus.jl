@@ -68,6 +68,7 @@ end
 
 Base.:(==)(p1::Parameter, p2::Parameter) = eqeq(p1, p2)
 Base.:(==)(p1::Parameter, p2::Number) = eqeq(p1, p2)
+Base.:(==)(p1::Parameter, p2::Symbol) = eqeq(p1, p2)
 Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 
 # following the same convention in Phase.jl implementation

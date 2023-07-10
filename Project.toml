@@ -12,6 +12,7 @@ Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 
