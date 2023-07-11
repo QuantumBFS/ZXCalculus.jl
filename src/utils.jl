@@ -415,3 +415,24 @@ function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CZ}, loc::T, ctrl::T) whe
     add_power!(zxwd, 1)
     return zxwd
 end
+
+"""
+
+Insert W triangle on a vector of vertices
+
+"""
+function insert_wtrig!(zxwd::ZXWDiagram{T,P}, locs::Vector{T}) where {T,P}
+    length(locs) < 2 && return nothing
+
+    prev_w = add_spider!(zxwd, W, locs[1:2])
+    head = add_spider!(zxwd, W, [prev_w])
+
+    length(locs) == 2 && return head
+
+    for loc in locs[3:end]
+        prev_w = add_spider!(zxwd, W, [head, loc])
+        head = add_spider!(zxwd, W, [prev_w])
+    end
+    return head
+
+end

@@ -10,21 +10,23 @@ function partial_diff(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     vs = symbol_vertices(zxwd, θ)
     w_trig_vs = T[]
     for v in vs
-        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit),1.0)), v)
-        w_v = add_spider!(zxwd, D, x_v )
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit),1.0)), [v])
+        w_v = add_spider!(zxwd, D, [x_v] )
         frac_v = @match spider_type(zxwd, v).p begin
             # don't know how to take derivative of Symbol
             # need to change later
-            PiUnit(pu,_) => add_spider!(zxwd, Z(Parameter(Val(:Factor), im * π)),w_v)
-            Factor(f,_) => add_spider!(zxwd, Z(Parameter(Val(:Factor), 1 // θ)),w_v)
+            PiUnit(pu,_) => add_spider!(zxwd, Z(Parameter(Val(:Factor), im * π)),[w_v])
+            Factor(f,_) => add_spider!(zxwd, Z(Parameter(Val(:Factor), 1 // θ)),[w_v])
             _ => error("not a valid parameter")
         end
         push!(w_trig_vs, frac_v)
     end
 
-    for wv in w_trig_vs
-        # need to connect to w triangles
-    end
+    head = insert_wtrig!(zxwd, w_trig_vs)
+
+    add_spider!(zxwd, X(Parameter(Val(:PiUnit),1.0)), [head])
+
+    return zxwd
 end
 
 function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}

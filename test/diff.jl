@@ -1,8 +1,8 @@
 using ZXCalculus: insert_spider!
-using ZXCalculus: symbol_vertices
+using ZXCalculus: symbol_vertices, partial_diff
 using Symbolics
 
-@testset "get vertices" begin
+@testset "diff" begin
     zxwd = ZXWDiagram(3)
     @variables x
     insert_spider!(zxwd, 1, 2, Z(Parameter(Val(:PiUnit), :a)))
@@ -15,5 +15,9 @@ using Symbolics
     @test symbol_vertices(zxwd, :b) == [9]
     # @test symbol_vertices(zxwd, x) == [10]
     @test symbol_vertices(zxwd, :c) == []
+
+    partial_diff(zxwd, :a)
+    # need more rigorous test after figuring out Symbol vs Symbolics and einsum
+    @test length(vertices(zxwd.mg)) == 20
 
 end

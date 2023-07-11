@@ -122,4 +122,6 @@ end
     @test zxwd.st[18] == Z(Parameter(Val(:PiUnit), 0 // 1))
     push_gate!(zxwd, Val(:H), 2)
     @test zxwd.st[19] == H
+
+    @test insert_wtrig!(zxwd, [1,2,3,4]) == 25
 end
