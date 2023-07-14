@@ -8,13 +8,14 @@
     # s2
     push_gate!(zxwd, Val(:Z), 2, 0)
 
-    vs1 = match(s1, zxwd)[1]
-    vs2 = match(s2, zxwd)[1]
+    vs1 = match(Rule(:s1), zxwd)[1]
+    vs2 = match(Rule(:s2), zxwd)[1]
     @test vs1.vertices == [9, 10]
     @test vs2.vertices == [11]
 
-    rewrite!(s1, zxwd, vs1)
+    rewrite!(Rule(:s1), zxwd, vs1)
     @test !has_vertex(zxwd.mg, 10)
-    rewrite!(s2, zxwd, vs2)
+    rewrite!(Rule(:s2), zxwd, vs2)
     @test !has_vertex(zxwd.mg, 11)
+
 end
