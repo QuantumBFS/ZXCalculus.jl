@@ -68,12 +68,19 @@ end
 
 Base.:(==)(p1::Parameter, p2::Parameter) = eqeq(p1, p2)
 Base.:(==)(p1::Parameter, p2::Number) = eqeq(p1, p2)
-Base.:(==)(p1::Parameter, p2::Symbol) = eqeq(p1, p2)
 Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 
 # following the same convention in Phase.jl implementation
 # comparison have inconsistent, we are comparing phases to numbers
 # if cause trouble, will change
+#
+function contains(p::Parameter, θ::Symbol)
+    @match p begin
+        PiUnit(pu, pt) && if !(pt <: Number) end  => Base.contains(repr(pu), string(θ))
+        _ => false
+    end
+end
+
 Base.isless(p1::Parameter, p2::Number) = @match p1 begin
     PiUnit(_...) => p1.pu isa Number && p1.pu < p2
     _ => p1.f < p2
