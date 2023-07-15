@@ -1,4 +1,4 @@
-using ZXCalculus: contains
+using ZXCalculus: contains, dagger
 
 """
 Take derivative of ZXWDiagram with respect to a parameter
@@ -13,8 +13,11 @@ function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
         x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
         w_v = add_spider!(zxwd, D, [x_v])
         frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) => add_spider!(zxwd, Z(Parameter(Val(:Factor), im * π)), [w_v])
-            Factor(f, _) => add_spider!(zxwd, Z(Parameter(Val(:Factor), 1 // θ)), [w_v])
+            PiUnit(pu, _) && if !(pu == θ)
+            end => add_spider!(zxwd, Z(Parameter(Val(:Factor), π)), [w_v])
+            PiUnit(pu, _) && if pu == θ
+            end => w_v
+            Factor(f, _) => error("Only supports PiUnit differentiation")
             _ => error("not a valid parameter")
         end
         push!(w_trig_vs, frac_v)

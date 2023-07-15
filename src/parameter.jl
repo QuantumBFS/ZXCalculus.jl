@@ -76,7 +76,8 @@ Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 #
 function contains(p::Parameter, θ::Symbol)
     @match p begin
-        PiUnit(pu, pt) && if !(pt <: Number) end  => Base.contains(repr(pu), string(θ))
+        PiUnit(pu, pt) && if !(pt <: Number)
+        end => Base.contains(repr(pu), string(θ))
         _ => false
     end
 end
@@ -170,5 +171,16 @@ function Base.rem(p::Parameter, d::Number)
         _ => error(
             "Invalid input '$(p)' of type $(typeof(p)) and '$(d)' of type $(typeof(d)) for ADT: rem",
         )
+    end
+end
+
+function Base.inv(p::Parameter)
+    @match p begin
+        PiUnit(pu, pu_t) && if pu isa Number
+        end => Parameter(Val(:PiUnit), -pu)
+        PiUnit(pu, pu_t) && if !(pu isa Number)
+        end => Parameter(Val(:PiUnit), Expr(:call, :-, pu))
+        Factor(f, _) => Parameter(Val(:Factor), inv(f))
+        _ => error("Invalid input '$(p)' of type $(typeof(p)) for ADT: inv")
     end
 end

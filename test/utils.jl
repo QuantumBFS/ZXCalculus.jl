@@ -26,6 +26,9 @@ using MLStyle: @match
     @test _round_phase(Parameter(Val(:PiUnit), 2)) == Parameter(Val(:PiUnit), 0)
     @test _round_phase(Parameter(Val(:Factor), exp(im * 1.5 * π))) ==
           Parameter(Val(:Factor), exp(im * 1.5 * π))
+    @test _round_phase(Parameter(Val(:PiUnit), :a)) == Parameter(Val(:PiUnit), :a)
+    @test _round_phase(Parameter(Val(:PiUnit), Expr(:call, :-, :a))) ==
+          Parameter(Val(:PiUnit), Expr(:call, :-, :a))
 end
 
 @testset "ZXWDiagram Utilities" begin
@@ -123,5 +126,5 @@ end
     push_gate!(zxwd, Val(:H), 2)
     @test zxwd.st[19] == H
 
-    @test insert_wtrig!(zxwd, [1,2,3,4]) == 25
+    @test insert_wtrig!(zxwd, [1, 2, 3, 4]) == 25
 end
