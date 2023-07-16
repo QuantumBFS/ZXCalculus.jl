@@ -1,5 +1,5 @@
 using ZXCalculus: insert_spider!
-using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!
+using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!, integrate!
 
 @testset "diff" begin
     zxwd = ZXWDiagram(3)
@@ -26,5 +26,7 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!
     concat!(zxwd, zxwd_dg)
 
     @test length(vertices(zxwd.mg)) == 16
+
+    integrate!(zxwd, [7 , 11])
 
 end
