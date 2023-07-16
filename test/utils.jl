@@ -104,7 +104,6 @@ end
 
     #TODO: Add test for construction of ZXWDiagram with empty circuit
     # einsum contraction should return all zero
-
 end
 
 @testset "gate insertion" begin

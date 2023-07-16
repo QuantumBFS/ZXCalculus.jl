@@ -17,7 +17,8 @@ end
 
 function _round_phase(p::Parameter)
     @match p begin
-        PiUnit(pu, pt) && if pt <: Number end  => rem(rem(p, 2) + 2, 2)
+        PiUnit(pu, pt) && if pt <: Number
+        end => rem(rem(p, 2) + 2, 2)
         _ => p
     end
 end
@@ -435,4 +436,61 @@ function insert_wtrig!(zxwd::ZXWDiagram{T,P}, locs::Vector{T}) where {T,P}
     end
     return head
 
+end
+
+"""
+Convert ZXWDiagram that represents unitary U to U^†
+"""
+function dagger(zxwd::ZXWDiagram{T,P}) where {T,P}
+    zxwd_dg = copy(zxwd)
+    for v in vertices(zxwd_dg.mg)
+        @match zxwd_dg.st[v] begin
+            Input(q) => (zxwd_dg.st[v] = Output(q))
+            Output(q) => (zxwd_dg.st[v] = Input(q))
+            Z(p) => (zxwd_dg.st[v] = Z(inv(p)))
+            X(p) => (zxwd_dg.st[v] = X(inv(p)))
+            W => nothing
+            H => nothing
+            D => nothing
+        end
+    end
+    return zxwd_dg
+end
+
+"""
+Concatenate two ZXWDiagrams, modify d1.
+
+Remove outputs of d1 and inputs of d2. Then add edges between to vertices
+that was conntecting to outputs of d1 and inputs of d2.
+Assuming you don't concatenate two empty circuit ZXWDiagram
+"""
+function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    v2tov1 = Dict{T,T}()
+    for v2 in vertices(d2.mg)
+        new_v = @match d2.st[v2] begin
+            Input(q) => nothing
+            Output(q) => nothing
+            (Z(_) || X(_) || W || H || D) => add_vertex!(d1.mg)[1]
+            _ => error("Unknown spider type $(d2.st[v2])")
+        end
+        if new_v !== nothing
+            v2tov1[v2] = new_v
+            d1.st[new_v] = d2.st[v2]
+        end
+    end
+    prior_outputs = [neighbors(d1, q_v) for q_v in d1.outputs]
+    for edge in edges(d2.mg)
+        src, dst, emul = edge.src, edge.dst, edge.mul
+        v1srcs, v1dst = @match (spider_type(d2, src), spider_type(d2, dst)) begin
+            (Input(q), _) => (prior_outputs[q], v2tov1[dst])
+            (_, Input(q)) => (prior_outputs[q], v2tov1[src])
+            (Output(q), _) => ([v2tov1[dst]], d1.outputs[q])
+            (_, Output(q)) => ([v2tov1[src]], d1.outputs[q])
+            _ => ([v2tov1[src]], v2tov1[dst])
+        end
+        for v1src in v1srcs
+            add_edge!(d1.mg, v1src, v1dst, emul)
+        end
+    end
+    return d1
 end

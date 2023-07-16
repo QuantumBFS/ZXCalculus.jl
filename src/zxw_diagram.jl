@@ -113,18 +113,3 @@ Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.outputs),
 )
 
-function dagger(zxwd::ZXWDiagram{T,P}) where {T,P}
-    zxwd_dg = copy(zxwd)
-    for v in vertices(zxwd_dg.mg)
-        @match zxwd_dg.st[v] begin
-            Input(q) => (zxwd_dg.st[v] = Output(q))
-            Output(q) => (zxwd_dg.st[v] = Input(q))
-            Z(p) => (zxwd_dg.st[v] = Z(inv(p)))
-            X(p) => (zxwd_dg.st[v] = X(inv(p)))
-            W => nothing
-            H => nothing
-            D => nothing
-        end
-    end
-    return zxwd_dg
-end

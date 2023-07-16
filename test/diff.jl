@@ -1,5 +1,5 @@
 using ZXCalculus: insert_spider!
-using ZXCalculus: symbol_vertices, diff_diagram, dagger
+using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!
 
 @testset "diff" begin
     zxwd = ZXWDiagram(3)
@@ -13,12 +13,18 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger
     @test symbol_vertices(zxwd, :b) == [9]
     @test symbol_vertices(zxwd, :c) == []
 
-    diff_diagram(zxwd, :a)
+    diff_expval!(copy(zxwd), "ZZZ", :a)
+
+    diff_zxwd = diff_diagram(copy(zxwd), :a)
     # originally 11 spiders, plus 12 spiders from differentiation
-    @test length(vertices(zxwd.mg)) == 23
+    @test length(vertices(diff_zxwd.mg)) == 23
 
     zxwd_dg = dagger(zxwd)
     @test spider_type(zxwd_dg, 7).p.pu == Expr(:call, :-, :a)
     @test sort!(symbol_vertices(zxwd_dg, :a)) == [7, 8, 11]
+
+    concat!(zxwd, zxwd_dg)
+
+    @test length(vertices(zxwd.mg)) == 16
 
 end

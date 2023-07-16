@@ -1,4 +1,4 @@
-using ZXCalculus: contains, dagger
+using ZXCalculus: contains, dagger, concat!
 
 """
 Take derivative of ZXWDiagram with respect to a parameter
@@ -30,7 +30,10 @@ function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     return zxwd
 end
 
-function diff_expval(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
+"""
+Take derivative with of Circuit with expectation of Hamiltonian H.
+"""
+function diff_expval!(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
     # convert U to U^\dag H U
     zxwd_dag = dagger(zxwd)
     for (i, h) in enumerate(H)
@@ -38,10 +41,10 @@ function diff_expval(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
             push_gate!(zxwd, Val(:Z), i)
         elseif h == "X"
             push_gate!(zxwd, Val(:X), i)
-        else
+        elseif h == "Y"
             push_gate!(zxwd, Val(:Z), i)
             push_gate!(zxwd, Val(:X), i)
-            add_global_phase!(zxwd, P(-π // 2))
+            add_global_phase!(zxwd, P(-π / 2))
         end
     end
     concat!(zxwd, zxwd_dag)
