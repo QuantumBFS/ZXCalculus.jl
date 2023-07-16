@@ -28,5 +28,10 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!, 
     @test length(vertices(zxwd.mg)) == 16
 
     integrate!(zxwd, [7 , 11])
+    @test length(vertices(zxwd.mg)) == 16
+
+    # abuse, cann't actually integrate like this
+    integrate!(zxwd, [7, 8, 11, 9])
+    @test length(vertices(zxwd.mg)) == 25
 
 end
