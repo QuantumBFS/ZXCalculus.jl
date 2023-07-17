@@ -6,8 +6,10 @@ Take derivative of ZXWDiagram with respect to a parameter
 Assuming Spiders have Parameter of type PiUnit which is parameterized purely by θ
 """
 function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
-    add_global_phase!(zxwd, P(π / 2))
     vs = symbol_vertices(zxwd, θ)
+    length(vs) == 0 && return zxwd
+
+    add_global_phase!(zxwd, P(π / 2))
     w_trig_vs = T[]
     for v in vs
         x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])

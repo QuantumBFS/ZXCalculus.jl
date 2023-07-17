@@ -74,7 +74,7 @@ Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 # comparison have inconsistent, we are comparing phases to numbers
 # if cause trouble, will change
 #
-function contains(p::Parameter, θ::Symbol)
+function Base.contains(p::Parameter, θ::Symbol)
     @match p begin
         PiUnit(pu, pt) && if !(pt <: Number)
         end => Base.contains(repr(pu), string(θ))
