@@ -27,11 +27,24 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!, 
 
     @test length(vertices(zxwd.mg)) == 16
 
-    integrate!(zxwd, [7 , 11])
+    integrate!(zxwd, [7, 11])
     @test length(vertices(zxwd.mg)) == 16
 
     # abuse, cann't actually integrate like this
     integrate!(zxwd, [7, 8, 11, 9])
     @test length(vertices(zxwd.mg)) == 25
+
+end
+
+@testset "Example 27 - 30" begin
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, Parameter(Val(:PiUnit), :a); autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, Parameter(Val(:PiUnit), :b); autoconvert = false)
+
+    zxwd_diff_a = diff_diagram(copy(zxwd), :a)
 
 end

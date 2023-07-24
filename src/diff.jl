@@ -15,7 +15,7 @@ function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
         x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
         w_v = add_spider!(zxwd, D, [x_v])
         frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) && if !(pu == θ)
+            PiUnit(pu, _) && if pu != θ
             end => add_spider!(zxwd, Z(Parameter(Val(:Factor), π)), [w_v])
             PiUnit(pu, _) && if pu == θ
             end => w_v
@@ -71,6 +71,25 @@ function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
         res !== nothing && push!(matched, v)
     end
     return matched
+end
+
+function substitue_variables!(zxwd::ZXWDiagram{T,P}, sbd::Dict{Symbol,Number}) where {T,P}
+    for (θ, val) in sbd
+        matched = symbol_vertices(zxwd, θ)
+        for idx in matched
+            p = spider_type(zxwd, idx).p
+            @match p begin
+                PiUnit(pu, _) && if pu == θ
+                end => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), val))
+                PiUnit(pu, _) && if pu != θ
+                end => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), -val))
+                Factor(pf, _) && if pf == θ
+                end => set_phase!(zxwd, idx, Parameter(Val(:Factor), val))
+                Factor(pf, _) && if pf != θ
+                end => set_phase!(zxwd, idx, Parameter(Val(:Factor), -val))
+            end
+        end
+    end
 end
 
 """

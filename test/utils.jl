@@ -89,11 +89,11 @@ end
     @test String(take!(io)) == "S_7{W}"
 
     print_spider(io, zxwd, new_v2)
-    @test String(take!(io)) == "S_8{phase = 3//2⋅π}"
+    @test String(take!(io)) == "S_8{phase = Parameter.PiUnit(pu=3//2, pu_type=Rational{Int64})}"
 
     new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
     print_spider(io, zxwd, new_v3)
-    @test String(take!(io)) == "S_9{phase = 1}"
+    @test String(take!(io)) == "S_9{phase = Parameter.Factor(f=1, f_type=Int64)}"
 
     print_spider(io, zxwd, 2)
     @test String(take!(io)) == "S_2{output = 1}"

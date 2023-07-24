@@ -42,7 +42,7 @@ Base.copy(p::Parameter) = @match p begin
     Factor(f, _) => Parameter(Val(:Factor), f)
 end
 
-function Base.show(io::IO, p::Parameter)
+function Base.show(io::IO, ::MIME"text/plain", p::Parameter)
     @match p begin
         PiUnit(pu, _) && if pu isa Number
         end => print(io, "$(pu)⋅π")
@@ -160,6 +160,28 @@ end
 Base.:(-)(p1::Parameter, p2::Parameter) = subt_param(p1, p2)
 Base.:(-)(p1::Number, p2::Parameter) = subt_param(p1, p2)
 Base.:(-)(p1::Parameter, p2::Number) = add_param(p1, -p2)
+
+# needed for tensor contraction
+function mul_param(p1, p2)
+    @match (p1, p2) begin
+        (PiUnit(p1u, _), PiUnit(p2u, _)) && if p1u isa Number && p2u isa Number
+        end => Parameter(Val(:PiUnit), p1u + p2u)
+        (PiUnit(p1u, _), n2::Number) && if p1u isa Number
+        end => Parameter(Val(:Factor), exp(im * p1u * π) * n2)
+        (Factor(f1, _), PiUnit(p2u, _)) && if p2u isa Number
+        end => Parameter(Val(:Factor), f1 * exp(im * p2u * π))
+        (PiUnit(p1u, _), Factor(f2, _)) && if p1u isa Number
+        end => Parameter(Val(:Factor), f2 * exp(im * p1u * π))
+        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 * f2)
+        _ => error(
+            "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: *",
+        )
+    end
+end
+
+Base.:(*)(p1::Parameter, p2::Parameter) = mul_param(p1, p2)
+Base.:(*)(p1::Parameter, p2::Number) = mul_param(p1, p2)
+Base.:(*)(p1::Number, p2::Parameter) = mul_param(p2, p1)
 
 function Base.rem(p::Parameter, d::Number)
     @match p begin

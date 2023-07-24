@@ -494,3 +494,4 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     end
     return d1
 end
+
