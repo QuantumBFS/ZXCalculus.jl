@@ -54,15 +54,15 @@ end
     io = IOBuffer()
     p1 = Parameter(Val(:PiUnit), 1.0)
     show(io, p1)
-    @test String(take!(io)) == "1.0⋅π"
+    @test String(take!(io)) == "Parameter.PiUnit(pu=1.0, pu_type=Float64)"
 
     p2 = Parameter(Val(:PiUnit), :a)
     show(io, p2)
-    @test String(take!(io)) == "PiUnit((a)::Symbol)"
+    @test String(take!(io)) == "Parameter.PiUnit(pu=:a, pu_type=Symbol)"
 
     f1 = Parameter(Val(:Factor), 1)
     show(io, f1)
-    @test String(take!(io)) == "1"
+    @test String(take!(io)) == "Parameter.Factor(f=1, f_type=Int64)"
 end
 
 @testset "relational" begin
@@ -90,6 +90,9 @@ end
     @test p1 < 3.0
     @test !(p3 < 4.0)
     @test f1 < 20
+
+    @test contains(p3, :a)
+    @test !contains(p3, :b)
 end
 
 

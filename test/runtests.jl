@@ -11,9 +11,9 @@ end
     include("diff.jl")
 end
 
-# @testset "parameter.jl" begin
-#     include("parameter.jl")
-# end
+@testset "parameter.jl" begin
+    include("parameter.jl")
+end
 
 # @testset "zxw_diagram.jl" begin
 #     include("zxw_diagram.jl")
@@ -23,9 +23,9 @@ end
     include("utils.jl")
 end
 
-# @testset "to_eincode.jl" begin
-#     include("to_eincode.jl")
-# end
+@testset "to_eincode.jl" begin
+    include("to_eincode.jl")
+end
 
 # @testset "scalar.jl" begin
 #     include("scalar.jl")

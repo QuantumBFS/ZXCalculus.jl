@@ -9,7 +9,8 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!, 
     insert_spider!(zxwd, 5, 6, Z(Parameter(Val(:PiUnit), 0.3)))
     insert_spider!(zxwd, 8, 2, Z(Parameter(Val(:PiUnit), Expr(:call, :-, :a))))
 
-    @test sort!(symbol_vertices(zxwd, :a)) == [7, 8, 11]
+    @test sort!(symbol_vertices(zxwd, :a)) == [7, 8]
+    @test symbol_vertices(zxwd, :a; neg = true) == [11]
     @test symbol_vertices(zxwd, :b) == [9]
     @test symbol_vertices(zxwd, :c) == []
 
@@ -21,7 +22,7 @@ using ZXCalculus: symbol_vertices, diff_diagram, dagger, concat!, diff_expval!, 
 
     zxwd_dg = dagger(zxwd)
     @test spider_type(zxwd_dg, 7).p.pu == Expr(:call, :-, :a)
-    @test sort!(symbol_vertices(zxwd_dg, :a)) == [7, 8, 11]
+    @test sort!(symbol_vertices(zxwd_dg, :a; neg = true)) == [7, 8]
 
     concat!(zxwd, zxwd_dg)
 
@@ -44,6 +45,16 @@ end
     push_gate!(zxwd, Val(:CZ), 1, 2)
     push_gate!(zxwd, Val(:X), 1, Parameter(Val(:PiUnit), :a); autoconvert = false)
     push_gate!(zxwd, Val(:X), 2, Parameter(Val(:PiUnit), :b); autoconvert = false)
+
+    zxwd_sub = substitute_variables!(copy(zxwd), Dict(:a => 0.1, :b => 0.2))
+    mtx = Matrix(zxwd_sub)
+    mtx_standard = [
+        0.497502-0.14776im 0.477668-0.0499167im 0.477668+0.0499167im 0.497502+0.14776im
+        0.477668+0.0499167im -0.497502-0.14776im 0.497502-0.14776im -0.477668+0.0499167im
+        0.477668-0.0499167im 0.497502-0.14776im -0.497502-0.14776im -0.477668-0.0499167im
+        -0.497502-0.14776im 0.477668+0.0499167im 0.477668-0.0499167im -0.497502+0.14776im
+    ]
+    # @test mtx ≈ mtx_standard
 
     zxwd_diff_a = diff_diagram(copy(zxwd), :a)
 

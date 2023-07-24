@@ -6,19 +6,30 @@ Take derivative of ZXWDiagram with respect to a parameter
 Assuming Spiders have Parameter of type PiUnit which is parameterized purely by θ
 """
 function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
-    vs = symbol_vertices(zxwd, θ)
-    length(vs) == 0 && return zxwd
+    vs_pos = symbol_vertices(zxwd, θ)
+    vs_neg = symbol_vertices(zxwd, θ; neg = true)
+
+    length(vs_pos) + length(vs_neg) == 0 && return zxwd
 
     add_global_phase!(zxwd, P(π / 2))
     w_trig_vs = T[]
-    for v in vs
+
+    for v in vs_pos
         x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
         w_v = add_spider!(zxwd, D, [x_v])
         frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) && if pu != θ
-            end => add_spider!(zxwd, Z(Parameter(Val(:Factor), π)), [w_v])
-            PiUnit(pu, _) && if pu == θ
-            end => w_v
+            PiUnit(pu, _) => w_v
+            Factor(f, _) => error("Only supports PiUnit differentiation")
+            _ => error("not a valid parameter")
+        end
+        push!(w_trig_vs, frac_v)
+    end
+
+    for v in vs_neg
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
+        w_v = add_spider!(zxwd, D, [x_v])
+        frac_v = @match spider_type(zxwd, v).p begin
+            PiUnit(pu, _) => add_spider!(zxwd, Z(Parameter(Val(:Factor), π)), [w_v])
             Factor(f, _) => error("Only supports PiUnit differentiation")
             _ => error("not a valid parameter")
         end
@@ -57,14 +68,18 @@ end
 
 Finds vertices of Spider that contains the parameter θ or -θ
 """
-function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
-
+function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol; neg::Bool = false) where {T,P}
+    if neg
+        target = Expr(:call, :-, θ)
+    else
+        target = θ
+    end
     matched = T[]
     for v in vertices(zxwd.mg)
         res = @match spider_type(zxwd, v) begin
-            Z(p1) && if contains(p1, θ)
+            Z(p1) && if contains(p1, target)
             end => v
-            X(p1) && if contains(p1, θ)
+            X(p1) && if contains(p1, target)
             end => v
             _ => nothing
         end
@@ -73,7 +88,13 @@ function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     return matched
 end
 
-function substitue_variables!(zxwd::ZXWDiagram{T,P}, sbd::Dict{Symbol,Number}) where {T,P}
+"""
+Replace symbols in ZXW Diagram with specific values
+"""
+function substitute_variables!(
+    zxwd::ZXWDiagram{T,P},
+    sbd::Dict{Symbol,<:Number},
+) where {T,P}
     for (θ, val) in sbd
         matched = symbol_vertices(zxwd, θ)
         for idx in matched
@@ -90,6 +111,7 @@ function substitue_variables!(zxwd::ZXWDiagram{T,P}, sbd::Dict{Symbol,Number}) w
             end
         end
     end
+    return zxwd
 end
 
 """
