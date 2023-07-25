@@ -96,18 +96,15 @@ function substitute_variables!(
     sbd::Dict{Symbol,<:Number},
 ) where {T,P}
     for (θ, val) in sbd
-        matched = symbol_vertices(zxwd, θ)
-        for idx in matched
-            p = spider_type(zxwd, idx).p
-            @match p begin
-                PiUnit(pu, _) && if pu == θ
-                end => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), val))
-                PiUnit(pu, _) && if pu != θ
-                end => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), -val))
-                Factor(pf, _) && if pf == θ
-                end => set_phase!(zxwd, idx, Parameter(Val(:Factor), val))
-                Factor(pf, _) && if pf != θ
-                end => set_phase!(zxwd, idx, Parameter(Val(:Factor), -val))
+        for negative in [false, true]
+            matched_pos = symbol_vertices(zxwd, θ; neg = negative)
+            val = negative ? -val : val
+            for idx in matched_pos
+                p = spider_type(zxwd, idx).p
+                @match p begin
+                    PiUnit(pu, _) => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), val))
+                    Factor(pf, _) => set_phase!(zxwd, idx, Parameter(Val(:Factor), val))
+                end
             end
         end
     end

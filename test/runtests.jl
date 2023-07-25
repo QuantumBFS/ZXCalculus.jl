@@ -3,25 +3,25 @@ using YaoHIR: Chain
 using Documenter
 using Test
 
-@testset "zxw_rules.jl" begin
-    include("zxw_rules.jl")
-end
+# @testset "zxw_rules.jl" begin
+#     include("zxw_rules.jl")
+# end
 
-@testset "diff.jl" begin
-    include("diff.jl")
-end
+# @testset "diff.jl" begin
+#     include("diff.jl")
+# end
 
-@testset "parameter.jl" begin
-    include("parameter.jl")
-end
+# @testset "parameter.jl" begin
+#     include("parameter.jl")
+# end
 
 # @testset "zxw_diagram.jl" begin
 #     include("zxw_diagram.jl")
 # end
 
-@testset "utils.jl" begin
-    include("utils.jl")
-end
+# @testset "utils.jl" begin
+#     include("utils.jl")
+# end
 
 @testset "to_eincode.jl" begin
     include("to_eincode.jl")

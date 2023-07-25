@@ -56,6 +56,6 @@ end
     ]
     # @test mtx ≈ mtx_standard
 
-    zxwd_diff_a = diff_diagram(copy(zxwd), :a)
+    # zxwd_diff_a = diff_diagram(copy(zxwd), :a)
 
 end

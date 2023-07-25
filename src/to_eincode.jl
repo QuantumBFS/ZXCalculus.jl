@@ -23,18 +23,25 @@ function to_eincode(zxwd::ZXWDiagram{T,P}) where {T,P}
             Input(q) => nothing
             Output(q) => nothing
         end
-        if res !== nothing
+
+        if res != nothing
             push!(ixs, to_eincode_indices(zxwd, v))
             push!(tensors, res)
-        else
-            push!(iy, to_eincode_indices(zxwd, v)[])
         end
+    end
+
+    for v in get_outputs(zxwd)
+        push!(iy, to_eincode_indices(zxwd, v)[])
+    end
+
+    for v in get_inputs(zxwd)
+        push!(iy, to_eincode_indices(zxwd, v)[])
     end
 
     scalar_tensor = zeros(ComplexF64, ())
 
     scalar_tensor[] = ZXCalculus.unwrap_scalar(scalar(zxwd))
-    push!(ixs, [])
+    push!(ixs, Tuple{T,T,T}[])
     push!(tensors, scalar_tensor)
     return EinCode(ixs, iy), tensors
 end
@@ -60,6 +67,7 @@ function to_eincode_indices(zxwd::ZXWDiagram{T,P}, v) where {T,P}
     end
     return ids
 end
+
 edge_index(v1, v2, mul) = (min(v1, v2), max(v1, v2), mul)
 
 function z_tensor(n::Int, α::Parameter)
@@ -81,7 +89,7 @@ function x_tensor(n::Int, α::Parameter)
     shape = (fill(2, n)...,)
     factor = @match α begin
         PiUnit(pu, _) => exp(im * pu * π)
-        Factor(f,_) => f
+        Factor(f, _) => f
         _ => error("Invalid parameter type for X-spider")
     end
     return reshape(reduce(kron, fill(pos, n)) + factor * reduce(kron, fill(neg, n)), shape)

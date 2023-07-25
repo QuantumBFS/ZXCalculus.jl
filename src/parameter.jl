@@ -174,14 +174,15 @@ Base.:(-)(p1::Parameter, p2::Number) = add_param(p1, -p2)
 function mul_param(p1, p2)
     @match (p1, p2) begin
         (PiUnit(p1u, _), PiUnit(p2u, _)) && if p1u isa Number && p2u isa Number
-        end => Parameter(Val(:PiUnit), p1u + p2u)
+        end => exp(im * (p1u + p2u) * π)
         (PiUnit(p1u, _), n2::Number) && if p1u isa Number
-        end => Parameter(Val(:Factor), exp(im * p1u * π) * n2)
+        end => exp(im * p1u * π) * n2
         (Factor(f1, _), PiUnit(p2u, _)) && if p2u isa Number
-        end => Parameter(Val(:Factor), f1 * exp(im * p2u * π))
+        end => f1 * exp(im * p2u * π)
         (PiUnit(p1u, _), Factor(f2, _)) && if p1u isa Number
-        end => Parameter(Val(:Factor), f2 * exp(im * p1u * π))
-        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 * f2)
+        end => f2 * exp(im * p1u * π)
+        (Factor(f1, _), Factor(f2, _)) => f1 * f2
+        (Factor(f1, _), n2::Number) => f1 * n2
         _ => error(
             "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: *",
         )
