@@ -478,7 +478,13 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
             d1.st[new_v] = d2.st[v2]
         end
     end
-    prior_outputs = [neighbors(d1, q_v) for q_v in d1.outputs]
+    prior_outputs = [neighbors(d1, q_v; count_mul = true) for q_v in d1.outputs]
+    for i = 1:length(d1.outputs)
+        for prior_vtx in prior_outputs[i]
+            rem_edge!(d1, d1.outputs[i], prior_vtx)
+        end
+    end
+
     for edge in edges(d2.mg)
         src, dst, emul = edge.src, edge.dst, edge.mul
         v1srcs, v1dst = @match (spider_type(d2, src), spider_type(d2, dst)) begin
@@ -494,4 +500,3 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     end
     return d1
 end
-

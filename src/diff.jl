@@ -47,17 +47,19 @@ end
 Take derivative with of Circuit with expectation of Hamiltonian H.
 """
 function diff_expval!(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
-    # convert U to U^\dag H U
+    # convert U to U H U^\dagger
     zxwd_dag = dagger(zxwd)
     for (i, h) in enumerate(H)
-        if h == "Z"
-            push_gate!(zxwd, Val(:Z), i)
-        elseif h == "X"
-            push_gate!(zxwd, Val(:X), i)
-        elseif h == "Y"
-            push_gate!(zxwd, Val(:Z), i)
-            push_gate!(zxwd, Val(:X), i)
-            add_global_phase!(zxwd, P(-π / 2))
+        if h == 'Z'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+        elseif h == 'X'
+            push_gate!(zxwd, Val(:X), i, 1.0)
+        elseif h == 'Y'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+            push_gate!(zxwd, Val(:X), i, 1.0)
+            add_global_phase!(zxwd, P(π / 2))
+        else
+            error("Invalid Hamiltonian, enter only Z, X, Y")
         end
     end
     concat!(zxwd, zxwd_dag)
