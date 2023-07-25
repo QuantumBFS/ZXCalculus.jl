@@ -498,5 +498,7 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
             add_edge!(d1.mg, v1src, v1dst, emul)
         end
     end
+    add_global_phase!(d1, d2.scalar.phase)
+    add_power!(d1, d2.scalar.power_of_sqrt_2)
     return d1
 end
