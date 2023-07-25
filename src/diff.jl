@@ -5,7 +5,7 @@ Take derivative of ZXWDiagram with respect to a parameter
 
 Assuming Spiders have Parameter of type PiUnit which is parameterized purely by θ
 """
-function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
+function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     vs_pos = symbol_vertices(zxwd, θ)
     vs_neg = symbol_vertices(zxwd, θ; neg = true)
 
@@ -29,7 +29,7 @@ function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
         x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
         w_v = add_spider!(zxwd, D, [x_v])
         frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) => add_spider!(zxwd, Z(Parameter(Val(:Factor), π)), [w_v])
+            PiUnit(pu, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
             Factor(f, _) => error("Only supports PiUnit differentiation")
             _ => error("not a valid parameter")
         end
@@ -44,9 +44,9 @@ function diff_diagram(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
 end
 
 """
-Take derivative with of Circuit with expectation of Hamiltonian H.
+Construct ZXW Diagram for representing the expectation value circuit
 """
-function diff_expval!(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
+function expval_circ!(zxwd::ZXWDiagram{T,P}, H::String) where {T,P}
     # convert U to U H U^\dagger
     zxwd_dag = dagger(zxwd)
     for (i, h) in enumerate(H)
@@ -63,7 +63,7 @@ function diff_expval!(zxwd::ZXWDiagram{T,P}, H::String, θ::Symbol) where {T,P}
         end
     end
     concat!(zxwd, zxwd_dag)
-    return diff_diagram(zxwd, θ)
+    return zxwd
 end
 
 """
@@ -151,7 +151,7 @@ function integrate4!(zxwd::ZXWDiagram{T,P}, loca::T, locb::T, locc::T, locd::T) 
 
     locm = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 0)), [loca, locb])
     locm = add_spider!(zxwd, D, [locm])
-    locm = add_spider!(zxwd, X(Parameter(Val(:PiUnit), π)), [locm])
+    locm = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [locm])
     add_spider!(zxwd, X(Parameter(Val(:PiUnit), 0)), [locm, locc, locd])
     return zxwd
 end
