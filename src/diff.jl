@@ -1,4 +1,4 @@
-using ZXCalculus: contains, dagger, concat!
+using ZXCalculus: contains, dagger, concat!, stack
 
 """
 Take derivative of ZXWDiagram with respect to a parameter

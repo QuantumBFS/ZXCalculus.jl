@@ -465,24 +465,18 @@ that was conntecting to outputs of d1 and inputs of d2.
 Assuming you don't concatenate two empty circuit ZXWDiagram
 """
 function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    nout(d1) != nin(d2) &&
+        error("Number of outputs of d1 and inputs of d2 must be the same")
+
     v2tov1 = Dict{T,T}()
-    for v2 in vertices(d2.mg)
-        new_v = @match d2.st[v2] begin
-            Input(q) => nothing
-            Output(q) => nothing
-            (Z(_) || X(_) || W || H || D) => add_vertex!(d1.mg)[1]
-            _ => error("Unknown spider type $(d2.st[v2])")
-        end
-        if new_v !== nothing
-            v2tov1[v2] = new_v
-            d1.st[new_v] = d2.st[v2]
-        end
-    end
-    prior_outputs = [neighbors(d1, q_v; count_mul = true) for q_v in d1.outputs]
-    for i = 1:length(d1.outputs)
-        for prior_vtx in prior_outputs[i]
-            rem_edge!(d1, d1.outputs[i], prior_vtx)
-        end
+    import_non_in_out!(d1, d2, v2tov1)
+
+    # output spiders cannot be connected to multiple vertices or with multiedge
+    prior2outputs = [neighbors(d1, q_v)[1] for q_v in get_outputs(d1)]
+    for i = 1:nout(d1)
+        rem_edge!(d1, get_outputs(d1)[i], prior2outputs[i])
+        # d2 input vtx idx is mapped to the vtx prior to d1 output
+        v2tov1[2*(i-1)+1] = prior2outputs[i]
     end
 
     for edge in edges(d2.mg)
@@ -501,4 +495,61 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     add_global_phase!(d1, d2.scalar.phase)
     add_power!(d1, d2.scalar.power_of_sqrt_2)
     return d1
+end
+
+"""
+Stacking two ZXWDiagrams, return new ZXWDiagram.
+
+Performs tensor product of two ZXWDiagrams. The result is a ZXWDiagram with d1 on
+lower qubit indices. Assuming number of inputs and outputs of are the same for both d1 and d2.
+"""
+function stack(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    d3 = ZXWDiagram(nqubits(d1) + nqubits(d2))
+
+    add_global_phase!(d3, d1.scalar.phase)
+    add_global_phase!(d3, d2.scalar.phase)
+    add_power!(d3, d1.scalar.power_of_sqrt_2)
+    add_power!(d3, d2.scalar.power_of_sqrt_2)
+
+    v1tov3 = Dict{T,T}([T(i) => T(i) for i = 1:(2*nqubits(d1))])
+
+    v2tov3 = Dict{T,T}([T(i) => T(i + 2 * nqubits(d1)) for i = 1:(2*nqubits(d2))])
+
+    import_vertices!(d3, d1, v1tov3)
+    import_vertices!(d3, d2, v2tov3)
+
+end
+
+"""
+Add non input and output spiders of d2 to d1, modify d1. Record the mapping of vertex indices.
+"""
+function import_non_in_out!(
+    d1::ZXWDiagram{T,P},
+    d2::ZXWDiagram{T,P},
+    v2tov1::Dict{T,T},
+) where {T,P}
+    for v2 in vertices(d2.mg)
+        new_v = @match spider_type(d2, v2) begin
+            Input(q) => nothing
+            Output(q) => nothing
+            (Z(_) || X(_) || W || H || D) => add_vertex!(d1.mg)[1]
+            _ => error("Unknown spider type $(d2.st[v2])")
+        end
+        if new_v !== nothing
+            v2tov1[v2] = new_v
+            d1.st[new_v] = d2.st[v2]
+        end
+    end
+end
+
+"""
+Import edges of d2 to d1, modify d1
+"""
+function import_edges!(
+    d1::ZXWDiagram{T,P},
+    d2::ZXWDiagram{T,P},
+    v2tov1::Dict{T,T},
+) where {T,P}
+
+
 end
