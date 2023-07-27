@@ -251,12 +251,35 @@ Returns a vector of input ids.
 """
 get_inputs(zxwd::ZXWDiagram) = zxwd.inputs
 
+function get_input_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_inputs(zxwd))
+        res = @match spider_type(zxwd, v) begin
+            Input(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        res !== nothing && return res
+    end
+    return -1
+end
 """
     get_outputs(zxwd)
 
 Returns a vector of output ids.
 """
 get_outputs(zxwd::ZXWDiagram) = zxwd.outputs
+
+function get_output_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_outputs(zxwd))
+        res = @match spider_type(zxwd, v) begin
+            Output(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        res !== nothing && return res
+    end
+    return -1
+end
 
 scalar(zxwd::ZXWDiagram) = zxwd.scalar
 
@@ -454,6 +477,11 @@ function dagger(zxwd::ZXWDiagram{T,P}) where {T,P}
             D => nothing
         end
     end
+    for i = 1:nin(zxwd_dg)
+        zxwd_dg.inputs[i] = zxwd.outputs[i]
+        zxwd_dg.outputs[i] = zxwd.inputs[i]
+    end
+
     return zxwd_dg
 end
 
@@ -471,27 +499,20 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     v2tov1 = Dict{T,T}()
     import_non_in_out!(d1, d2, v2tov1)
 
-    # output spiders cannot be connected to multiple vertices or with multiedge
-    prior2outputs = [neighbors(d1, q_v)[1] for q_v in get_outputs(d1)]
     for i = 1:nout(d1)
-        rem_edge!(d1, get_outputs(d1)[i], prior2outputs[i])
+        out_idx = get_output_idx(d1, i)
+        # output spiders cannot be connected to multiple vertices or with multiedge
+        prior_vtx = neighbors(d1, out_idx)[1]
+        rem_edge!(d1, out_idx, prior_vtx)
         # d2 input vtx idx is mapped to the vtx prior to d1 output
-        v2tov1[2*(i-1)+1] = prior2outputs[i]
+        v2tov1[get_input_idx(d2, i)] = prior_vtx
     end
 
-    for edge in edges(d2.mg)
-        src, dst, emul = edge.src, edge.dst, edge.mul
-        v1srcs, v1dst = @match (spider_type(d2, src), spider_type(d2, dst)) begin
-            (Input(q), _) => (prior_outputs[q], v2tov1[dst])
-            (_, Input(q)) => (prior_outputs[q], v2tov1[src])
-            (Output(q), _) => ([v2tov1[dst]], d1.outputs[q])
-            (_, Output(q)) => ([v2tov1[src]], d1.outputs[q])
-            _ => ([v2tov1[src]], v2tov1[dst])
-        end
-        for v1src in v1srcs
-            add_edge!(d1.mg, v1src, v1dst, emul)
-        end
+    for i = 1:nout(d2)
+        v2tov1[get_output_idx(d2, i)] = get_output_idx(d1, i)
     end
+
+    import_edges!(d1, d2, v2tov1)
     add_global_phase!(d1, d2.scalar.phase)
     add_power!(d1, d2.scalar.power_of_sqrt_2)
     return d1
@@ -503,21 +524,39 @@ Stacking two ZXWDiagrams, return new ZXWDiagram.
 Performs tensor product of two ZXWDiagrams. The result is a ZXWDiagram with d1 on
 lower qubit indices. Assuming number of inputs and outputs of are the same for both d1 and d2.
 """
-function stack(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+function stack_zxwd(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     d3 = ZXWDiagram(nqubits(d1) + nqubits(d2))
+    for in_vtx in d3.inputs
+        rem_edge!(d3, in_vtx, neighbors(d3, in_vtx)[1])
+    end
 
     add_global_phase!(d3, d1.scalar.phase)
     add_global_phase!(d3, d2.scalar.phase)
     add_power!(d3, d1.scalar.power_of_sqrt_2)
     add_power!(d3, d2.scalar.power_of_sqrt_2)
 
-    v1tov3 = Dict{T,T}([T(i) => T(i) for i = 1:(2*nqubits(d1))])
+    v1tov3 = Dict{T,T}()
+    v2tov3 = Dict{T,T}()
 
-    v2tov3 = Dict{T,T}([T(i) => T(i + 2 * nqubits(d1)) for i = 1:(2*nqubits(d2))])
+    import_non_in_out!(d3, d1, v1tov3)
+    import_non_in_out!(d3, d2, v2tov3)
 
-    import_vertices!(d3, d1, v1tov3)
-    import_vertices!(d3, d2, v2tov3)
+    for idx in get_inputs(d1)
+        v1tov3[idx] = idx
+    end
+    for idx in get_outputs(d1)
+        v1tov3[idx] = idx
+    end
+    for idx in get_inputs(d2)
+        v2tov3[idx] = idx + nqubits(d1) * 2
+    end
+    for idx in get_outputs(d2)
+        v2tov3[idx] = idx + nqubits(d1) * 2
+    end
 
+    import_edges!(d3, d1, v1tov3)
+    import_edges!(d3, d2, v2tov3)
+    return d3
 end
 
 """
@@ -537,7 +576,7 @@ function import_non_in_out!(
         end
         if new_v !== nothing
             v2tov1[v2] = new_v
-            d1.st[new_v] = d2.st[v2]
+            d1.st[new_v] = spider_type(d2, v2)
         end
     end
 end
@@ -550,6 +589,8 @@ function import_edges!(
     d2::ZXWDiagram{T,P},
     v2tov1::Dict{T,T},
 ) where {T,P}
-
-
+    for edge in edges(d2.mg)
+        src, dst, emul = edge.src, edge.dst, edge.mul
+        add_edge!(d1.mg, v2tov1[src], v2tov1[dst], emul)
+    end
 end
