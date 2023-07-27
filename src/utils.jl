@@ -45,7 +45,7 @@ function parameter(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
     @match spider_type(zxwd, v) begin
         Z(p) => p
         X(p) => p
-        Input(_) || Output(_) => error("Input and outputs doesn't have valid parameter")
+        Input(q) || Output(q) => q
         _ => Parameter(Val(:PiUnit), 0)
     end
 end
@@ -448,17 +448,13 @@ Insert W triangle on a vector of vertices
 function insert_wtrig!(zxwd::ZXWDiagram{T,P}, locs::Vector{T}) where {T,P}
     length(locs) < 2 && return nothing
 
-    prev_w = add_spider!(zxwd, W, locs[1:2])
-    head = add_spider!(zxwd, W, [prev_w])
+    head = locs[1]
 
-    length(locs) == 2 && return head
-
-    for loc in locs[3:end]
+    for loc in locs[2:end]
         prev_w = add_spider!(zxwd, W, [head, loc])
         head = add_spider!(zxwd, W, [prev_w])
     end
     return head
-
 end
 
 """

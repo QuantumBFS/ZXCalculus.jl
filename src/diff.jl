@@ -15,22 +15,22 @@ function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     w_trig_vs = T[]
 
     for v in vs_pos
-        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
-        w_v = add_spider!(zxwd, D, [x_v])
-        frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) => w_v
-            Factor(f, _) => error("Only supports PiUnit differentiation")
+        d_v = add_spider!(zxwd, D, [v])
+        w_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [d_v])
+        frac_v = @match parameter(zxwd, v) begin
+            PiUnit(_,_) => w_v
+            Factor(_,_) => error("Only supports PiUnit differentiation")
             _ => error("not a valid parameter")
         end
         push!(w_trig_vs, frac_v)
     end
 
     for v in vs_neg
-        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [v])
-        w_v = add_spider!(zxwd, D, [x_v])
+        d_v = add_spider!(zxwd, D, [v])
+        w_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [d_v])
         frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(pu, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
-            Factor(f, _) => error("Only supports PiUnit differentiation")
+            PiUnit(_, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
+            Factor(_, _) => error("Only supports PiUnit differentiation")
             _ => error("not a valid parameter")
         end
         push!(w_trig_vs, frac_v)
