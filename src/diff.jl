@@ -15,8 +15,15 @@ function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     w_trig_vs = T[]
 
     for v in vs_pos
-        d_v = add_spider!(zxwd, D, [v])
-        w_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [d_v])
+
+        h_v = @match spider_type(zxwd,v) begin
+            X(_) => add_spider!(zxwd, H, [v])
+            Z(_) => v
+        end
+
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
+        w_v = add_spider!(zxwd, D, [x_v])
+
         frac_v = @match parameter(zxwd, v) begin
             PiUnit(_,_) => w_v
             Factor(_,_) => error("Only supports PiUnit differentiation")
@@ -26,8 +33,15 @@ function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     end
 
     for v in vs_neg
-        d_v = add_spider!(zxwd, D, [v])
-        w_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [d_v])
+
+        h_v = @match spider_type(zxwd,v) begin
+            X(_) => add_spider!(zxwd, H, [v])
+            Z(_) => v
+        end
+
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
+        w_v = add_spider!(zxwd, D, [x_v])
+
         frac_v = @match spider_type(zxwd, v).p begin
             PiUnit(_, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
             Factor(_, _) => error("Only supports PiUnit differentiation")
@@ -39,6 +53,8 @@ function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
     head = insert_wtrig!(zxwd, w_trig_vs)
 
     add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [head])
+    # our definition of x_tensor exceeds one power of sqrt(2)
+    add_power!(zxwd, -1)
 
     return zxwd
 end
@@ -58,6 +74,8 @@ function expval_circ!(zxwd::ZXWDiagram{T,P}, H::String) where {T,P}
             push_gate!(zxwd, Val(:Z), i, 1.0)
             push_gate!(zxwd, Val(:X), i, 1.0)
             add_global_phase!(zxwd, P(π / 2))
+        elseif h == 'I'
+            continue
         else
             error("Invalid Hamiltonian, enter only Z, X, Y")
         end
