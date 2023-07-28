@@ -101,6 +101,21 @@ end
     @test isapprox(int_val, 1.0; atol = 1e-10)
 end
 
+
+@testset "Theorem 23" begin
+
+
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :a; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+
+    int_zxwd = integrate!(exp_zxwd, [5, 9, 6, 10])
+
+    int_val = real(Matrix(int_zxwd)[1, 1])
+    @test isapprox(int_val, 1.0; atol = 1e-10)
+end
+
 @testset "Lemma 30" begin
     # to calculate variance, we double the circuit
     zxwd = ZXWDiagram(4)

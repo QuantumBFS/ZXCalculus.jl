@@ -170,7 +170,12 @@ function integrate4!(zxwd::ZXWDiagram{T,P}, loca::T, locb::T, locc::T, locd::T) 
     locm = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 0)), [loca, locb])
     locm = add_spider!(zxwd, D, [locm])
     locm = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [locm])
-    add_spider!(zxwd, X(Parameter(Val(:PiUnit), 0)), [locm, locc, locd])
+    add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 0)), [locm, locc, locd])
+
+    # pink spider is different from red spider, we had three of them
+    # each with three legs, 3 * (3-2)/2 powers of 2 need to be added
+    # see 2307.01803
+    add_power!(zxwd,3)
     return zxwd
 end
 
