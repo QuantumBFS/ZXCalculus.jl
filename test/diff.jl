@@ -75,37 +75,58 @@ end
     @test gradient ≈ gradient_parameter_shift
 end
 
-# @testset "Lemma 30" begin
-#     # to calculate variance, we double the circuit
-#     zxwd = ZXWDiagram(4)
-
-#     push_gate!(zxwd, Val(:H), 1)
-#     push_gate!(zxwd, Val(:H), 2)
-#     push_gate!(zxwd, Val(:H), 3)
-#     push_gate!(zxwd, Val(:H), 4)
-#     push_gate!(zxwd, Val(:CZ), 1, 2)
-#     push_gate!(zxwd, Val(:CZ), 3, 4)
-#     push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
-#     push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
-#     push_gate!(zxwd, Val(:X), 3, :a; autoconvert=false)
-#     push_gate!(zxwd, Val(:X), 4, :c; autoconvert=false)
-
-#     exp_zxwd = expval_circ!(copy(zxwd), "ZZZZ")
-#     exp_zxwd = diff_diagram!(exp_zxwd, :b)
-#     exp_zxwd = diff_diagram!(exp_zxwd, :c)
+@testset "Proposition 20" begin
 
 
-#     posb = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg=false)[1]
-#     posbminus = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg=true)[1]
+    zxwd = ZXWDiagram(1)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "Z")
 
-#     posc = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg=false)[1]
-#     poscminus = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg=true)[1]
+    int_zxwd = integrate!(exp_zxwd, [3, 5])
 
-#     integrated_zxwd = ZXCalculus.integrate!(exp_zxwd, [posb, posbminus, posc, poscminus])
+    int_val = real(Matrix(int_zxwd)[1, 1])
+    # plot the exp val and you should see a sin curve
+    # should integrate to zero
+    @test isapprox(int_val, 0.0; atol = 1e-10)
 
 
-#     integrated_zxwd = substitute_variables!(integrated_zxwd, Dict(:a => 0.0))
+    zxwd = ZXWDiagram(1)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "I")
 
-#     integrated_mtx = Matrix(integrated_zxwd)
+    int_zxwd = integrate!(exp_zxwd, [3, 4])
 
-# end
+    int_val = real(Matrix(int_zxwd)[1, 1])
+    # constant, should be 1.0
+    @test isapprox(int_val, 1.0; atol = 1e-10)
+end
+
+@testset "Lemma 30" begin
+    # to calculate variance, we double the circuit
+    zxwd = ZXWDiagram(4)
+
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZZZ")
+    exp_zxwd = diff_diagram!(exp_zxwd, :b)
+    exp_zxwd = diff_diagram!(exp_zxwd, :c)
+
+
+    posb = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg = false)[1]
+    posbminus = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg = true)[1]
+
+    posc = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg = false)[1]
+    poscminus = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg = true)[1]
+
+    integrated_zxwd = ZXCalculus.integrate!(exp_zxwd, [posb, posbminus, posc, poscminus])
+
+
+    integrated_zxwd = substitute_variables!(integrated_zxwd, Dict(:a => 0.0))
+
+    integrated_mtx = Matrix(integrated_zxwd)
+
+end
