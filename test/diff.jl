@@ -69,7 +69,8 @@ end
     diff_zxwd = substitute_variables!(diff_zxwd, Dict(:a => a, :b => b))
 
     diff_mtx = Matrix(diff_zxwd)
-    # need to adjust for pi since our parameter is in unit of pi
+    # our parameter is in unit of pi
+    # during derivation, dummy variable will have extra factor of pi
     gradient = real(diff_mtx[1, 1]) * π
 
     @test gradient ≈ gradient_parameter_shift
@@ -77,6 +78,12 @@ end
 
 @testset "Proposition 20" begin
 
+    # standard value of integration obtained from
+    # doing Riemann sum and extrapolating
+    # the sum will differ to the integrated value
+    # provided by the ZXWDiagram by a factor of 2
+    # since we are using a dummy variable k pi = alpha
+    # where k goes from 0 to 2, hence the factor 2 in test
 
     zxwd = ZXWDiagram(1)
     push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
@@ -85,20 +92,20 @@ end
     int_zxwd = integrate!(exp_zxwd, [3, 5])
 
     int_val = real(Matrix(int_zxwd)[1, 1])
-    # plot the exp val and you should see a sin curve
-    # should integrate to zero
-    @test isapprox(int_val, 0.0; atol = 1e-10)
+
+    @test isapprox(2 * int_val, 0.0; atol = 1e-10)
 
 
-    zxwd = ZXWDiagram(1)
+    zxwd = ZXWDiagram(2)
     push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    exp_zxwd = expval_circ!(copy(zxwd), "I")
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "IZ")
 
-    int_zxwd = integrate!(exp_zxwd, [3, 4])
-
+    int_zxwd = integrate!(exp_zxwd, [5, 8])
+    int_zxwd = substitute_variables!(int_zxwd, Dict(:a => 0.3, :b => 0.0))
     int_val = real(Matrix(int_zxwd)[1, 1])
-    # constant, should be 1.0
-    @test isapprox(int_val, 1.0; atol = 1e-10)
+    # constant, should be 2.0
+    @test isapprox(2 * int_val, 2.0; atol = 1e-10)
 end
 
 
@@ -113,7 +120,10 @@ end
     int_zxwd = integrate!(exp_zxwd, [5, 9, 6, 10])
 
     int_val = real(Matrix(int_zxwd)[1, 1])
-    @test isapprox(int_val, 1.0; atol = 1e-10)
+    # By thm 23, and change of dummy variable, k * pi = alpha
+    # we get 1/2 \int_{-1}^{1} ... dk = ZXWDiagram
+    # hence the factor of two here
+    @test isapprox(2 * int_val, 1.0; atol = 1e-10)
 end
 
 @testset "Lemma 30" begin
