@@ -42,7 +42,7 @@ end
 
     @test_throws ErrorException("Spider 10 does not exist!") spider_type(zxwd, 10)
 
-    @test_throws ErrorException parameter(zxwd, 1)
+    @test parameter(zxwd, 1) == 1
     @test ZXCalculus.set_phase!(zxwd, 1, Parameter(Val(:PiUnit), 2 // 3))
     @test !ZXCalculus.set_phase!(zxwd, 10, Parameter(Val(:PiUnit), 2 // 3))
 
