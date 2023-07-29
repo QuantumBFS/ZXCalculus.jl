@@ -126,9 +126,55 @@ end
     @test isapprox(2 * int_val, 1.0; atol = 1e-10)
 end
 
-@testset "Lemma 30" begin
-    # to calculate variance, we double the circuit
-    zxwd = ZXWDiagram(4)
+@testset "Lemma 30 - a" begin
+
+    # first part of integration
+    a = 0.3
+    b = 0.0
+
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+    # essential to take diff here first, not stack then diff
+    # otherwise value may not be strictly positive
+    diff_exp = diff_diagram!(copy(exp_zxwd), :b)
+    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
+    # order of spider idx also matters, needs to be + - + -
+    int_dbdiff = integrate!(copy(dbdiff_zxwd), [22, 16, 48, 42])
+    int_subb = substitute_variables!(copy(int_dbdiff), Dict(:a => a, :b => b))
+    int_valb = real(Matrix(int_subb)[1, 1])
+
+    # standard value obtained from doing Riemann sum, observe it's some sort of
+    # cos function with all positive values, it's integral will be just the amplitude
+    # which is calculated by A
+
+    # rng = 0.0:0.001:2.0
+    # val_vec = Float64[]
+    # for c in rng
+    #     sig_zxwd = substitute_variables!(copy(dbdiff_zxwd), Dict(:a => a, :b => c))
+    #     push!(val_vec, real(Matrix(sig_zxwd)[1, 1]))
+    # end
+    # plot(rng, val_vec)
+
+    A = real(
+        Matrix(substitute_variables!(copy(dbdiff_zxwd), Dict(:a => a, :b => 0.0)))[1, 1],
+    )
+    @test isapprox(int_valb, A / 2; atol = 1e-10)
+end
+
+@testset "Lemma 30 - b" begin
+    # do two integration
+    # we verify by doing Riemann sum with integrated value w.r.t
+    # :b and sweep across :a from 0 to 2, observe it's still
+    # some sort of cos function with all positive values
+    # integral of it will be just the amplitude halfed
+
+    zxwd = ZXWDiagram(2)
 
     push_gate!(zxwd, Val(:H), 1)
     push_gate!(zxwd, Val(:H), 2)
@@ -136,22 +182,27 @@ end
     push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
     push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
 
-    exp_zxwd = expval_circ!(copy(zxwd), "ZZZZ")
-    exp_zxwd = diff_diagram!(exp_zxwd, :b)
-    exp_zxwd = diff_diagram!(exp_zxwd, :c)
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+    # essential to take diff here first, not stack then diff
+    # otherwise value may not be strictly positive
+    diff_exp = diff_diagram!(copy(exp_zxwd), :b)
+    # need to take derivative here, otherwise the value is not strictly positive
+    # after the two ZXDiagram are stacked
+    diff_exp = diff_diagram!(diff_exp, :a)
+    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
+    # integrate away b first
+    # this step is assumed to be correct since we tested it in step a above
+    int_dbdiff = integrate!(copy(dbdiff_zxwd), [24, 17, 60, 53])
+    int_dadiff = integrate!(copy(int_dbdiff), [39, 11, 75, 47])
+    int_vala = real(Matrix(int_dadiff)[1, 1])
 
-
-    posb = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg = false)[1]
-    posbminus = ZXCalculus.symbol_vertices(exp_zxwd, :b; neg = true)[1]
-
-    posc = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg = false)[1]
-    poscminus = ZXCalculus.symbol_vertices(exp_zxwd, :c; neg = true)[1]
-
-    integrated_zxwd = ZXCalculus.integrate!(exp_zxwd, [posb, posbminus, posc, poscminus])
-
-
-    integrated_zxwd = substitute_variables!(integrated_zxwd, Dict(:a => 0.0))
-
-    integrated_mtx = Matrix(integrated_zxwd)
-
+    # rng = 0.0:0.001:2.0
+    # val_vec = Float64[]
+    # for c in rng
+    #     int_subba = substitute_variables!(copy(int_dbdiff), Dict(:a => c))
+    #     push!(val_vec, real(Matrix(int_subba)[1, 1]))
+    # end
+    # plot(rng, val_vec)
+    A = real(Matrix(substitute_variables!(copy(int_dbdiff), Dict(:a => 0.0)))[1, 1])
+    @test isapprox(int_vala, A / 2; atol = 1e-10)
 end
