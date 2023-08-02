@@ -72,7 +72,7 @@ Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 
 function Base.contains(p::Parameter, θ::Symbol)
     @match p begin
-        PiUnit(pu, pt) && if !(pt <: Number)
+        PiUnit(pu, pt) && if !(pu isa Number)
         end => Base.contains(repr(pu), ":" * string(θ))
         _ => false
     end
@@ -80,7 +80,7 @@ end
 
 function Base.contains(p::Parameter, θ::Expr)
     @match p begin
-        PiUnit(pu, pt) && if !(pt <: Number)
+        PiUnit(pu, pt) && if !(pu isa Number)
         end => Base.contains(repr(pu), ":(" * string(θ) * ")")
         _ => false
     end

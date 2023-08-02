@@ -1,65 +1,6 @@
 using ZXCalculus: contains, dagger, concat!, stack
 
 """
-Take derivative of ZXWDiagram with respect to a parameter
-
-Assuming Spiders have Parameter of type PiUnit which is parameterized purely by θ
-"""
-function diff_diagram!(zxwd::ZXWDiagram{T,P}, θ::Symbol) where {T,P}
-    vs_pos = symbol_vertices(zxwd, θ)
-    vs_neg = symbol_vertices(zxwd, θ; neg = true)
-
-    length(vs_pos) + length(vs_neg) == 0 && return zxwd
-
-    add_global_phase!(zxwd, P(π / 2))
-    w_trig_vs = T[]
-
-    for v in vs_pos
-
-        h_v = @match spider_type(zxwd,v) begin
-            X(_) => add_spider!(zxwd, H, [v])
-            Z(_) => v
-        end
-
-        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
-        w_v = add_spider!(zxwd, D, [x_v])
-
-        frac_v = @match parameter(zxwd, v) begin
-            PiUnit(_,_) => w_v
-            Factor(_,_) => error("Only supports PiUnit differentiation")
-            _ => error("not a valid parameter")
-        end
-        push!(w_trig_vs, frac_v)
-    end
-
-    for v in vs_neg
-
-        h_v = @match spider_type(zxwd,v) begin
-            X(_) => add_spider!(zxwd, H, [v])
-            Z(_) => v
-        end
-
-        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
-        w_v = add_spider!(zxwd, D, [x_v])
-
-        frac_v = @match spider_type(zxwd, v).p begin
-            PiUnit(_, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
-            Factor(_, _) => error("Only supports PiUnit differentiation")
-            _ => error("not a valid parameter")
-        end
-        push!(w_trig_vs, frac_v)
-    end
-
-    head = insert_wtrig!(zxwd, w_trig_vs)
-
-    add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [head])
-    # our definition of x_tensor exceeds one power of sqrt(2)
-    add_power!(zxwd, -1)
-
-    return zxwd
-end
-
-"""
 Construct ZXW Diagram for representing the expectation value circuit
 """
 function expval_circ!(zxwd::ZXWDiagram{T,P}, H::String) where {T,P}

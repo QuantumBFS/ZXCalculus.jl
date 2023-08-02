@@ -76,6 +76,19 @@ function Base.match(::Rule{:b1}, zxwd::ZXWDiagram{T,P}) where {T,P}
     return matches
 end
 
+struct CalcRule{L} <: AbstractRule
+    var::Symbol
+end
+
+CalcRule(r::Symbol, var::Symbol) = CalcRule{r}(var)
+
+function Base.match(rule::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}) where {T,P}
+    vtxs = symbol_vertices(zxwd, rule.var)
+    push!(vtxs, zero(T))
+    append!(vtxs, symbol_vertices(zxwd, rule.var; neg = true))
+    return [Match{T}(vtxs)]
+end
+
 
 """
     rewrite!(r, zxd, matches)
@@ -132,6 +145,57 @@ function rewrite!(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     return zxwd
 end
 
+function rewrite!(r::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+    zero_loc = findfirst(x -> x == zero(T), vs)
+
+    add_global_phase!(zxwd, P(π / 2))
+    w_trig_vs = T[]
+
+    for v in view(vs, 1:zero_loc-1)
+
+        h_v = @match spider_type(zxwd, v) begin
+            X(_) => add_spider!(zxwd, H, [v])
+            Z(_) => v
+        end
+
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
+        w_v = add_spider!(zxwd, D, [x_v])
+
+        frac_v = @match parameter(zxwd, v) begin
+            PiUnit(_, _) => w_v
+            Factor(_, _) => error("Only supports PiUnit differentiation")
+            _ => error("not a valid parameter")
+        end
+        push!(w_trig_vs, frac_v)
+    end
+
+    for v in view(vs, zero_loc+1:length(vs))
+
+        h_v = @match spider_type(zxwd, v) begin
+            X(_) => add_spider!(zxwd, H, [v])
+            Z(_) => v
+        end
+
+        x_v = add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [h_v])
+        w_v = add_spider!(zxwd, D, [x_v])
+
+        frac_v = @match spider_type(zxwd, v).p begin
+            PiUnit(_, _) => add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1.0)), [w_v])
+            Factor(_, _) => error("Only supports PiUnit differentiation")
+            _ => error("not a valid parameter")
+        end
+        push!(w_trig_vs, frac_v)
+    end
+
+    head = insert_wtrig!(zxwd, w_trig_vs)
+
+    add_spider!(zxwd, X(Parameter(Val(:PiUnit), 1.0)), [head])
+    # our definition of x_tensor exceeds one power of sqrt(2)
+    add_power!(zxwd, -1)
+
+    return zxwd
+end
+
 function check_rule(::Rule{:s1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     v1, v2 = vs
     (has_vertex(zxwd.mg, v1) && has_vertex(zxwd.mg, v2)) || return false
@@ -185,4 +249,39 @@ function check_rule(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,
         end => true
         _ => false
     end
+end
+
+function check_rule(r::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+
+    zero_loc = findfirst(x -> x == zero(T), vs)
+
+    vs_len = length(vs)
+
+    vs_len == 1 && return false
+
+    all(has_vertex(zxwd.mg, v) for v in view(vs, 1:zero_loc-1)) || return false
+    all(has_vertex(zxwd.mg, v) for v in view(vs, zero_loc+1:vs_len)) || return false
+
+    for v in view(vs, 1:zero_loc-1)
+        res = @match spider_type(zxwd, v) begin
+            Z(p1) && if contains(p1, r.var)
+            end => true
+            X(p1) && if contains(p1, r.var)
+            end => true
+            _ => false
+        end
+        !res && return false
+    end
+
+    for v in view(vs, zero_loc+1:vs_len)
+        res = @match spider_type(zxwd, v) begin
+            Z(p1) && if contains(p1, Expr(:call, :-, r.var))
+            end => true
+            X(p1) && if contains(p1, Expr(:call, :-, r.var))
+            end => true
+            _ => false
+        end
+        !res && return false
+    end
+    return true
 end

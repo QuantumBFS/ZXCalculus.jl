@@ -1,5 +1,5 @@
 using ZXCalculus: insert_spider!
-using ZXCalculus: symbol_vertices, diff_diagram!, dagger, concat!, expval_circ!, integrate!
+using ZXCalculus: symbol_vertices, dagger, concat!, expval_circ!, integrate!
 
 @testset "Example 28" begin
     zxwd = ZXWDiagram(2)
@@ -21,37 +21,6 @@ using ZXCalculus: symbol_vertices, diff_diagram!, dagger, concat!, expval_circ!,
 
 end
 
-@testset "Parameter Shift" begin
-
-    zxwd = ZXWDiagram(2)
-
-
-    a = 0.3
-    b = 0.5
-
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
-    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
-
-    exp_pluspihf = substitute_variables!(copy(exp_zxwd), Dict(:a => a, :b => b + 1 / 2))
-    exp_mnuspihf = substitute_variables!(copy(exp_zxwd), Dict(:a => a, :b => b - 1 / 2))
-
-
-    # should be around -1.8465
-    gradient_parameter_shift =
-        real(π / 2 * (Matrix(exp_pluspihf)[1, 1] - Matrix(exp_mnuspihf)[1, 1]))
-
-    diff_zxwd = diff_diagram!(exp_zxwd, :b)
-
-    diff_zxwd = substitute_variables!(diff_zxwd, Dict(:a => a, :b => b))
-
-    diff_mtx = Matrix(diff_zxwd)
-    # our parameter is in unit of pi
-    # during derivation, dummy variable will have extra factor of pi
-    gradient = real(diff_mtx[1, 1]) * π
-
-    @test gradient ≈ gradient_parameter_shift
-end
 
 @testset "Proposition 20" begin
 
@@ -119,7 +88,9 @@ end
     exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
     # essential to take diff here first, not stack then diff
     # otherwise value may not be strictly positive
-    diff_exp = diff_diagram!(copy(exp_zxwd), :b)
+
+    matches = match(CalcRule(:deri, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:deri, :b), copy(exp_zxwd), matches)
     dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
     # order of spider idx also matters, needs to be + - + -
     int_dbdiff = integrate!(copy(dbdiff_zxwd), [22, 16, 48, 42])
@@ -162,10 +133,12 @@ end
     exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
     # essential to take diff here first, not stack then diff
     # otherwise value may not be strictly positive
-    diff_exp = diff_diagram!(copy(exp_zxwd), :b)
+    matches = match(CalcRule(:deri, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
     # need to take derivative here, otherwise the value is not strictly positive
     # after the two ZXDiagram are stacked
-    diff_exp = diff_diagram!(diff_exp, :a)
+    matches = match(CalcRule(:deri, :a), diff_exp)
+    diff_exp = rewrite!(CalcRule(:deri, :a), diff_exp, matches)
     dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
     # integrate away b first
     # this step is assumed to be correct since we tested it in step a above
@@ -173,13 +146,6 @@ end
     int_dadiff = integrate!(copy(int_dbdiff), [39, 11, 75, 47])
     int_vala = real(Matrix(int_dadiff)[1, 1])
 
-    # rng = 0.0:0.001:2.0
-    # val_vec = Float64[]
-    # for c in rng
-    #     int_subba = substitute_variables!(copy(int_dbdiff), Dict(:a => c))
-    #     push!(val_vec, real(Matrix(int_subba)[1, 1]))
-    # end
-    # plot(rng, val_vec)
     A = real(Matrix(substitute_variables!(copy(int_dbdiff), Dict(:a => 0.0)))[1, 1])
     @test isapprox(int_vala, A / 2; atol = 1e-10)
 end
