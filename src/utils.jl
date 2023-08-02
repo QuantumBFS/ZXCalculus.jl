@@ -308,7 +308,7 @@ function push_gate!(
     phase = zero(P);
     autoconvert::Bool = true,
 ) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
     insert_spider!(zxwd, bound_id, out_id, Z(Parameter(Val(:PiUnit), rphase)))
@@ -322,7 +322,7 @@ function push_gate!(
     phase = zero(P);
     autoconvert::Bool = true,
 ) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
     insert_spider!(zxwd, bound_id, out_id, X(Parameter(Val(:PiUnit), rphase)))
@@ -330,7 +330,7 @@ function push_gate!(
 end
 
 function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     insert_spider!(zxwd, bound_id, out_id, H)
     return zxwd
@@ -382,7 +382,7 @@ function pushfirst_gate!(
     loc::T,
     phase::P = zero(P),
 ) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, Z(Parameter(Val(:PiUnit), phase)))
     return zxwd
@@ -394,14 +394,14 @@ function pushfirst_gate!(
     loc::T,
     phase::P = zero(P),
 ) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, X(Parameter(Val(:PiUnit), phase)))
     return zxwd
 end
 
 function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, H)
     return zxwd
@@ -474,8 +474,8 @@ function dagger(zxwd::ZXWDiagram{T,P}) where {T,P}
         end
     end
     for i = 1:nin(zxwd_dg)
-        zxwd_dg.inputs[i] = zxwd.outputs[i]
-        zxwd_dg.outputs[i] = zxwd.inputs[i]
+        @inbounds zxwd_dg.inputs[i] = zxwd.outputs[i]
+        @inbounds zxwd_dg.outputs[i] = zxwd.inputs[i]
     end
 
     return zxwd_dg
