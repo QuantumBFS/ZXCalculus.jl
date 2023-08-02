@@ -17,7 +17,7 @@ end
 
 function _round_phase(p::Parameter)
     @match p begin
-        PiUnit(pu, pt) && if pt <: Number
+        PiUnit(pu, pt) && if pu isa Number
         end => rem(rem(p, 2) + 2, 2)
         _ => p
     end
