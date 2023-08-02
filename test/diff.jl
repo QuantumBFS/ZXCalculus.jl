@@ -15,29 +15,6 @@ using ZXCalculus: symbol_vertices, diff_diagram!, dagger, concat!, expval_circ!,
     exp_zxwd_sub = substitute_variables!(copy(exp_zxwd), Dict(:a => 0.3, :b => 0.4))
     exp_val = Matrix(exp_zxwd_sub)[1, 1]
 
-
-    # zxrx1 = GeneralMatrixBlock(
-    #     [
-    #         (1+exp(im * 0.3 * π))/2 (1-exp(im * 0.3 * π))/2
-    #         (1-exp(im * 0.3 * π))/2 (1+exp(im * 0.3 * π))/2
-    #     ],
-    # )
-    # zxrx2 = GeneralMatrixBlock(
-    #     [
-    #         (1+exp(im * 0.4 * π))/2 (1-exp(im * 0.4 * π))/2
-    #         (1-exp(im * 0.4 * π))/2 (1+exp(im * 0.4 * π))/2
-    #     ],
-    # )
-    # yao_circ = chain(
-    #     2,
-    #     put(2, 1 => Yao.H),
-    #     put(2, 2 => Yao.H),
-    #     cz(2, 1, 2),
-    #     put(2, 1 => zxrx2),
-    #     put(2, 2 => zxrx1),
-    # )
-
-    # exp_yao = expect(repeat(2, Yao.Z), zero_state(2) => yao_circ)
     exp_yao = 0.7694208842938131
 
     @test exp_val ≈ exp_yao

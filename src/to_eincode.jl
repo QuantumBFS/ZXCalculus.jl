@@ -24,7 +24,7 @@ function to_eincode(zxwd::ZXWDiagram{T,P}) where {T,P}
             Output(q) => nothing
         end
 
-        if res != nothing
+        if !isnothing(res)
             push!(ixs, to_eincode_indices(zxwd, v))
             push!(tensors, res)
         end

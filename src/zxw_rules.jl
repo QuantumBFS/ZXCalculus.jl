@@ -20,7 +20,7 @@ function Base.match(::Rule{:s1}, zxwd::ZXWDiagram{T,P}) where {T,P}
                 end => Match{T}([v1, v2])
                 _ => nothing
             end
-            res === nothing || push!(matches, res)
+            isnothing(res) || push!(matches, res)
         end
     end
     return matches
@@ -37,7 +37,7 @@ function Base.match(::Rule{:s2}, zxwd::ZXWDiagram{T,P}) where {T,P}
             end => Match{T}([v1])
             _ => nothing
         end
-        res === nothing || push!(matches, res)
+        isnothing(res) || push!(matches, res)
     end
     return matches
 end
@@ -52,7 +52,7 @@ function Base.match(::Rule{:ept}, zxwd::ZXWDiagram{T,P}) where {T,P}
                 end => Match{T}([v1, v2])
                 _ => nothing
             end
-            res === nothing || push!(matches, res)
+            isnothing(res) || push!(matches, res)
         end
     end
     return matches
@@ -70,7 +70,7 @@ function Base.match(::Rule{:b1}, zxwd::ZXWDiagram{T,P}) where {T,P}
                 end => Match{T}([v1, v2])
                 _ => nothing
             end
-            res === nothing || push!(matches, res)
+            isnothing(res) || push!(matches, res)
         end
     end
     return matches

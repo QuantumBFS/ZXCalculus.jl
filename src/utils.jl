@@ -258,7 +258,7 @@ function get_input_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
             end => v
             _ => nothing
         end
-        res !== nothing && return res
+        !isnothing(res) && return res
     end
     return -1
 end
@@ -276,7 +276,7 @@ function get_output_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
             end => v
             _ => nothing
         end
-        res !== nothing && return res
+        !isnothing(res) && return res
     end
     return -1
 end
@@ -570,7 +570,7 @@ function import_non_in_out!(
             (Z(_) || X(_) || W || H || D) => add_vertex!(d1.mg)[1]
             _ => error("Unknown spider type $(d2.st[v2])")
         end
-        if new_v !== nothing
+        if !isnothing(new_v)
             v2tov1[v2] = new_v
             d1.st[new_v] = spider_type(d2, v2)
         end

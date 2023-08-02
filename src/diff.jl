@@ -103,7 +103,7 @@ function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol; neg::Bool = false) w
             end => v
             _ => nothing
         end
-        res !== nothing && push!(matched, v)
+        !isnothing(res) && push!(matched, v)
     end
     return matched
 end
