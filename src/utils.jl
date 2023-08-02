@@ -590,3 +590,75 @@ function import_edges!(
         add_edge!(d1.mg, v2tov1[src], v2tov1[dst], emul)
     end
 end
+
+"""
+Construct ZXW Diagram for representing the expectation value circuit
+"""
+function expval_circ!(zxwd::ZXWDiagram{T,P}, H::String) where {T,P}
+    # convert U to U H U^\dagger
+    zxwd_dag = dagger(zxwd)
+    for (i, h) in enumerate(H)
+        if h == 'Z'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+        elseif h == 'X'
+            push_gate!(zxwd, Val(:X), i, 1.0)
+        elseif h == 'Y'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+            push_gate!(zxwd, Val(:X), i, 1.0)
+            add_global_phase!(zxwd, P(π / 2))
+        elseif h == 'I'
+            continue
+        else
+            error("Invalid Hamiltonian, enter only Z, X, Y")
+        end
+    end
+    concat!(zxwd, zxwd_dag)
+    return zxwd
+end
+
+"""
+
+Finds vertices of Spider that contains the parameter θ or -θ
+"""
+function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol; neg::Bool = false) where {T,P}
+    if neg
+        target = Expr(:call, :-, θ)
+    else
+        target = θ
+    end
+    matched = T[]
+    for v in vertices(zxwd.mg)
+        res = @match spider_type(zxwd, v) begin
+            Z(p1) && if contains(p1, target)
+            end => v
+            X(p1) && if contains(p1, target)
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && push!(matched, v)
+    end
+    return matched
+end
+
+"""
+Replace symbols in ZXW Diagram with specific values
+"""
+function substitute_variables!(
+    zxwd::ZXWDiagram{T,P},
+    sbd::Dict{Symbol,<:Number},
+) where {T,P}
+    for (θ, val) in sbd
+        for negative in [false, true]
+            matched_pos = symbol_vertices(zxwd, θ; neg = negative)
+            val = negative ? -val : val
+            for idx in matched_pos
+                p = spider_type(zxwd, idx).p
+                @match p begin
+                    PiUnit(pu, _) => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), val))
+                    Factor(pf, _) => set_phase!(zxwd, idx, Parameter(Val(:Factor), val))
+                end
+            end
+        end
+    end
+    return zxwd
+end
