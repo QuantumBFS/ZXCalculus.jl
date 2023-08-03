@@ -127,3 +127,24 @@ end
 
     @test insert_wtrig!(zxwd, [1, 2, 3, 4]) == 25
 end
+
+
+@testset "Example 28" begin
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+
+    exp_zxwd_sub = substitute_variables!(copy(exp_zxwd), Dict(:a => 0.3, :b => 0.4))
+    exp_val = Matrix(exp_zxwd_sub)[1, 1]
+
+    exp_yao = 0.7694208842938131
+
+    @test exp_val ≈ exp_yao
+
+end

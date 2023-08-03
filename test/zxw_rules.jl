@@ -1,3 +1,7 @@
+using Test: match_logs
+using ZXCalculus: insert_spider!
+using ZXCalculus: symbol_vertices, dagger, concat!, expval_circ!
+
 @testset "Calculus Rule" begin
     deri_rule = CalcRule(:deri, :p)
     @test deri_rule.var == :p
@@ -58,4 +62,114 @@ end
     gradient = real(diff_mtx[1, 1]) * π
 
     @test gradient ≈ gradient_parameter_shift
+end
+
+@testset "Proposition 20" begin
+
+    # standard value of integration obtained from
+    # doing Riemann sum and extrapolating
+    # the sum will differ to the integrated value
+    # provided by the ZXWDiagram by a factor of 2
+    # since we are using a dummy variable k pi = alpha
+    # where k goes from 0 to 2, hence the factor 2 in test
+
+    zxwd = ZXWDiagram(1)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "Z")
+
+    matches = match(CalcRule(:int, :a), exp_zxwd)
+    int_zxwd = rewrite!(CalcRule(:int, :a), exp_zxwd, matches)
+
+    int_val = real(Matrix(int_zxwd)[1, 1])
+
+    @test isapprox(2 * int_val, 0.0; atol = 1e-10)
+
+
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "IZ")
+
+    matches = match(CalcRule(:int, :a), exp_zxwd)
+    int_zxwd = rewrite!(CalcRule(:int, :a), exp_zxwd, matches)
+    int_zxwd = substitute_variables!(int_zxwd, Dict(:a => 0.3, :b => 0.0))
+    int_val = real(Matrix(int_zxwd)[1, 1])
+    # constant, should be 2.0
+    @test isapprox(2 * int_val, 2.0; atol = 1e-10)
+end
+
+@testset "Theorem 23" begin
+
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :a; autoconvert = false)
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+
+    matches = match(CalcRule(:int, :a), exp_zxwd)
+    int_zxwd = rewrite!(CalcRule(:int, :a), exp_zxwd, matches)
+
+    int_val = real(Matrix(int_zxwd)[1, 1])
+    # By thm 23, and change of dummy variable, k * pi = alpha
+    # we get 1/2 \int_{-1}^{1} ... dk = ZXWDiagram
+    # hence the factor of two here
+    @test isapprox(2 * int_val, 1.0; atol = 1e-10)
+end
+
+@testset "Lemma 30 - a" begin
+
+    # first part of integration
+    a = 0.3
+    b = 0.0
+
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(zxwd, "ZZ")
+    # essential to take diff here first, not stack then diff
+    # otherwise value may not be strictly positive
+
+    matches = match(CalcRule(:deri, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
+    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
+    # order of spider idx also matters, needs to be + - + -
+
+    matches = match(CalcRule(:int, :b), dbdiff_zxwd)
+    int_dbdiff = rewrite!(CalcRule(:int, :b), copy(dbdiff_zxwd), matches)
+    int_subb = substitute_variables!(int_dbdiff, Dict(:a => a, :b => b))
+    int_valb = real(Matrix(int_subb)[1, 1])
+
+    A = real(
+        Matrix(substitute_variables!(copy(dbdiff_zxwd), Dict(:a => a, :b => 0.0)))[1, 1],
+    )
+    @test isapprox(int_valb, A / 2; atol = 1e-10)
+end
+
+@testset "Lemma 30 - b" begin
+    zxwd = ZXWDiagram(2)
+
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(zxwd, "ZZ")
+    matches = match(CalcRule(:deri, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
+    matches = match(CalcRule(:deri, :a), diff_exp)
+    diff_exp = rewrite!(CalcRule(:deri, :a), diff_exp, matches)
+    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
+
+    matches = match(CalcRule(:int, :b), dbdiff_zxwd)
+    int_dbdiff = rewrite!(CalcRule(:int, :b), dbdiff_zxwd, matches)
+    matches = match(CalcRule(:int, :a), int_dbdiff)
+    int_dadiff = rewrite!(CalcRule(:int, :a), copy(int_dbdiff), matches)
+    int_vala = real(Matrix(int_dadiff)[1, 1])
+
+    A = real(Matrix(substitute_variables!(copy(int_dbdiff), Dict(:a => 0.0)))[1, 1])
+    @test isapprox(int_vala, A / 2; atol = 1e-10)
 end
