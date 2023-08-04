@@ -1,4 +1,4 @@
-using .ZXCalculus: Parameter, _round_phase, round_phases!, print_spider
+using ZXCalculus: Parameter, _round_phase, round_phases!, print_spider
 using MLStyle: @match
 
 @testset "Phase rounding" begin
@@ -89,7 +89,8 @@ end
     @test String(take!(io)) == "S_7{W}"
 
     print_spider(io, zxwd, new_v2)
-    @test String(take!(io)) == "S_8{phase = Parameter.PiUnit(pu=3//2, pu_type=Rational{Int64})}"
+    @test String(take!(io)) ==
+          "S_8{phase = Parameter.PiUnit(pu=3//2, pu_type=Rational{Int64})}"
 
     new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
     print_spider(io, zxwd, new_v3)
@@ -101,9 +102,19 @@ end
     rem_spiders!(zxwd, [2, 3, new_v])
     @test nv(zxwd) == 6 && ne(zxwd) == 1
 
+    zxwd = ZXWDiagram(3)
+    nqubits_prior = ZXCalculus.nqubits(zxwd)
+    ZXCalculus.add_inout!(zxwd, 3)
+    @test ZXCalculus.nqubits(zxwd) == nqubits_prior + 3
+    @test ZXCalculus.nin(zxwd) == nqubits_prior + 3
+    @test ZXCalculus.nout(zxwd) == nqubits_prior + 3
+    nspiders = ZXCalculus.nv(zxwd)
+    @test sort!(
+        [ZXCalculus.get_inputs(zxwd)[end-2:end]; ZXCalculus.get_outputs(zxwd)[end-2:end]],
+    ) == collect(nspiders-5:nspiders)
 
-    #TODO: Add test for construction of ZXWDiagram with empty circuit
-    # einsum contraction should return all zero
+
+
 end
 
 @testset "gate insertion" begin

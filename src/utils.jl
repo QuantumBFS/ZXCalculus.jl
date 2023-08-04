@@ -515,44 +515,49 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
 end
 
 """
-Stacking two ZXWDiagrams, return new ZXWDiagram.
+Add input and outputs to diagram
+"""
+function add_inout!(zxwd::ZXWDiagram{T,P}, n::T) where {T,P}
+    nq = nqubits(zxwd)
+    for i = 1:n
+        idxin = add_spider!(zxwd, Input(n + nq), T[])
+        push!(zxwd.inputs, idxin)
+        idxout = add_spider!(zxwd, Output(n + nq), T[])
+        push!(zxwd.outputs, idxout)
+        add_edge!(zxwd, idxin, idxout)
+    end
+    return zxwd
+end
+
+"""
+Stacking two ZXWDiagrams in place. Modify d1.
 
 Performs tensor product of two ZXWDiagrams. The result is a ZXWDiagram with d1 on
 lower qubit indices. Assuming number of inputs and outputs of are the same for both d1 and d2.
 """
-function stack_zxwd(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
-    d3 = ZXWDiagram(nqubits(d1) + nqubits(d2))
-    for in_vtx in d3.inputs
-        rem_edge!(d3, in_vtx, neighbors(d3, in_vtx)[1])
+function stack_zxwd!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    prior_nq = nqubits(d1)
+    add_inout!(d1, nqubits(d2))
+    for in_vtx in d1.inputs[end-nqubits(d2)+1:end]
+        rem_edge!(d1, in_vtx, neighbors(d1, in_vtx)[1])
     end
 
-    add_global_phase!(d3, d1.scalar.phase)
-    add_global_phase!(d3, d2.scalar.phase)
-    add_power!(d3, d1.scalar.power_of_sqrt_2)
-    add_power!(d3, d2.scalar.power_of_sqrt_2)
+    add_global_phase!(d1, d2.scalar.phase)
+    add_power!(d1, d2.scalar.power_of_sqrt_2)
 
-    v1tov3 = Dict{T,T}()
-    v2tov3 = Dict{T,T}()
+    v2tov1 = Dict{T,T}()
 
-    import_non_in_out!(d3, d1, v1tov3)
-    import_non_in_out!(d3, d2, v2tov3)
+    import_non_in_out!(d1, d2, v2tov1)
 
-    for idx in get_inputs(d1)
-        v1tov3[idx] = idx
+    for (i, idx) in enumerate(get_inputs(d2))
+        v2tov1[idx] = get_inputs(d1)[i+prior_nq]
     end
-    for idx in get_outputs(d1)
-        v1tov3[idx] = idx
-    end
-    for idx in get_inputs(d2)
-        v2tov3[idx] = idx + nqubits(d1) * 2
-    end
-    for idx in get_outputs(d2)
-        v2tov3[idx] = idx + nqubits(d1) * 2
+    for (i, idx) in enumerate(get_outputs(d2))
+        v2tov1[idx] = get_outputs(d1)[i+prior_nq]
     end
 
-    import_edges!(d3, d1, v1tov3)
-    import_edges!(d3, d2, v2tov3)
-    return d3
+    import_edges!(d1, d2, v2tov1)
+    return d1
 end
 
 """

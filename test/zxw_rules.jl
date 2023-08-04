@@ -134,8 +134,7 @@ end
 
     matches = match(CalcRule(:deri, :b), exp_zxwd)
     diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
-    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
-    # order of spider idx also matters, needs to be + - + -
+    dbdiff_zxwd = stack_zxwd!(diff_exp, copy(diff_exp))
 
     matches = match(CalcRule(:int, :b), dbdiff_zxwd)
     int_dbdiff = rewrite!(CalcRule(:int, :b), copy(dbdiff_zxwd), matches)
@@ -162,7 +161,7 @@ end
     diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
     matches = match(CalcRule(:deri, :a), diff_exp)
     diff_exp = rewrite!(CalcRule(:deri, :a), diff_exp, matches)
-    dbdiff_zxwd = stack_zxwd(diff_exp, copy(diff_exp))
+    dbdiff_zxwd = stack_zxwd!(diff_exp, copy(diff_exp))
 
     matches = match(CalcRule(:int, :b), dbdiff_zxwd)
     int_dbdiff = rewrite!(CalcRule(:int, :b), dbdiff_zxwd, matches)

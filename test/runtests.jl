@@ -68,4 +68,4 @@ end
     include("challenge.jl")
 end
 
- doctest(ZXCalculus)
+doctest(ZXCalculus)

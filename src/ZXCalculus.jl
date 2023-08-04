@@ -24,7 +24,7 @@ export push_gate!, pushfirst_gate!, tcount, insert_wtrig!
 export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 
     circuit_extraction, phase_teleportation
-export substitute_variables!, expval_circ!, stack_zxwd, concat!, integrate!
+export substitute_variables!, expval_circ!, stack_zxwd!, concat!
 
 include("parameter.jl")
 include("phase.jl")
