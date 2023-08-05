@@ -42,7 +42,6 @@ include("utils.jl")
 
 include("rules.jl")
 include("zxw_rules.jl")
-include("diff.jl")
 include("simplify.jl")
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")
