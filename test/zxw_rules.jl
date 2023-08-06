@@ -3,7 +3,7 @@ using ZXCalculus: insert_spider!
 using ZXCalculus: symbol_vertices, dagger, concat!, expval_circ!
 
 @testset "Calculus Rule" begin
-    deri_rule = CalcRule(:deri, :p)
+    deri_rule = CalcRule(:diff, :p)
     @test deri_rule.var == :p
 
     int_rule = CalcRule(:int, :a)
@@ -51,8 +51,8 @@ end
         real(π / 2 * (Matrix(exp_pluspihf)[1, 1] - Matrix(exp_mnuspihf)[1, 1]))
 
 
-    matches = match(CalcRule(:deri, :b), exp_zxwd)
-    diff_zxwd = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
+    matches = match(CalcRule(:diff, :b), exp_zxwd)
+    diff_zxwd = rewrite!(CalcRule(:diff, :b), exp_zxwd, matches)
 
     diff_zxwd = substitute_variables!(diff_zxwd, Dict(:a => a, :b => b))
 
@@ -132,8 +132,8 @@ end
     # essential to take diff here first, not stack then diff
     # otherwise value may not be strictly positive
 
-    matches = match(CalcRule(:deri, :b), exp_zxwd)
-    diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
+    matches = match(CalcRule(:diff, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:diff, :b), exp_zxwd, matches)
     dbdiff_zxwd = stack_zxwd!(diff_exp, copy(diff_exp))
 
     matches = match(CalcRule(:int, :b), dbdiff_zxwd)
@@ -157,10 +157,10 @@ end
     push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
 
     exp_zxwd = expval_circ!(zxwd, "ZZ")
-    matches = match(CalcRule(:deri, :b), exp_zxwd)
-    diff_exp = rewrite!(CalcRule(:deri, :b), exp_zxwd, matches)
-    matches = match(CalcRule(:deri, :a), diff_exp)
-    diff_exp = rewrite!(CalcRule(:deri, :a), diff_exp, matches)
+    matches = match(CalcRule(:diff, :b), exp_zxwd)
+    diff_exp = rewrite!(CalcRule(:diff, :b), exp_zxwd, matches)
+    matches = match(CalcRule(:diff, :a), diff_exp)
+    diff_exp = rewrite!(CalcRule(:diff, :a), diff_exp, matches)
     dbdiff_zxwd = stack_zxwd!(diff_exp, copy(diff_exp))
 
     matches = match(CalcRule(:int, :b), dbdiff_zxwd)

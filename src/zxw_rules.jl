@@ -82,7 +82,7 @@ end
 
 CalcRule(r::Symbol, var::Symbol) = CalcRule{r}(var)
 
-function Base.match(rule::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}) where {T,P}
+function Base.match(rule::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}) where {T,P}
     vtxs = symbol_vertices(zxwd, rule.var)
     push!(vtxs, zero(T))
     append!(vtxs, symbol_vertices(zxwd, rule.var; neg = true))
@@ -152,7 +152,7 @@ function rewrite!(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     return zxwd
 end
 
-function rewrite!(r::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+function rewrite!(r::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     zero_loc = findfirst(x -> x == zero(T), vs)
 
     add_global_phase!(zxwd, P(π / 2))
@@ -323,7 +323,7 @@ function check_rule(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,
     end
 end
 
-function check_rule(r::CalcRule{:deri}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+function check_rule(r::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
 
     zero_loc = findfirst(x -> x == zero(T), vs)
 
