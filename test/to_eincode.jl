@@ -17,11 +17,21 @@ end
 
 @testset "Convert to Einsum" begin
 
+
     zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    zxwd_sub = substitute_variables!(copy(zxwd), Dict(:a => 0.4, :b => 0.3))
+    zxwd_mtx = Matrix(zxwd_sub)
 
-    pushfirst_gate!(zxwd, Val(:CNOT), 1, 2)
-    pushfirst_gate!(zxwd, Val(:CNOT), 1, 2)
-
-    @test Matrix(zxwd) ≈ Matrix{ComplexF64}(I, 4, 4)
-
+    yao_mtx = ComplexF64[
+        0.6211468747399733+0.23776412907378838im 0.033361622447500294+0.23776412907378833im 0.1727457514062631+0.16674436811368532im -0.1727457514062631+0.642272626261262im
+        0.1727457514062631+0.16674436811368532im 0.1727457514062631-0.642272626261262im 0.6211468747399733+0.23776412907378838im -0.033361622447500294-0.23776412907378833im
+        0.033361622447500294+0.23776412907378833im 0.6211468747399733+0.23776412907378838im 0.1727457514062631-0.642272626261262im -0.1727457514062631-0.16674436811368532im
+        0.1727457514062631-0.642272626261262im 0.1727457514062631+0.16674436811368532im 0.033361622447500294+0.23776412907378833im -0.6211468747399733-0.23776412907378838im
+    ]
+    @test isapprox(zxwd_mtx' * yao_mtx, Matrix{ComplexF64}((1.0 + 0.0 * im) * I, 4, 4))
 end

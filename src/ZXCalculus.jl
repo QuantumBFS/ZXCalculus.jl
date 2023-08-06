@@ -16,14 +16,15 @@ export SpiderType, EdgeType, ZXWSpiderType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
 export ZXWDiagram
 export Rule, Match
+export CalcRule
 
 export spider_type, phase, spiders, rem_spider!, rem_spiders!, scalar
 export parameter
-export push_gate!, pushfirst_gate!, tcount
+export push_gate!, pushfirst_gate!, tcount, insert_wtrig!
 export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 
     circuit_extraction, phase_teleportation
-export random_circuit
+export substitute_variables!, expval_circ!, stack_zxwd!, concat!
 
 include("parameter.jl")
 include("phase.jl")
@@ -40,6 +41,7 @@ include("to_eincode.jl")
 include("utils.jl")
 
 include("rules.jl")
+include("zxw_rules.jl")
 include("simplify.jl")
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")

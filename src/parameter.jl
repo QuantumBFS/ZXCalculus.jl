@@ -42,7 +42,7 @@ Base.copy(p::Parameter) = @match p begin
     Factor(f, _) => Parameter(Val(:Factor), f)
 end
 
-function Base.show(io::IO, p::Parameter)
+function Base.show(io::IO, ::MIME"text/plain", p::Parameter)
     @match p begin
         PiUnit(pu, _) && if pu isa Number
         end => print(io, "$(pu)⋅π")
@@ -70,9 +70,27 @@ Base.:(==)(p1::Parameter, p2::Parameter) = eqeq(p1, p2)
 Base.:(==)(p1::Parameter, p2::Number) = eqeq(p1, p2)
 Base.:(==)(p1::Number, p2::Parameter) = eqeq(p2, p1)
 
-# following the same convention in Phase.jl implementation
+function Base.contains(p::Parameter, θ::Symbol)
+    @match p begin
+        PiUnit(pu, pt) && if !(pu isa Number)
+        end => Base.contains(repr(pu), ":" * string(θ))
+        _ => false
+    end
+end
+
+function Base.contains(p::Parameter, θ::Expr)
+    @match p begin
+        PiUnit(pu, pt) && if !(pu isa Number)
+        end => Base.contains(repr(pu), ":(" * string(θ) * ")")
+        _ => false
+    end
+end
+
+# following the same convention in phase.jl implementation
 # comparison have inconsistent, we are comparing phases to numbers
 # if cause trouble, will change
+#
+
 Base.isless(p1::Parameter, p2::Number) = @match p1 begin
     PiUnit(_...) => p1.pu isa Number && p1.pu < p2
     _ => p1.f < p2
@@ -109,8 +127,9 @@ function add_param(p1, p2)
     @match (p1, p2) begin
         (PiUnit(pu1, _), PiUnit(pu2, _)) && if pu1 isa Number && pu2 isa Number
         end => Parameter(Val(:PiUnit), pu1 + pu2)
-        (PiUnit(pu1, _), PiUnit(pu2, _)) && if !(pu1 isa Number) || !(pu2 isa Number)
-        end => Parameter(Val(:PiUnit), Expr(:call, :+, pu1, pu2))
+        (PiUnit(pu1, pu1_t), PiUnit(pu2, pu2_t)) &&
+            if !(pu1 isa Number) || !(pu2 isa Number)
+            end => PiUnit(Expr(:call, :+, pu1, pu2), Base.promote_op(+, pu1_t, pu2_t))
         (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 + f2)
         (PiUnit(pu1, _), Factor(f2, _)) => Parameter(Val(:Factor), exp(im * pu1 * π) * f2)
         (Factor(f1, _), PiUnit(pu2, _)) => Parameter(Val(:Factor), exp(im * pu2 * π) * f1)
@@ -134,8 +153,8 @@ function subt_param(p1, p2)
         end => Parameter(Val(:PiUnit), pu1 - pu2)
         (PiUnit(pu1, pu_t1), PiUnit(pu2, pu_t2)) &&
             if !(pu1 isa Number) || !(pu2 isa Number)
-            end => Parameter(Val(:PiUnit), Expr(:call, :-, pu1, pu2))
-        (Factor(f1, _), Factor(f2, _)) => Factor(f1 - f2)
+            end => PiUnit(Expr(:call, :-, pu1, pu2), Base.promote_op(-, pu_t1, pu_t2))
+        (Factor(f1, _), Factor(f2, _)) => Parameter(Val(:Factor), f1 - f2)
         (PiUnit(_...), Factor(_...)) => Parameter(Val(:Factor), exp(im * p1.pu * π) - p2.f)
         (Factor(_...), PiUnit(_...)) => Parameter(Val(:Factor), p1.f - exp(im * p2.pu * π))
         (_, PiUnit(_...)) => Parameter(Val(:PiUnit), p1 - p2.pu)
@@ -151,6 +170,29 @@ Base.:(-)(p1::Parameter, p2::Parameter) = subt_param(p1, p2)
 Base.:(-)(p1::Number, p2::Parameter) = subt_param(p1, p2)
 Base.:(-)(p1::Parameter, p2::Number) = add_param(p1, -p2)
 
+# needed for tensor contraction
+function mul_param(p1, p2)
+    @match (p1, p2) begin
+        (PiUnit(p1u, _), PiUnit(p2u, _)) && if p1u isa Number && p2u isa Number
+        end => exp(im * (p1u + p2u) * π)
+        (PiUnit(p1u, _), n2::Number) && if p1u isa Number
+        end => exp(im * p1u * π) * n2
+        (Factor(f1, _), PiUnit(p2u, _)) && if p2u isa Number
+        end => f1 * exp(im * p2u * π)
+        (PiUnit(p1u, _), Factor(f2, _)) && if p1u isa Number
+        end => f2 * exp(im * p1u * π)
+        (Factor(f1, _), Factor(f2, _)) => f1 * f2
+        (Factor(f1, _), n2::Number) => f1 * n2
+        _ => error(
+            "Invalid input '$(p1)' of type $(typeof(p1)) and '$(p2)' of type $(typeof(p2)) for ADT: *",
+        )
+    end
+end
+
+Base.:(*)(p1::Parameter, p2::Parameter) = mul_param(p1, p2)
+Base.:(*)(p1::Parameter, p2::Number) = mul_param(p1, p2)
+Base.:(*)(p1::Number, p2::Parameter) = mul_param(p2, p1)
+
 function Base.rem(p::Parameter, d::Number)
     @match p begin
         PiUnit(pu, pu_t) && if pu isa Number
@@ -161,5 +203,16 @@ function Base.rem(p::Parameter, d::Number)
         _ => error(
             "Invalid input '$(p)' of type $(typeof(p)) and '$(d)' of type $(typeof(d)) for ADT: rem",
         )
+    end
+end
+
+function Base.inv(p::Parameter)
+    @match p begin
+        PiUnit(pu, pu_t) && if pu isa Number
+        end => Parameter(Val(:PiUnit), -pu)
+        PiUnit(pu, pu_t) && if !(pu isa Number)
+        end => Parameter(Val(:PiUnit), Expr(:call, :-, pu))
+        Factor(f, _) => Parameter(Val(:Factor), inv(f))
+        _ => error("Invalid input '$(p)' of type $(typeof(p)) for ADT: inv")
     end
 end

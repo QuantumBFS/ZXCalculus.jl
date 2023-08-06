@@ -54,15 +54,15 @@ end
     io = IOBuffer()
     p1 = Parameter(Val(:PiUnit), 1.0)
     show(io, p1)
-    @test String(take!(io)) == "1.0⋅π"
+    @test String(take!(io)) == "Parameter.PiUnit(pu=1.0, pu_type=Float64)"
 
     p2 = Parameter(Val(:PiUnit), :a)
     show(io, p2)
-    @test String(take!(io)) == "PiUnit((a)::Symbol)"
+    @test String(take!(io)) == "Parameter.PiUnit(pu=:a, pu_type=Symbol)"
 
     f1 = Parameter(Val(:Factor), 1)
     show(io, f1)
-    @test String(take!(io)) == "1"
+    @test String(take!(io)) == "Parameter.Factor(f=1, f_type=Int64)"
 end
 
 @testset "relational" begin
@@ -90,6 +90,9 @@ end
     @test p1 < 3.0
     @test !(p3 < 4.0)
     @test f1 < 20
+
+    @test contains(p3, :a)
+    @test !contains(p3, :b)
 end
 
 
@@ -106,12 +109,13 @@ end
     @test p1 + p2 == Parameter(Val(:PiUnit), 3.0)
     @test p1 + 2 == Parameter(Val(:PiUnit), 3.0)
     @test 2 + p1 == Parameter(Val(:PiUnit), 3.0)
+    @test f1 + f2 == Parameter(Val(:Factor), 3.5)
     @test 2 + f2 == Parameter(Val(:Factor), 4.5)
     @test f2 + 2 == Parameter(Val(:Factor), 4.5)
     p13 = p1 + p3
-    @test p13.pu == Expr(:call, :+, 1.0, :a) && p13.pu_type == Expr
+    @test p13.pu == Expr(:call, :+, 1.0, :a) && p13.pu_type == Union{}
     p34 = p3 + p4
-    @test p34.pu == Expr(:call, :+, :a, :b) && p34.pu_type == Expr
+    @test p34.pu == Expr(:call, :+, :a, :b) && p34.pu_type == Union{}
 
     @test p2 + f1 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
     @test f1 + p2 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
@@ -130,12 +134,13 @@ end
     @test p1 - p2 == Parameter(Val(:PiUnit), -1.0)
     @test p1 - 2 == Parameter(Val(:PiUnit), -1.0)
     @test 2 - p1 == Parameter(Val(:PiUnit), 1.0)
+    @test f1 - f2 == Parameter(Val(:Factor), -1.5)
     @test 2 - f2 == Parameter(Val(:Factor), -0.5)
     @test f2 - 2 == Parameter(Val(:Factor), 0.5)
     p13 = p1 - p3
-    @test p13.pu == Expr(:call, :-, 1.0, :a) && p13.pu_type == Expr
+    @test p13.pu == Expr(:call, :-, 1.0, :a) && p13.pu_type == Union{}
     p34 = p3 - p4
-    @test p34.pu == Expr(:call, :-, :a, :b) && p34.pu_type == Expr
+    @test p34.pu == Expr(:call, :-, :a, :b) && p34.pu_type == Union{}
 
     @test p2 - f1 == Parameter(Val(:Factor), exp(im * 2 * π) - 1)
     @test f1 - p2 == Parameter(Val(:Factor), 1 - exp(im * 2 * π))

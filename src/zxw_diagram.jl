@@ -112,3 +112,4 @@ Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.inputs),
     copy(zxwd.outputs),
 )
+

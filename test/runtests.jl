@@ -3,6 +3,10 @@ using YaoHIR: Chain
 using Documenter
 using Test
 
+@testset "zxw_rules.jl" begin
+    include("zxw_rules.jl")
+end
+
 @testset "parameter.jl" begin
     include("parameter.jl")
 end
@@ -64,4 +68,4 @@ end
     include("challenge.jl")
 end
 
- doctest(ZXCalculus)
+doctest(ZXCalculus)

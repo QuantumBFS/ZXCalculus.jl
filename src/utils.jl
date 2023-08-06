@@ -17,7 +17,8 @@ end
 
 function _round_phase(p::Parameter)
     @match p begin
-        PiUnit(_...) => rem(rem(p, 2) + 2, 2)
+        PiUnit(pu, pt) && if pu isa Number
+        end => rem(rem(p, 2) + 2, 2)
         _ => p
     end
 end
@@ -44,7 +45,7 @@ function parameter(zxwd::ZXWDiagram{T,P}, v::T) where {T<:Integer,P}
     @match spider_type(zxwd, v) begin
         Z(p) => p
         X(p) => p
-        Input(_) || Output(_) => error("Input and outputs doesn't have valid parameter")
+        Input(q) || Output(q) => q
         _ => Parameter(Val(:PiUnit), 0)
     end
 end
@@ -250,12 +251,35 @@ Returns a vector of input ids.
 """
 get_inputs(zxwd::ZXWDiagram) = zxwd.inputs
 
+function get_input_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_inputs(zxwd))
+        res = @match spider_type(zxwd, v) begin
+            Input(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && return res
+    end
+    return -1
+end
 """
     get_outputs(zxwd)
 
 Returns a vector of output ids.
 """
 get_outputs(zxwd::ZXWDiagram) = zxwd.outputs
+
+function get_output_idx(zxwd::ZXWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_outputs(zxwd))
+        res = @match spider_type(zxwd, v) begin
+            Output(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && return res
+    end
+    return -1
+end
 
 scalar(zxwd::ZXWDiagram) = zxwd.scalar
 
@@ -284,7 +308,7 @@ function push_gate!(
     phase = zero(P);
     autoconvert::Bool = true,
 ) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
     insert_spider!(zxwd, bound_id, out_id, Z(Parameter(Val(:PiUnit), rphase)))
@@ -298,7 +322,7 @@ function push_gate!(
     phase = zero(P);
     autoconvert::Bool = true,
 ) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
     insert_spider!(zxwd, bound_id, out_id, X(Parameter(Val(:PiUnit), rphase)))
@@ -306,7 +330,7 @@ function push_gate!(
 end
 
 function push_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
-    @inbounds out_id = get_outputs(zxwd)[loc]
+    out_id = get_output_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, out_id)[1]
     insert_spider!(zxwd, bound_id, out_id, H)
     return zxwd
@@ -358,7 +382,7 @@ function pushfirst_gate!(
     loc::T,
     phase::P = zero(P),
 ) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, Z(Parameter(Val(:PiUnit), phase)))
     return zxwd
@@ -370,14 +394,14 @@ function pushfirst_gate!(
     loc::T,
     phase::P = zero(P),
 ) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, X(Parameter(Val(:PiUnit), phase)))
     return zxwd
 end
 
 function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:H}, loc::T) where {T,P}
-    @inbounds in_id = get_inputs(zxwd)[loc]
+    in_id = get_input_idx(zxwd, loc)
     @inbounds bound_id = neighbors(zxwd, in_id)[1]
     insert_spider!(zxwd, in_id, bound_id, H)
     return zxwd
@@ -413,5 +437,233 @@ function pushfirst_gate!(zxwd::ZXWDiagram{T,P}, ::Val{:CZ}, loc::T, ctrl::T) whe
     add_edge!(zxwd, v1, v2)
     insert_spider!(zxwd, v1, v2, H)
     add_power!(zxwd, 1)
+    return zxwd
+end
+
+"""
+
+Insert W triangle on a vector of vertices
+
+"""
+function insert_wtrig!(zxwd::ZXWDiagram{T,P}, locs::Vector{T}) where {T,P}
+    length(locs) < 2 && return nothing
+
+    head = locs[1]
+
+    for loc in locs[2:end]
+        prev_w = add_spider!(zxwd, W, [head, loc])
+        head = add_spider!(zxwd, W, [prev_w])
+    end
+    return head
+end
+
+"""
+Convert ZXWDiagram that represents unitary U to U^†
+"""
+function dagger(zxwd::ZXWDiagram{T,P}) where {T,P}
+    zxwd_dg = copy(zxwd)
+    for v in vertices(zxwd_dg.mg)
+        @match zxwd_dg.st[v] begin
+            Input(q) => (zxwd_dg.st[v] = Output(q))
+            Output(q) => (zxwd_dg.st[v] = Input(q))
+            Z(p) => (zxwd_dg.st[v] = Z(inv(p)))
+            X(p) => (zxwd_dg.st[v] = X(inv(p)))
+            W => nothing
+            H => nothing
+            D => nothing
+        end
+    end
+    for i = 1:nin(zxwd_dg)
+        @inbounds zxwd_dg.inputs[i] = zxwd.outputs[i]
+        @inbounds zxwd_dg.outputs[i] = zxwd.inputs[i]
+    end
+
+    return zxwd_dg
+end
+
+"""
+Concatenate two ZXWDiagrams, modify d1.
+
+Remove outputs of d1 and inputs of d2. Then add edges between to vertices
+that was conntecting to outputs of d1 and inputs of d2.
+Assuming you don't concatenate two empty circuit ZXWDiagram
+"""
+function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    nout(d1) != nin(d2) &&
+        error("Number of outputs of d1 and inputs of d2 must be the same")
+
+    v2tov1 = Dict{T,T}()
+    import_non_in_out!(d1, d2, v2tov1)
+
+    for i = 1:nout(d1)
+        out_idx = get_output_idx(d1, i)
+        # output spiders cannot be connected to multiple vertices or with multiedge
+        prior_vtx = neighbors(d1, out_idx)[1]
+        rem_edge!(d1, out_idx, prior_vtx)
+        # d2 input vtx idx is mapped to the vtx prior to d1 output
+        v2tov1[get_input_idx(d2, i)] = prior_vtx
+    end
+
+    for i = 1:nout(d2)
+        v2tov1[get_output_idx(d2, i)] = get_output_idx(d1, i)
+    end
+
+    import_edges!(d1, d2, v2tov1)
+    add_global_phase!(d1, d2.scalar.phase)
+    add_power!(d1, d2.scalar.power_of_sqrt_2)
+    return d1
+end
+
+"""
+Add input and outputs to diagram
+"""
+function add_inout!(zxwd::ZXWDiagram{T,P}, n::T) where {T,P}
+    nq = nqubits(zxwd)
+    for i = 1:n
+        idxin = add_spider!(zxwd, Input(n + nq), T[])
+        push!(zxwd.inputs, idxin)
+        idxout = add_spider!(zxwd, Output(n + nq), T[])
+        push!(zxwd.outputs, idxout)
+        add_edge!(zxwd, idxin, idxout)
+    end
+    return zxwd
+end
+
+"""
+Stacking two ZXWDiagrams in place. Modify d1.
+
+Performs tensor product of two ZXWDiagrams. The result is a ZXWDiagram with d1 on
+lower qubit indices. Assuming number of inputs and outputs of are the same for both d1 and d2.
+"""
+function stack_zxwd!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
+    prior_nq = nqubits(d1)
+    add_inout!(d1, nqubits(d2))
+    for in_vtx in d1.inputs[end-nqubits(d2)+1:end]
+        rem_edge!(d1, in_vtx, neighbors(d1, in_vtx)[1])
+    end
+
+    add_global_phase!(d1, d2.scalar.phase)
+    add_power!(d1, d2.scalar.power_of_sqrt_2)
+
+    v2tov1 = Dict{T,T}()
+
+    import_non_in_out!(d1, d2, v2tov1)
+
+    for (i, idx) in enumerate(get_inputs(d2))
+        v2tov1[idx] = get_inputs(d1)[i+prior_nq]
+    end
+    for (i, idx) in enumerate(get_outputs(d2))
+        v2tov1[idx] = get_outputs(d1)[i+prior_nq]
+    end
+
+    import_edges!(d1, d2, v2tov1)
+    return d1
+end
+
+"""
+Add non input and output spiders of d2 to d1, modify d1. Record the mapping of vertex indices.
+"""
+function import_non_in_out!(
+    d1::ZXWDiagram{T,P},
+    d2::ZXWDiagram{T,P},
+    v2tov1::Dict{T,T},
+) where {T,P}
+    for v2 in vertices(d2.mg)
+        new_v = @match spider_type(d2, v2) begin
+            Input(q) => nothing
+            Output(q) => nothing
+            (Z(_) || X(_) || W || H || D) => add_vertex!(d1.mg)[1]
+            _ => error("Unknown spider type $(d2.st[v2])")
+        end
+        if !isnothing(new_v)
+            v2tov1[v2] = new_v
+            d1.st[new_v] = spider_type(d2, v2)
+        end
+    end
+end
+
+"""
+Import edges of d2 to d1, modify d1
+"""
+function import_edges!(
+    d1::ZXWDiagram{T,P},
+    d2::ZXWDiagram{T,P},
+    v2tov1::Dict{T,T},
+) where {T,P}
+    for edge in edges(d2.mg)
+        src, dst, emul = edge.src, edge.dst, edge.mul
+        add_edge!(d1.mg, v2tov1[src], v2tov1[dst], emul)
+    end
+end
+
+"""
+Construct ZXW Diagram for representing the expectation value circuit
+"""
+function expval_circ!(zxwd::ZXWDiagram{T,P}, H::String) where {T,P}
+    # convert U to U H U^\dagger
+    zxwd_dag = dagger(zxwd)
+    for (i, h) in enumerate(H)
+        if h == 'Z'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+        elseif h == 'X'
+            push_gate!(zxwd, Val(:X), i, 1.0)
+        elseif h == 'Y'
+            push_gate!(zxwd, Val(:Z), i, 1.0)
+            push_gate!(zxwd, Val(:X), i, 1.0)
+            add_global_phase!(zxwd, P(π / 2))
+        elseif h == 'I'
+            continue
+        else
+            error("Invalid Hamiltonian, enter only Z, X, Y")
+        end
+    end
+    concat!(zxwd, zxwd_dag)
+    return zxwd
+end
+
+"""
+
+Finds vertices of Spider that contains the parameter θ or -θ
+"""
+function symbol_vertices(zxwd::ZXWDiagram{T,P}, θ::Symbol; neg::Bool = false) where {T,P}
+    if neg
+        target = Expr(:call, :-, θ)
+    else
+        target = θ
+    end
+    matched = T[]
+    for v in vertices(zxwd.mg)
+        res = @match spider_type(zxwd, v) begin
+            Z(p1) && if contains(p1, target)
+            end => v
+            X(p1) && if contains(p1, target)
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && push!(matched, v)
+    end
+    return matched
+end
+
+"""
+Replace symbols in ZXW Diagram with specific values
+"""
+function substitute_variables!(
+    zxwd::ZXWDiagram{T,P},
+    sbd::Dict{Symbol,<:Number},
+) where {T,P}
+    for (θ, val) in sbd
+        for negative in [false, true]
+            matched_pos = symbol_vertices(zxwd, θ; neg = negative)
+            val = negative ? -val : val
+            for idx in matched_pos
+                p = spider_type(zxwd, idx).p
+                @match p begin
+                    PiUnit(pu, _) => set_phase!(zxwd, idx, Parameter(Val(:PiUnit), val))
+                    Factor(pf, _) => set_phase!(zxwd, idx, Parameter(Val(:Factor), val))
+                end
+            end
+        end
+    end
     return zxwd
 end

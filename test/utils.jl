@@ -1,4 +1,4 @@
-using .ZXCalculus: Parameter, _round_phase, round_phases!, print_spider
+using ZXCalculus: Parameter, _round_phase, round_phases!, print_spider
 using MLStyle: @match
 
 @testset "Phase rounding" begin
@@ -26,6 +26,9 @@ using MLStyle: @match
     @test _round_phase(Parameter(Val(:PiUnit), 2)) == Parameter(Val(:PiUnit), 0)
     @test _round_phase(Parameter(Val(:Factor), exp(im * 1.5 * π))) ==
           Parameter(Val(:Factor), exp(im * 1.5 * π))
+    @test _round_phase(Parameter(Val(:PiUnit), :a)) == Parameter(Val(:PiUnit), :a)
+    @test _round_phase(Parameter(Val(:PiUnit), Expr(:call, :-, :a))) ==
+          Parameter(Val(:PiUnit), Expr(:call, :-, :a))
 end
 
 @testset "ZXWDiagram Utilities" begin
@@ -39,7 +42,7 @@ end
 
     @test_throws ErrorException("Spider 10 does not exist!") spider_type(zxwd, 10)
 
-    @test_throws ErrorException parameter(zxwd, 1)
+    @test parameter(zxwd, 1) == 1
     @test ZXCalculus.set_phase!(zxwd, 1, Parameter(Val(:PiUnit), 2 // 3))
     @test !ZXCalculus.set_phase!(zxwd, 10, Parameter(Val(:PiUnit), 2 // 3))
 
@@ -86,11 +89,12 @@ end
     @test String(take!(io)) == "S_7{W}"
 
     print_spider(io, zxwd, new_v2)
-    @test String(take!(io)) == "S_8{phase = 3//2⋅π}"
+    @test String(take!(io)) ==
+          "S_8{phase = Parameter.PiUnit(pu=3//2, pu_type=Rational{Int64})}"
 
     new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
     print_spider(io, zxwd, new_v3)
-    @test String(take!(io)) == "S_9{phase = 1}"
+    @test String(take!(io)) == "S_9{phase = Parameter.Factor(f=1, f_type=Int64)}"
 
     print_spider(io, zxwd, 2)
     @test String(take!(io)) == "S_2{output = 1}"
@@ -98,9 +102,18 @@ end
     rem_spiders!(zxwd, [2, 3, new_v])
     @test nv(zxwd) == 6 && ne(zxwd) == 1
 
+    zxwd = ZXWDiagram(3)
+    nqubits_prior = ZXCalculus.nqubits(zxwd)
+    ZXCalculus.add_inout!(zxwd, 3)
+    @test ZXCalculus.nqubits(zxwd) == nqubits_prior + 3
+    @test ZXCalculus.nin(zxwd) == nqubits_prior + 3
+    @test ZXCalculus.nout(zxwd) == nqubits_prior + 3
+    nspiders = ZXCalculus.nv(zxwd)
+    @test sort!(
+        [ZXCalculus.get_inputs(zxwd)[end-2:end]; ZXCalculus.get_outputs(zxwd)[end-2:end]],
+    ) == collect(nspiders-5:nspiders)
 
-    #TODO: Add test for construction of ZXWDiagram with empty circuit
-    # einsum contraction should return all zero
+
 
 end
 
@@ -122,4 +135,27 @@ end
     @test zxwd.st[18] == Z(Parameter(Val(:PiUnit), 0 // 1))
     push_gate!(zxwd, Val(:H), 2)
     @test zxwd.st[19] == H
+
+    @test insert_wtrig!(zxwd, [1, 2, 3, 4]) == 25
+end
+
+
+@testset "Example 28" begin
+    zxwd = ZXWDiagram(2)
+    push_gate!(zxwd, Val(:H), 1)
+    push_gate!(zxwd, Val(:H), 2)
+
+    push_gate!(zxwd, Val(:CZ), 1, 2)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+
+    exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
+
+    exp_zxwd_sub = substitute_variables!(copy(exp_zxwd), Dict(:a => 0.3, :b => 0.4))
+    exp_val = Matrix(exp_zxwd_sub)[1, 1]
+
+    exp_yao = 0.7694208842938131
+
+    @test exp_val ≈ exp_yao
+
 end
