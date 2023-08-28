@@ -34,6 +34,7 @@ include("abstract_zx_diagram.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")
+include("planar_multigraph.jl")
 
 include("zxw_diagram.jl")
 include("to_eincode.jl")
