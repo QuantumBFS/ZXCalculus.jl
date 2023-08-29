@@ -499,8 +499,8 @@ function contract_edge!(g::PlanarMultigraph, he_id::Integer)
             (v11, v22) = contract_edge!(g, twin_id)
             return (v22, v11)
         else
-            # 2 isolated vertices
-            error("TODO: fix this")
+            rem_vertex!(g, v1; update = true)
+            return (v1, v2)
         end
     end
 
