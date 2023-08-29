@@ -11,3 +11,8 @@
     @test ophe2 == ophe1
 
 end
+
+@testset "PlanarMultigraph Constructor" begin
+    g = PlanarMultigraph({}, {}, {}, {}, {}, {}, {}, 0, 0, 0)
+
+end

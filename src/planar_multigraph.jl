@@ -42,6 +42,8 @@ mutable struct PlanarMultigraph{T<:Integer}
     next::Dict{T,T}    # he_id -> he_id
     twin::Dict{T,T}    # he_id -> he_id
 
+    vs_isolated::Dict{Int,Int} # v_id -> f_id
+
     v_max::T
     he_max::T
     f_max::T
@@ -54,12 +56,15 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
     copy(g.he2f),
     copy(g.next),
     copy(g.twin),
+    copy(g.vs_isolated),
     g.v_max,
     g.he_max,
     g.f_max,
 )
 
-vertices(g::PlanarMultigraph) = collect(keys(g.v2he))
+vertices(g::PlanarMultigraph) = vcat(collect(keys(g.v2he)), collect(keys(g.vs_isolated)))
+isolated_vertices(g::PlanarMultigraph) = collect(keys(g.vs_isolated))
+is_isolated(g::PlanarMultigraph{T}, v::T) where {T<:Integer} = haskey(g.vs_isolated, v)
 
 faces(g::PlanarMultigraph) = sort!(collect(keys(g.f2he)))
 half_edges(g::PlanarMultigraph) = sort!(collect(keys(g.half_edges)))
@@ -112,12 +117,15 @@ Get netx_at_source
 """
 σ_inv(g::PlanarMultigraph{T}, he_id::T) where {T} = next(g, twin(g, he_id))
 
-nv(g::PlanarMultigraph) = length(g.v2he)
+nv(g::PlanarMultigraph) = length(g.v2he) + length(g.vs_isolated)
 nf(g::PlanarMultigraph) = length(g.f2he)
 nhe(g::PlanarMultigraph) = length(g.half_edges)
 ne(g::PlanarMultigraph) = nhe(g) ÷ 2
 
-out_half_edge(g::PlanarMultigraph{T}, v::T) where {T} = g.v2he[v]
+function out_half_edge(g::PlanarMultigraph{T}, v::T) where {T}
+    is_isolated(g, v) && return 0
+    return g.v2he[v]
+end
 
 surrounding_half_edge(g::PlanarMultigraph{T}, f::T) where {T} = g.f2he[f]
 
@@ -145,6 +153,7 @@ function trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
 end
 
 function trace_vertex(g::PlanarMultigraph{T}, v::T) where {T}
+    is_isolated(g, v) && return Int[]
     return trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
 end
 
@@ -163,6 +172,7 @@ function rem_vertex!(g::PlanarMultigraph{T}, v::T; update::Bool = true) where {T
         rem_edge!(g, he_id; update = update)
     end
     delete!(g.v2he, v)
+    delete!(g.vs_isolated, v)
     return g
 end
 
@@ -181,7 +191,9 @@ function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where 
             he_out = twin(g, he_in)
             f_in = face(g, he_in)
             f_out = face(g, he_out)
-
+            for (v_iso, f_iso) in g.vs_isolated
+                f_iso == f_in && (g.vs_isolated[v_iso] = f_out)
+            end
             hes_f_he = trace_face(g, f_in; safe_trace = true)
             rem_face!(g, f_in)
             for he in hes_f_he
@@ -195,6 +207,7 @@ function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where 
             end
             if update
                 delete!(g.v2he, v_loop)
+                g.vs_isolated[v_loop] = f_out
             end
             return g
         end
@@ -215,6 +228,9 @@ function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where 
 
         # remove a inner face
         if face_he != face_twin
+            for (v_iso, f_iso) in g.vs_isolated
+                f_iso == face_he && (g.vs_isolated[v_iso] = face_twin)
+            end
             hes_f_he = trace_face(g, face_he; safe_trace = true)
             rem_face!(g, face_he)
             for he in hes_f_he
@@ -256,9 +272,11 @@ function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where 
         end
 
         if he_next == twin_id
+            g.vs_isolated[src(g, he_next)] = face(g, he_next)
             delete!(g.v2he, src(g, he_next))
         end
         if twin_next == he_id
+            g.vs_isolated[src(g, twin_next)] = face(g, twin_next)
             delete!(g.v2he, src(g, twin_next))
         end
     end
@@ -309,6 +327,9 @@ function merge_graph!(A::PlanarMultigraph, B::PlanarMultigraph)
     for (curr, twin) in B.twin
         A.twin[curr+A.he_max] = twin + A.he_max
     end
+    for (v, f) in B.vs_isolated
+        A.vs_isolated[v+A.v_max] = (f == 0) ? 0 : (f + A.f_max)
+    end
 
     A.v_max += B.v_max
     A.he_max += B.he_max
@@ -356,6 +377,9 @@ function update_face!(g::PlanarMultigraph{T}, he_id::T) where {T<:Integer}
         end
         curr_he = next(g, curr_he)
     end
+    for (v, f) in g.vs_isolated
+        (f in fs_rm) && (g.vs_isolated[v] = face_id)
+    end
     return g
 end
 
@@ -367,7 +391,69 @@ function add_vertex!(g::PlanarMultigraph{T}, f::T) where {T<:Integer}
     return v
 end
 
+function add_edge_isolated_1!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
+    f == g.vs_isolated[v1] || return (0, 0)
+    hes = trace_vertex(g, v2)
+    he2_in = 0
+    he2_out = 0
+    for he in hes
+        if face(g, twin(g, he)) == f
+            he2_in = twin(g, he)
+            he2_out = next(g, he2_in)
+            break
+        end
+    end
+    he2_in * he2_out != 0 || return (0, 0)
+
+    g.he_max += 2
+    new_he1 = g.he_max - 1
+    new_he2 = g.he_max
+    g.v2he[v1] = new_he2
+    g.twin[new_he1] = new_he2
+    g.twin[new_he2] = new_he1
+    g.next[he2_in] = new_he1
+    g.next[new_he1] = new_he2
+    g.next[new_he2] = he2_out
+    g.he2f[new_he1] = f
+    g.he2f[new_he2] = f
+    g.half_edges[new_he1] = HalfEdge(v2, v1)
+    g.half_edges[new_he2] = HalfEdge(v1, v2)
+    delete!(g.vs_isolated, v1)
+
+    return (new_he1, new_he2)
+end
+
+function add_edge_isolated_2!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
+    f == g.vs_isolated[v1] == g.vs_isolated[v2] || return (0, 0)
+    g.he_max += 2
+    new_he1 = g.he_max - 1
+    new_he2 = g.he_max
+    g.twin[new_he1] = new_he2
+    g.twin[new_he2] = new_he1
+    g.next[new_he1] = new_he2
+    g.next[new_he2] = new_he1
+    g.v2he[v1] = new_he1
+    g.v2he[v2] = new_he2
+    g.he2f[new_he1] = f
+    g.he2f[new_he2] = f
+    g.half_edges[new_he1] = HalfEdge(v1, v2)
+    g.half_edges[new_he2] = HalfEdge(v2, v1)
+    delete!(g.vs_isolated, v1)
+    delete!(g.vs_isolated, v2)
+
+    return (new_he1, new_he2)
+end
+
 function add_edge!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
+    if is_isolated(g, v1)
+        if is_isolated(g, v2)
+            return add_edge_isolated_2!(g, v1, v2, f)
+        else
+            return add_edge_isolated_1!(g, v1, v2, f)
+        end
+    elseif is_isolated(g, v2)
+        return add_edge_isolated_1!(g, v2, v1, f)
+    end
     hes_f = trace_face(g, f)
     he1_in, he1_out, he2_in, he2_out = (0, 0, 0, 0)
     for he in hes_f
@@ -517,7 +603,20 @@ function normalize(g::PlanarMultigraph)
     next = Dict{Int,Int}(he_map[cur] => he_map[nxt] for (cur, nxt) in g.next)
     twin = Dict{Int,Int}(he_map[cur] => he_map[twn] for (cur, twn) in g.twin)
 
-    g_new = PlanarMultigraph(v2he, halfedges, f2he, he2f, next, twin, v_max, he_max, f_max)
+    vs_isolated = Dict{Int,Int}(v_map[v] => f_map[f] for (v, f) in g.vs_isolated)
+
+    g_new = PlanarMultigraph(
+        v2he,
+        halfedges,
+        f2he,
+        he2f,
+        next,
+        twin,
+        vs_isolated,
+        v_max,
+        he_max,
+        f_max,
+    )
     return g_new, v_map, he_map, f_map
 end
 
@@ -528,6 +627,6 @@ Return the number of connected components.
 """
 n_conn_comp(g::PlanarMultigraph) = nv(g) - ne(g) + nf(g) - 1
 
-has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v)
+has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v) || haskey(g.vs_isolated, v)
 has_half_edge(g::PlanarMultigraph, he) = haskey(g.half_edges, he)
 has_face(g::PlanarMultigraph, f) = haskey(g.f2he, f)
