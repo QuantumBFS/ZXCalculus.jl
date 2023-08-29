@@ -1,4 +1,5 @@
-import Graphs: AbstractEdge, src, dst, nv
+import Graphs: AbstractEdge, src, dst, nv, ne, neighbors
+import Graphs.SimpleGraphs: rem_edge!, rem_vertex!, add_edge!, add_vertex!
 export HalfEdge, src, dst, maketwin, makepair
 
 struct HalfEdge{T<:Integer} <: AbstractEdge{T}
