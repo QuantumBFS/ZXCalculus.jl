@@ -1,12 +1,21 @@
 import Graphs: AbstractEdge, src, dst, nv, ne, neighbors
 import Graphs.SimpleGraphs: rem_edge!, rem_vertex!, add_edge!, add_vertex!
-export HalfEdge, src, dst, maketwin, makepair
+export HalfEdge, src, dst, new_edge, PlanarMultigraph
 
+"""
+    HalfEdge{T<:Integer}(src ,dst)
+
+Datatype to represent a Half Edge
+
+## Reference
+
+* Brönnimann, Hervé [Designing and Implementing a General Purpose Halfedge Data Structure]
+(https://doi.org/10.1007/3-540-44688-5_5)
+"""
 struct HalfEdge{T<:Integer} <: AbstractEdge{T}
     src::T
     dst::T
     function HalfEdge(src::T, dst::T) where {T<:Integer}
-        src == dst && error("src and dst cannot be the same vertex")
         return new{T}(src, dst)
     end
 end
@@ -15,22 +24,53 @@ src(he::HalfEdge) = he.src
 dst(he::HalfEdge) = he.dst
 
 """
-    maketwin(he::HalfEdge)
-
-Make the twin half edge
-"""
-maketwin(he::HalfEdge) = HalfEdge(he.dst, he.src)
-
-"""
-    makepair(src::T, dst::T) where {T<:Integer}
+    new_edge(src::T, dst::T) where {T<:Integer}
 
 Create a half edge and its twin
 """
-makepair(src::T, dst::T) where {T<:Integer} = (HalfEdge(src, dst), HalfEdge(dst, src))
+new_edge(src::T, dst::T) where {T<:Integer} = (HalfEdge(src, dst), HalfEdge(dst, src))
 
 function Base.:(==)(he1::HalfEdge, he2::HalfEdge)
     src(he1) == src(he2) && dst(he1) == dst(he2)
 end
+
+"""
+    GraphPlanarMultigraph{T<:Integer}
+
+Implements a planar multigraph with a graphic HDS Structure.
+
+## Features
+1. Stores Bidirectional Half Edge pointer in facet
+Vertex + Link
+
+
+"""
+mutable struct GraphicPlanarMultigraph{T<:Integer}
+    half_edges::Dict{T,HalfEdge{T}} # he_id -> he
+    twin::Dict{T,T} # he_id -> he_id
+
+    prev::Dict{T,T} # he_id -> he_id
+    next::Dict{T,T} # he_id -> he_id
+
+end
+
+opposite(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.twin[he_id]
+
+next_in_facet(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.next[he_id]
+
+next_at_source(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
+    next_in_facet(g, opposite(g, he_id))
+
+next_at_target(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
+    opposite(g, next_in_facet(g, he_id))
+
+prev_in_fact(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.prev[he_id]
+
+prev_at_source(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
+    opposite(g, prev_in_facet(g, he_id))
+
+prev_at_target(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
+    prev_in_fact(g, opposite(g, he_id))
 
 mutable struct PlanarMultigraph{T<:Integer}
     v2he::Dict{T,T}  # v_id -> he_id
@@ -42,11 +82,23 @@ mutable struct PlanarMultigraph{T<:Integer}
     next::Dict{T,T}    # he_id -> he_id
     twin::Dict{T,T}    # he_id -> he_id
 
-    vs_isolated::Dict{Int,Int} # v_id -> f_id
+    vs_isolated::Dict{T,T} # v_id -> f_id
 
     v_max::T
     he_max::T
     f_max::T
+    PlanarMultigraph{T}() where {T<:Int} = new{Int64}(
+        Dict{T,T}(),
+        Dict{T,HalfEdge{T}}(),
+        Dict{T,T}(),
+        Dict{T,T}(),
+        Dict{T,T}(),
+        Dict{T,T}(),
+        Dict{T,T}(),
+        0,
+        0,
+        0,
+    )
 end
 
 Base.copy(g::PlanarMultigraph) = PlanarMultigraph(

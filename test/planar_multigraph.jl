@@ -13,6 +13,9 @@
 end
 
 @testset "PlanarMultigraph Constructor" begin
-    g = PlanarMultigraph({}, {}, {}, {}, {}, {}, {}, 0, 0, 0)
+    g = PlanarMultigraph{Int64}()
 
+    add_vertex!(g, 1)
+    add_vertex!(g, 2)
+    add_edge!(g, 1, 2, 1)
 end
