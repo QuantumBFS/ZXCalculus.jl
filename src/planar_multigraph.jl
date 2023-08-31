@@ -49,6 +49,8 @@ mutable struct GraphicPlanarMultigraph{T<:Integer}
     prev::Dict{T,T} # he_id -> he_id
     next::Dict{T,T} # he_id -> he_id
 
+    v2he::Dict{T,T} # v_id -> he_id
+
 end
 
 opposite(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.twin[he_id]
@@ -102,8 +104,6 @@ Implements a planar multigraph with a maximal HDS Structure.
 1. Stores Bidirectional Half Edge pointer in facet
 2. Vertex linked
 3. Face Linked
-3. No support for holes
-
 """
 mutable struct PlanarMultigraph{T<:Integer}
     v2he::Dict{T,T}  # v_id -> he_id
@@ -115,15 +115,12 @@ mutable struct PlanarMultigraph{T<:Integer}
     next::Dict{T,T}    # he_id -> he_id
     twin::Dict{T,T}    # he_id -> he_id
 
-    vs_isolated::Dict{T,T} # v_id -> f_id
-
     v_max::T
     he_max::T
     f_max::T
     PlanarMultigraph{T}() where {T<:Int} = new{Int64}(
         Dict{T,T}(),
         Dict{T,HalfEdge{T}}(),
-        Dict{T,T}(),
         Dict{T,T}(),
         Dict{T,T}(),
         Dict{T,T}(),
@@ -141,15 +138,12 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
     copy(g.he2f),
     copy(g.next),
     copy(g.twin),
-    copy(g.vs_isolated),
     g.v_max,
     g.he_max,
     g.f_max,
 )
 
-vertices(g::PlanarMultigraph) = vcat(collect(keys(g.v2he)), collect(keys(g.vs_isolated)))
-isolated_vertices(g::PlanarMultigraph) = collect(keys(g.vs_isolated))
-is_isolated(g::PlanarMultigraph{T}, v::T) where {T<:Integer} = haskey(g.vs_isolated, v)
+vertices(g::PlanarMultigraph) = collect(keys(g.v2he))
 
 faces(g::PlanarMultigraph) = sort!(collect(keys(g.f2he)))
 half_edges(g::PlanarMultigraph) = sort!(collect(keys(g.half_edges)))
@@ -202,16 +196,23 @@ Get netx_at_source
 """
 σ_inv(g::PlanarMultigraph{T}, he_id::T) where {T} = next(g, twin(g, he_id))
 
-nv(g::PlanarMultigraph) = length(g.v2he) + length(g.vs_isolated)
+nv(g::PlanarMultigraph) = length(g.v2he)
 nf(g::PlanarMultigraph) = length(g.f2he)
 nhe(g::PlanarMultigraph) = length(g.half_edges)
 ne(g::PlanarMultigraph) = nhe(g) ÷ 2
 
-function out_half_edge(g::PlanarMultigraph{T}, v::T) where {T}
-    is_isolated(g, v) && return 0
-    return g.v2he[v]
-end
+"""
+    out_half_edge(g::PlanarMultigraph{T}, v::T)
 
+Get the one out half edge of a vertex
+"""
+out_half_edge(g::PlanarMultigraph{T}, v::T) where {T} = g.v2he[v]
+
+"""
+    surrounding_half_edge(g::PlanarMultigraph{T}, f::T)
+
+Get the one surrounding half edge of a face
+"""
 surrounding_half_edge(g::PlanarMultigraph{T}, f::T) where {T} = g.f2he[f]
 
 function trace_orbit(f::Function, a::T; rev::Bool = false) where {T}
@@ -237,10 +238,8 @@ function trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
     return hes_f
 end
 
-function trace_vertex(g::PlanarMultigraph{T}, v::T) where {T}
-    is_isolated(g, v) && return Int[]
-    return trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
-end
+trace_vertex(g::PlanarMultigraph{T}, v::T) where {T} =
+    trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
 
 neighbors(g::PlanarMultigraph{T}, v::T) where {T} =
     [dst(g, he) for he in trace_vertex(g, v)]
@@ -252,14 +251,59 @@ If the half edge is on the boundary of entire manifold
 """
 is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T} = (face(g, he_id) == 0)
 
+"""
+    split_vertex!(g::PlanarMultigraph{T}, v1::T, he_vec1::Vector{T})
+
+Split a vertex into 2 vertices.
+
+Connect the two vertices with a new pair of half edges. he_vec1 and he_vec2 are all half edges
+that has destination v. All he_vec1 will remain unchanged. All he_vec2 will be updated to
+having destination at the new vertex.
+"""
+function split_vertex!(g::PlanarMultigraph{T}, v1::T, he_vec1::Vector{T}) where {T}
+    # get all half edges that goes out of v1
+    out_hes = trace_vertex(g, v1)
+    # verify all he_vec1 have src at v1
+
+    # remaining set of half edges from out_hes starts at the new vertex
+
+    # add new vertex into g
+    v2 = g.v_max + 1
+    g.v_max += 1
+
+
+    # add new half edges from v1 to v2
+
+    # update all half edges in he_vec2 to have destination at v2
+
+    # need to update them consistently
+    # just reset it to one in he_vec1
+    # also add v2 to v2he with one in he_vec2
+    # v2he::Dict{T,T}  # v_id -> he_id
+
+    # add new pair of he
+    g.he_max += 2
+    # update he_vec2's content but keep id
+    # half_edges::Dict{T,HalfEdge{T}} # he_id -> he
+
+    # no need to update face
+    # f2he::Dict{T,T}  # f_id -> he_id
+    # he2f::Dict{T,T}    # he_id -> f_id
+
+    # in the same face, need to update
+    # next::Dict{T,T}    # he_id -> he_id
+    # just need to add new pair of he
+    # twin::Dict{T,T}    # he_id -> he_id
+end
+
 function rem_vertex!(g::PlanarMultigraph{T}, v::T; update::Bool = true) where {T}
     for he_id in trace_vertex(g, v)
         rem_edge!(g, he_id; update = update)
     end
     delete!(g.v2he, v)
-    delete!(g.vs_isolated, v)
     return g
 end
+
 
 function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where {T}
     # make sure the face of he_id is an inner face
@@ -712,6 +756,6 @@ Return the number of connected components.
 """
 n_conn_comp(g::PlanarMultigraph) = nv(g) - ne(g) + nf(g) - 1
 
-has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v) || haskey(g.vs_isolated, v)
+has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v)
 has_half_edge(g::PlanarMultigraph, he) = haskey(g.half_edges, he)
 has_face(g::PlanarMultigraph, f) = haskey(g.f2he, f)
