@@ -15,9 +15,6 @@ Datatype to represent a Half Edge
 struct HalfEdge{T<:Integer} <: AbstractEdge{T}
     src::T
     dst::T
-    function HalfEdge(src::T, dst::T) where {T<:Integer}
-        return new{T}(src, dst)
-    end
 end
 
 src(he::HalfEdge) = he.src
@@ -41,11 +38,11 @@ Implements a planar multigraph with a graphic HDS Structure.
 
 ## Features
 1. Stores Bidirectional Half Edge pointer in facet
-Vertex + Link
-
-
+2. Vertex linked
+3. No support for holes
 """
 mutable struct GraphicPlanarMultigraph{T<:Integer}
+
     half_edges::Dict{T,HalfEdge{T}} # he_id -> he
     twin::Dict{T,T} # he_id -> he_id
 
@@ -72,6 +69,42 @@ prev_at_source(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
 prev_at_target(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
     prev_in_fact(g, opposite(g, he_id))
 
+function set_opposite(g::GraphicPlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    #TODO
+end
+
+function set_next_in_facet(g::GraphicPlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    #TODO
+end
+
+function set_next_at_source(
+    g::GraphicPlanarMultigraph{T},
+    he1::T,
+    he2::T,
+) where {T<:Integer}
+    #TODO
+end
+
+function set_next_at_target(
+    g::GraphicPlanarMultigraph{T},
+    he1::T,
+    he2::T,
+) where {T<:Integer}
+    #TODO
+end
+
+"""
+    PlanarMultigraph{T<:Integer}
+
+Implements a planar multigraph with a maximal HDS Structure.
+
+## Features
+1. Stores Bidirectional Half Edge pointer in facet
+2. Vertex linked
+3. Face Linked
+3. No support for holes
+
+"""
 mutable struct PlanarMultigraph{T<:Integer}
     v2he::Dict{T,T}  # v_id -> he_id
     half_edges::Dict{T,HalfEdge{T}} # he_id -> he
