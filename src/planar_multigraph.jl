@@ -296,13 +296,27 @@ function split_vertex!(g::PlanarMultigraph{T}, v1::T, he_vec1::Vector{T}) where 
     # twin::Dict{T,T}    # he_id -> he_id
 end
 
-function rem_vertex!(g::PlanarMultigraph{T}, v::T; update::Bool = true) where {T}
-    for he_id in trace_vertex(g, v)
-        rem_edge!(g, he_id; update = update)
-    end
-    delete!(g.v2he, v)
-    return g
+function join_vertices!(g::PlanarMultigraph{T}, he::T) where {T}
+    # first verify he is the only he connecting it's src and dst
+
+    # get all out half edges of src and dst
+    # change dst's out half edges to such that they start at src
+
+    # update g's fields
+
 end
+
+function split_facet(g::PlanarMultigraph{T}, f::T, v1::T, v2::T) where {T}
+    # verify v1 and v2 indeed in f
+
+    # create new he pair that connectes v1 and v2
+    # update fields
+end
+
+function join_facets!(g::PlanarMultigraph{T}, he::T) where {T}
+    # basically remove a pair of he
+end
+
 
 
 function rem_edge!(g::PlanarMultigraph{T}, he_id::T; update::Bool = true) where {T}
@@ -510,14 +524,6 @@ function update_face!(g::PlanarMultigraph{T}, he_id::T) where {T<:Integer}
         (f in fs_rm) && (g.vs_isolated[v] = face_id)
     end
     return g
-end
-
-function add_vertex!(g::PlanarMultigraph{T}, f::T) where {T<:Integer}
-    haskey(g.f2he, f) || return 0
-    g.v_max += 1
-    v = g.v_max
-    g.vs_isolated[v] = f
-    return v
 end
 
 function add_edge_isolated_1!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
