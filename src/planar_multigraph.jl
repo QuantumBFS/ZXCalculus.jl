@@ -252,48 +252,75 @@ If the half edge is on the boundary of entire manifold
 is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T} = (face(g, he_id) == 0)
 
 """
-    split_vertex!(g::PlanarMultigraph{T}, v1::T, he_vec1::Vector{T})
+    split_vertex!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
 
 Split a vertex into 2 vertices.
 
-Connect the two vertices with a new pair of half edges. he_vec1 and he_vec2 are all half edges
-that has destination v. All he_vec1 will remain unchanged. All he_vec2 will be updated to
-having destination at the new vertex.
+Connect the two vertices with a new pair of half edges.
+he1 and he2 are half edges that marks the start and end
+of half edges that remain on v1.
 """
-function split_vertex!(g::PlanarMultigraph{T}, v1::T, he_vec1::Vector{T}) where {T}
-    # get all half edges that goes out of v1
-    out_hes = trace_vertex(g, v1)
+function split_vertex!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
     # verify all he_vec1 have src at v1
-
-    # remaining set of half edges from out_hes starts at the new vertex
+    all_out([he1, he2]) || error("Not all half edges have src at v1")
+    v1 = src(g, he1)
+    #get all he with soruce v1, starting from he1
+    out_hes = trace_orbit(h -> σ_inv(g, h), he1; rev = true)
+    he2_pos = findfirst(x -> x == he2, out_hes)
+    he_vec1 = out_hes[1:he2_pos]
+    he_vec2 = out_hes[he2_pos+1:end]
 
     # add new vertex into g
     v2 = g.v_max + 1
     g.v_max += 1
 
-
     # add new half edges from v1 to v2
+    g.he_max += 2
+    new_he1, new_he2 = g.he_max - 1, g.he_max
+    he_pair = new_edge(v1, v2)
+    g.half_edges[new_he1] = he_pair[1]
+    g.half_edges[new_he2] = he_pair[2]
+    set_opposite!(g, new_he1, new_he2)
+
+    # update for all affected vtx
+    g.v2he[v1] = new_he1
+    g.v2he[v2] = new_he2
 
     # update all half edges in he_vec2 to have destination at v2
+    for he in he_vec2
+        #reusing he idx, no need to update twin here
+        twin_id = twin(g, he)
+        g.half_edges[he] = HalfEdge(v2, dst(g, he))
+        g.half_edges[twin_id] = HalfEdge(src(g, twin_id), v2)
+    end
 
-    # need to update them consistently
-    # just reset it to one in he_vec1
-    # also add v2 to v2he with one in he_vec2
-    # v2he::Dict{T,T}  # v_id -> he_id
+    set_next!(g, twin(he1), new_he1)
+    set_next!(g, new_he2, he2)
 
-    # add new pair of he
-    g.he_max += 2
-    # update he_vec2's content but keep id
-    # half_edges::Dict{T,HalfEdge{T}} # he_id -> he
+    he2_pos == length(out_hes) && return g
 
-    # no need to update face
-    # f2he::Dict{T,T}  # f_id -> he_id
-    # he2f::Dict{T,T}    # he_id -> f_id
+    set_next!(g, twin(g, out_hes[he2_pos+1]), new_he2)
+    set_next!(g, new_he1, out_hes[end])
+end
 
-    # in the same face, need to update
-    # next::Dict{T,T}    # he_id -> he_id
-    # just need to add new pair of he
-    # twin::Dict{T,T}    # he_id -> he_id
+all_out(g::PlanarMultigraph, he_vec::Vector{T}) where {T} =
+    all(he -> src(g, he) == src(g, he_vec[1]), he_vec)
+
+function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    he1 == he2 && error("Can't set opposite to itself")
+
+    !(he1 ∈ half_edges(g)) && error("he1 not in g")
+    !(he2 ∈ half_edges(g)) && error("he2 not in g")
+
+    g.twin[he1] = he2
+    g.twin[he2] = he1
+    return g
+end
+
+function set_next!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    he1 == he2 && error("Can't set next to itself")
+    g.next[he1] = he2
+    return g
 end
 
 function join_vertices!(g::PlanarMultigraph{T}, he::T) where {T}
