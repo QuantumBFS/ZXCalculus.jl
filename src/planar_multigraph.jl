@@ -369,15 +369,56 @@ function join_vertices!(
     return g
 end
 
-function split_facet(g::PlanarMultigraph{T}, f::T, v1::T, v2::T) where {T}
-    # verify v1 and v2 indeed in f
+function split_facet!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    he1n = next(g, he1)
+    he2n = next(g, he2)
 
-    # create new he pair that connectes v1 and v2
-    # update fields
+    g.he_max += 2
+    new_he1, new_he2 = g.he_max - 1, g.he_max
+    new_he_pair = new_edge(dst(g, he1), dst(g, he2))
+    g.half_edges[new_he1] = new_he_pair[1]
+    g.half_edges[new_he2] = new_he_pair[2]
+
+    g.twin[new_he1] = new_he2
+    g.twin[new_he2] = new_he1
+
+    f1 = face(g, he1)
+    g.f_max += 1
+    f2 = g.f_max
+    g.f2he[f1] = new_he1
+    g.f2he[f2] = new_he2
+
+    g.next[he1] = new_he1
+    g.next[new_he1] = he2n
+    g.next[he2] = new_he2
+    g.next[new_he2] = he1n
+
+    return g
 end
 
-function join_facets!(g::PlanarMultigraph{T}, he::T) where {T}
-    # basically remove a pair of he
+function join_facets!(g::PlanarMultigraph{T}, he::T; update::Bool = true) where {T}
+    twin_he = twin(g, he)
+    he1 = prev(g, he)
+    he2 = prev(g, twin_he)
+    he3 = next(g, he)
+    he4 = next(g, twin_he)
+
+    g.next[he1] = he4
+    g.next[he2] = he3
+
+    f1_id = face(g, he1)
+    f2_id = face(g, he2)
+
+    hes_f = trace_face(g, f2_id; safe_trace = false)
+    for hef in hes_f
+        g.he2f[hef]f1_id
+    end
+
+    g.f2he[f1_id] = he1
+    delete!(g.f2he, f2_id)
+
+    update && g = normalize(g)
+    return g
 end
 
 
