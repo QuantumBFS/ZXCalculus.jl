@@ -323,14 +323,50 @@ function set_next!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
     return g
 end
 
-function join_vertices!(g::PlanarMultigraph{T}, he::T) where {T}
-    # first verify he is the only he connecting it's src and dst
+"""
+    join_vertices!(g::PlanarMultigraph{T}, he::T) where {T<:Integer}
 
-    # get all out half edges of src and dst
-    # change dst's out half edges to such that they start at src
+Join two vertices connected by a HalfEdge into one.
+"""
+function join_vertices!(
+    g::PlanarMultigraph{T},
+    he::T;
+    do_norm::Bool = false,
+) where {T<:Integer}
+    hes1 = trace_orbit(h -> σ_inv(g, h), he; rev = true)
+    hes2 = trace_orbit(h -> σ_inv(g, twin(g, h)), he; rev = true)
+
+    length(hes1) + length(hes2) == 2 &&
+        error("Cann't have isolated vertex after vertex merging")
+    if length(hes2) > length(hes1)
+        he = twin(g, he)
+        hes1, hes2 = hes2, hes1
+    end
+
+    g.v2he[src(g, he)] = hes1[2]
+    delete!(g.v2he, dst(g, he))
+
+    v1 = src(g, he)
+    v2 = dst(g, he)
+    for he2 in hes2
+        twin_id = twin(g, he2)
+        g.half_edges[he2] = HalfEdge(v1, dst(g, he2))
+        g.half_edges[twin_id] = HalfEdge(src(g, twin_id), v1)
+    end
 
     # update g's fields
+    he_face = face(g, next(g, he))
+    twin_he_face = face(g, next(g, twin(g, he)))
+    # add test here
+    g.f2he[he_face] = next(g, he)
+    g.f2he[twin_he_face] = next(g, twin(g, he))
+    delete!(g.he2f, he)
 
+    g.next[prev(g, he)] = g.next[he]
+    g.next[prev(g, twin(g, he))] = g.next[twin(g, he)]
+
+    do_norm && g = normalize(g)
+    return g
 end
 
 function split_facet(g::PlanarMultigraph{T}, f::T, v1::T, v2::T) where {T}
