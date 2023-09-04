@@ -101,7 +101,7 @@ end
 Implements a planar multigraph with a maximal HDS Structure.
 
 ## Features
-1. Stores Bidirectional Half Edge pointer in facet
+1. Stores Forward Half Edge pointer in facet
 2. Vertex linked
 3. Face Linked
 """
@@ -110,7 +110,7 @@ mutable struct PlanarMultigraph{T<:Integer}
     half_edges::Dict{T,HalfEdge{T}} # he_id -> he
 
     f2he::Dict{T,T}  # f_id -> he_id
-    he2f::Dict{T,T}    # he_id -> f_id
+    he2f::Dict{T,T}    # he_id -> f_id, if cannot find, then it's a boundary
 
     next::Dict{T,T}    # he_id -> he_id
     twin::Dict{T,T}    # he_id -> he_id
@@ -129,6 +129,16 @@ mutable struct PlanarMultigraph{T<:Integer}
         0,
         0,
     )
+end
+
+function PlanarMultigraph{T}(qubits::Int) where {T<:Integer}
+    g = PlanarMultigraph{T}()
+    for _ = 1:qubits
+        vtxs = create_vertex(g; mul = 2)
+        hes_id, hes = create_edge(g, vtxs[1], vtxs[2])
+    end
+
+    return g
 end
 
 Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
@@ -331,7 +341,7 @@ Join two vertices connected by a HalfEdge into one.
 function join_vertices!(
     g::PlanarMultigraph{T},
     he::T;
-    do_norm::Bool = false,
+    update::Bool = false,
 ) where {T<:Integer}
     hes1 = trace_orbit(h -> σ_inv(g, h), he; rev = true)
     hes2 = trace_orbit(h -> σ_inv(g, twin(g, h)), he; rev = true)
@@ -365,7 +375,9 @@ function join_vertices!(
     g.next[prev(g, he)] = g.next[he]
     g.next[prev(g, twin(g, he))] = g.next[twin(g, he)]
 
-    do_norm && g = normalize(g)
+    if update
+        g = normalize(g)
+    end
     return g
 end
 
@@ -417,7 +429,9 @@ function join_facets!(g::PlanarMultigraph{T}, he::T; update::Bool = true) where 
     g.f2he[f1_id] = he1
     delete!(g.f2he, f2_id)
 
-    update && g = normalize(g)
+    if update
+        g = normalize(g)
+    end
     return g
 end
 
@@ -869,3 +883,29 @@ n_conn_comp(g::PlanarMultigraph) = nv(g) - ne(g) + nf(g) - 1
 has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v)
 has_half_edge(g::PlanarMultigraph, he) = haskey(g.half_edges, he)
 has_face(g::PlanarMultigraph, f) = haskey(g.f2he, f)
+
+function create_vertex(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
+    g.v_max += mul
+    return collect(g.v_max-mul+1:g.v_max)
+end
+
+"""
+    create_edge(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+
+Create an a pair of halfedge from vs to vd, add to PlanarMultigraph g.
+
+f2he, he2f, next not updated
+"""
+function create_edge(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+    hes = new_edge(vs, vd)
+    g.he_max += 2
+    hes_id = T[g.he_max-1, g.he_max]
+    g.twin[hes_id[1]] = hes_id[2]
+    g.twin[hes_id[2]] = hes_id[1]
+    for (he_id, he) in zip(hes_id, hes)
+        g.half_edges[he_id] = he
+    end
+    g.v2he[vs] = hes_id[1]
+    g.v2he[vd] = hes_id[2]
+    return hes_id, hes
+end
