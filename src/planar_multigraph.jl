@@ -32,70 +32,6 @@ function Base.:(==)(he1::HalfEdge, he2::HalfEdge)
 end
 
 """
-    GraphPlanarMultigraph{T<:Integer}
-
-Implements a planar multigraph with a graphic HDS Structure.
-
-## Features
-1. Stores Bidirectional Half Edge pointer in facet
-2. Vertex linked
-3. No support for holes
-"""
-mutable struct GraphicPlanarMultigraph{T<:Integer}
-
-    half_edges::Dict{T,HalfEdge{T}} # he_id -> he
-    twin::Dict{T,T} # he_id -> he_id
-
-    prev::Dict{T,T} # he_id -> he_id
-    next::Dict{T,T} # he_id -> he_id
-
-    v2he::Dict{T,T} # v_id -> he_id
-
-end
-
-opposite(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.twin[he_id]
-
-next_in_facet(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.next[he_id]
-
-next_at_source(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
-    next_in_facet(g, opposite(g, he_id))
-
-next_at_target(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
-    opposite(g, next_in_facet(g, he_id))
-
-prev_in_fact(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} = g.prev[he_id]
-
-prev_at_source(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
-    opposite(g, prev_in_facet(g, he_id))
-
-prev_at_target(g::GraphicPlanarMultigraph{T}, he_id::T) where {T<:Integer} =
-    prev_in_fact(g, opposite(g, he_id))
-
-function set_opposite(g::GraphicPlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    #TODO
-end
-
-function set_next_in_facet(g::GraphicPlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    #TODO
-end
-
-function set_next_at_source(
-    g::GraphicPlanarMultigraph{T},
-    he1::T,
-    he2::T,
-) where {T<:Integer}
-    #TODO
-end
-
-function set_next_at_target(
-    g::GraphicPlanarMultigraph{T},
-    he1::T,
-    he2::T,
-) where {T<:Integer}
-    #TODO
-end
-
-"""
     PlanarMultigraph{T<:Integer}
 
 Implements a planar multigraph with a maximal HDS Structure.
@@ -135,9 +71,10 @@ function PlanarMultigraph{T}(qubits::Int) where {T<:Integer}
     g = PlanarMultigraph{T}()
     for _ = 1:qubits
         vtxs = create_vertex(g; mul = 2)
-        hes_id, hes = create_edge(g, vtxs[1], vtxs[2])
+        hes_id, _ = create_edge(g, vtxs[1], vtxs[2])
+        g.he2f[hes_id[1]] = 0
+        g.he2f[hes_id[2]] = 0
     end
-
     return g
 end
 
@@ -270,47 +207,35 @@ Connect the two vertices with a new pair of half edges.
 he1 and he2 are half edges that marks the start and end
 of half edges that remain on v1.
 """
-function split_vertex!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    # verify all he_vec1 have src at v1
-    all_out([he1, he2]) || error("Not all half edges have src at v1")
-    v1 = src(g, he1)
-    #get all he with soruce v1, starting from he1
-    out_hes = trace_orbit(h -> σ_inv(g, h), he1; rev = true)
-    he2_pos = findfirst(x -> x == he2, out_hes)
-    he_vec1 = out_hes[1:he2_pos]
-    he_vec2 = out_hes[he2_pos+1:end]
+function split_vertex!(pmg::PlanarMultigraph{T}, h1t::T, g1t::T) where {T<:Integer}
+    v1 = dst(pmg, h1t)
 
     # add new vertex into g
-    v2 = g.v_max + 1
-    g.v_max += 1
+    v2 = create_vertex!(pmg)[1]
 
     # add new half edges from v1 to v2
-    g.he_max += 2
-    new_he1, new_he2 = g.he_max - 1, g.he_max
-    he_pair = new_edge(v1, v2)
-    g.half_edges[new_he1] = he_pair[1]
-    g.half_edges[new_he2] = he_pair[2]
-    set_opposite!(g, new_he1, new_he2)
+    hes_id, _ = create_edge!(pmg, v1, v2)
 
-    # update for all affected vtx
-    g.v2he[v1] = new_he1
-    g.v2he[v2] = new_he2
+    he_vec = trace_orbit(h -> σ_inv(pmg, h), h1t; rev = true)
+    if length(he_vec) == 1
+        pmg.he2f[hes_id[1]] = 0
+        pmg.he2f[hes_id[2]] = 0
+        return pmg
+    end
 
     # update all half edges in he_vec2 to have destination at v2
     for he in he_vec2
-        #reusing he idx, no need to update twin here
-        twin_id = twin(g, he)
-        g.half_edges[he] = HalfEdge(v2, dst(g, he))
-        g.half_edges[twin_id] = HalfEdge(src(g, twin_id), v2)
+        set_dst!(pmg, he, v2)
     end
 
-    set_next!(g, twin(he1), new_he1)
-    set_next!(g, new_he2, he2)
+    set_next!(pmg, twin(pmg, h1), hes_id[1])
+    set_next!(pmg, hes_id[2], g1)
 
     he2_pos == length(out_hes) && return g
 
     set_next!(g, twin(g, out_hes[he2_pos+1]), new_he2)
     set_next!(g, new_he1, out_hes[end])
+    return pmg
 end
 
 all_out(g::PlanarMultigraph, he_vec::Vector{T}) where {T} =
@@ -330,6 +255,13 @@ end
 function set_next!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
     he1 == he2 && error("Can't set next to itself")
     g.next[he1] = he2
+    return g
+end
+
+function set_dst!(g::PlanarMultigraph{T}, he::T, v::T) where {T<:Integer}
+    twin_he = twin(g, he)
+    g.half_edges[he] = HalfEdge(src(g, he), v)
+    g.half_edges[twin_he] = HalfEdge(v, dst(g, twin_he))
     return g
 end
 
@@ -884,28 +816,49 @@ has_vertex(g::PlanarMultigraph, v) = haskey(g.v2he, v)
 has_half_edge(g::PlanarMultigraph, he) = haskey(g.half_edges, he)
 has_face(g::PlanarMultigraph, f) = haskey(g.f2he, f)
 
-function create_vertex(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
+"""
+    create_vertex!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
+
+Create vertices.
+
+Create `mul` of vertices and record them in PlanarMultigraph g's `v_max` field.
+"""
+function create_vertex!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
     g.v_max += mul
     return collect(g.v_max-mul+1:g.v_max)
 end
 
 """
-    create_edge(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+    create_face!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
 
 Create an a pair of halfedge from vs to vd, add to PlanarMultigraph g.
 
 f2he, he2f, next not updated
+
 """
-function create_edge(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+function create_edge!(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
     hes = new_edge(vs, vd)
     g.he_max += 2
     hes_id = T[g.he_max-1, g.he_max]
-    g.twin[hes_id[1]] = hes_id[2]
-    g.twin[hes_id[2]] = hes_id[1]
+    set_opposite!(g, hes_id[1], hes_id[2])
     for (he_id, he) in zip(hes_id, hes)
         g.half_edges[he_id] = he
     end
     g.v2he[vs] = hes_id[1]
     g.v2he[vd] = hes_id[2]
     return hes_id, hes
+end
+
+function destroy_vertex!(g::PlanarMultigraph{T}, v::T) where {T<:Integer}
+    !(v in vertices(g)) && error("Vertex $v not in graph")
+    delete!(g.v2he, v)
+    return g
+end
+
+function destroy_edge!(g::PlanarMultigraph{T}, h1::T) where {T<:Integer}
+    !(h1 in half_edges(g)) && error("Half edge $h1 not in graph")
+    h1_twin = twin(g, h1)
+    delete!(g.half_edges, h1)
+    delete!(g.half_edges, h1_twin)
+    return g
 end

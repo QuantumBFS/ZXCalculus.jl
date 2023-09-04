@@ -1,4 +1,4 @@
-using ZXCalculus: create_vertex, create_edge
+using ZXCalculus: create_vertex!, create_edge!, split_vertex!
 
 @testset "Half edge constructor" begin
 
@@ -24,8 +24,16 @@ end
     @test hes[1] == HalfEdge(1, 2)
     @test hes[2] == HalfEdge(2, 1)
 
+    @test check_vertices(g)
+    @test check_faces(g)
+    @test check_combinatorial_maps(g)
 end
 
 @testset "PlanarMultigraph Constructor" begin
     g = PlanarMultigraph{Int64}(3)
+
+    split_vertex!(g, 1, -1)
+    @test check_vertices(g)
+    @test check_faces(g)
+    @test check_combinatorial_maps(g)
 end
