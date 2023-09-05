@@ -70,8 +70,8 @@ end
 function PlanarMultigraph{T}(qubits::Int) where {T<:Integer}
     g = PlanarMultigraph{T}()
     for _ = 1:qubits
-        vtxs = create_vertex(g; mul = 2)
-        hes_id, _ = create_edge(g, vtxs[1], vtxs[2])
+        vtxs = create_vertex!(g; mul = 2)
+        hes_id, _ = create_edge!(g, vtxs[1], vtxs[2])
         g.he2f[hes_id[1]] = 0
         g.he2f[hes_id[2]] = 0
     end
@@ -241,30 +241,6 @@ end
 all_out(g::PlanarMultigraph, he_vec::Vector{T}) where {T} =
     all(he -> src(g, he) == src(g, he_vec[1]), he_vec)
 
-function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    he1 == he2 && error("Can't set opposite to itself")
-
-    !(he1 ∈ half_edges(g)) && error("he1 not in g")
-    !(he2 ∈ half_edges(g)) && error("he2 not in g")
-
-    g.twin[he1] = he2
-    g.twin[he2] = he1
-    return g
-end
-
-function set_next!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    he1 == he2 && error("Can't set next to itself")
-    g.next[he1] = he2
-    return g
-end
-
-function set_dst!(g::PlanarMultigraph{T}, he::T, v::T) where {T<:Integer}
-    twin_he = twin(g, he)
-    g.half_edges[he] = HalfEdge(src(g, he), v)
-    g.half_edges[twin_he] = HalfEdge(v, dst(g, twin_he))
-    return g
-end
-
 """
     join_vertices!(g::PlanarMultigraph{T}, he::T) where {T<:Integer}
 
@@ -313,32 +289,6 @@ function join_vertices!(
     return g
 end
 
-function split_facet!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
-    he1n = next(g, he1)
-    he2n = next(g, he2)
-
-    g.he_max += 2
-    new_he1, new_he2 = g.he_max - 1, g.he_max
-    new_he_pair = new_edge(dst(g, he1), dst(g, he2))
-    g.half_edges[new_he1] = new_he_pair[1]
-    g.half_edges[new_he2] = new_he_pair[2]
-
-    g.twin[new_he1] = new_he2
-    g.twin[new_he2] = new_he1
-
-    f1 = face(g, he1)
-    g.f_max += 1
-    f2 = g.f_max
-    g.f2he[f1] = new_he1
-    g.f2he[f2] = new_he2
-
-    g.next[he1] = new_he1
-    g.next[new_he1] = he2n
-    g.next[he2] = new_he2
-    g.next[new_he2] = he1n
-
-    return g
-end
 
 function join_facets!(g::PlanarMultigraph{T}, he::T; update::Bool = true) where {T}
     twin_he = twin(g, he)
@@ -829,24 +779,30 @@ function create_vertex!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
 end
 
 """
-    create_face!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
-
+    create_edge!(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
 Create an a pair of halfedge from vs to vd, add to PlanarMultigraph g.
-
 f2he, he2f, next not updated
-
 """
-function create_edge!(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+function create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
     hes = new_edge(vs, vd)
     g.he_max += 2
     hes_id = T[g.he_max-1, g.he_max]
-    set_opposite!(g, hes_id[1], hes_id[2])
+    set_opposite!(pmg, hes_id...)
     for (he_id, he) in zip(hes_id, hes)
         g.half_edges[he_id] = he
     end
     g.v2he[vs] = hes_id[1]
     g.v2he[vd] = hes_id[2]
     return hes_id, hes
+end
+
+"""
+    create_face!(pmg::PlanarMultigraph{T}) where {T<:Integer}
+
+"""
+function create_face!(pmg::PlanarMultigraph{T}) where {T<:Integer}
+    pmg.f_max += 1
+    return pmg.f_max
 end
 
 function destroy_vertex!(g::PlanarMultigraph{T}, v::T) where {T<:Integer}
@@ -861,4 +817,74 @@ function destroy_edge!(g::PlanarMultigraph{T}, h1::T) where {T<:Integer}
     delete!(g.half_edges, h1)
     delete!(g.half_edges, h1_twin)
     return g
+end
+
+function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
+    face(pmg, h) == face(pmg, g) || error("h and g are not in the same face")
+    h == g || error("h and g are the same half edge")
+    (next(pmg, h) == g && next(pmg, g) == h) && error("Should use #TODO to add multiedge")
+
+    hn = next(pmg, h)
+    gn = next(pmg, g)
+
+    new_hes, _ = create_edge!(pmg, dst(pmg, h), dst(pmg, g))
+
+    f_old = face(g, h)
+    f_new = create_face!(pmg)
+
+    hes_f = trace_face(pmg, f_old; safe_trace = true)
+    hes_f = circshift(hes_f, findfirst(he -> he == h, hes_f) - 1)
+
+    for he in hes_f[1:end]
+        set_face!(pmg, he, f_new)
+        (he == g) && break
+    end
+    set_face!(pmg, new_hes[1], f_new)
+    set_face!(pmg, new_hes[2], f_old)
+
+
+    set_next!(pmg, [h, g, new_hes...], [new_hes..., gn, hn])
+    return h
+end
+
+function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
+    he1 == he2 && error("Can't set opposite to itself")
+
+    !(he1 ∈ half_edges(g)) && error("he1 not in g")
+    !(he2 ∈ half_edges(g)) && error("he2 not in g")
+
+    g.twin[he1] = he2
+    g.twin[he2] = he1
+    return g
+end
+
+function set_next!(
+    g::PlanarMultigraph{T},
+    hss::Vector{T},
+    hds::Vector{T},
+) where {T<:Integer}
+    for (hs, hd) in zip(hss, hds)
+        g.next[hs] = hd
+    end
+    return g
+end
+
+function set_dst!(g::PlanarMultigraph{T}, he::T, v::T) where {T<:Integer}
+    twin_he = twin(g, he)
+    g.half_edges[he] = HalfEdge(src(g, he), v)
+    g.half_edges[twin_he] = HalfEdge(v, dst(g, twin_he))
+    return g
+end
+
+function set_face!(
+    pmg::PlanarMultigraph{T},
+    he::T,
+    f::T;
+    both::Bool = false,
+) where {T<:Integer}
+    pmg.he2f[he] = f
+    if both
+        pmg.f2he[f] = he
+    end
+    return pmg
 end
