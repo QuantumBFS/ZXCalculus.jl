@@ -90,6 +90,16 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
     g.f_max,
 )
 
+function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
+    pmg1.v_max == pmg2.v_max || return false
+    pmg1.he_max == pmg2.he_max || return false
+    pmg1.f_max == pmg2.f_max || return false
+    # could be relaxed, idx might be different but content needs to be the same for HalfEdges
+    pmg1.next == pmg2.next || return false
+    pmg2.twin == pmg2.twin || return false
+    return true
+end
+
 vertices(g::PlanarMultigraph) = collect(keys(g.v2he))
 
 faces(g::PlanarMultigraph) = sort!(collect(keys(g.f2he)))
@@ -290,32 +300,6 @@ function join_vertices!(
 end
 
 
-function join_facets!(g::PlanarMultigraph{T}, he::T; update::Bool = true) where {T}
-    twin_he = twin(g, he)
-    he1 = prev(g, he)
-    he2 = prev(g, twin_he)
-    he3 = next(g, he)
-    he4 = next(g, twin_he)
-
-    g.next[he1] = he4
-    g.next[he2] = he3
-
-    f1_id = face(g, he1)
-    f2_id = face(g, he2)
-
-    hes_f = trace_face(g, f2_id; safe_trace = false)
-    for hef in hes_f
-        g.he2f[hef]f1_id
-    end
-
-    g.f2he[f1_id] = he1
-    delete!(g.f2he, f2_id)
-
-    if update
-        g = normalize(g)
-    end
-    return g
-end
 
 
 
@@ -811,12 +795,16 @@ function destroy_vertex!(g::PlanarMultigraph{T}, v::T) where {T<:Integer}
     return g
 end
 
-function destroy_edge!(g::PlanarMultigraph{T}, h1::T) where {T<:Integer}
-    !(h1 in half_edges(g)) && error("Half edge $h1 not in graph")
-    h1_twin = twin(g, h1)
-    delete!(g.half_edges, h1)
-    delete!(g.half_edges, h1_twin)
-    return g
+function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    !(h in half_edges(pmg)) && error("Half edge $h not in graph")
+    twin_h = twin(g, h)
+    pmg.v2he[src(pmg, h)] = σ_inv(pmg, h)
+    pmg.v2he[dst(pmg, h)] = σ_inv(pmg, twin_h)
+    delete!(pmg.half_edges, h)
+    delete!(pmg.half_edges, twin_h)
+    delete!(pmg.twin, h)
+    delete!(pmg.twin, twin_h)
+    return pmg
 end
 
 function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
@@ -845,6 +833,34 @@ function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     set_next!(pmg, [h, g, new_hes...], [new_hes..., gn, hn])
     return h
+end
+
+function join_facets!(pmg::PlanarMultigraph{T}, h::T) where {T}
+    vs = src(pmg, h)
+    vd = dst(pmg, h)
+
+    length(trace_vertex(pmg, vs)) == 3 && error("Src vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vd)) == 3 && error("Dst vtx must have degree 3 or above")
+
+    twin_h = twin(pmg, h)
+    hp = prev(pmg, h)
+    thp = prev(pmg, twin_h)
+    hn = next(pmg, h)
+    thn = next(pmg, twin_h)
+
+    set_next!(pmg, [thp, hp], [hn, thn])
+
+    f1_id = face(g, h)
+    f2_id = face(g, twin_h)
+
+    hes_f = trace_face(g, f2_id; safe_trace = true)
+    set_face!(pmg, hes_f, f1_id; both = true)
+
+    delete!(g.f2he, f2_id)
+
+    destroy_edge!(pmg, h)
+
+    return hp
 end
 
 function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
@@ -878,13 +894,24 @@ end
 
 function set_face!(
     pmg::PlanarMultigraph{T},
+    hes::Vector{T},
+    f::T;
+    both::Bool = false,
+) where {T<:Integer}
+    for he in hes
+        pmg.he2f[he] = f
+    end
+    if both
+        pmg.f2he[f] = hes[end]
+    end
+    return pmg
+end
+
+function set_face!(
+    pmg::PlanarMultigraph{T},
     he::T,
     f::T;
     both::Bool = false,
 ) where {T<:Integer}
-    pmg.he2f[he] = f
-    if both
-        pmg.f2he[f] = he
-    end
-    return pmg
+    return set_face!(pmg, [he], f; both = both)
 end
