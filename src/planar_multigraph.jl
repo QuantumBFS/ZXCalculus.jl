@@ -54,18 +54,19 @@ mutable struct PlanarMultigraph{T<:Integer}
     v_max::T
     he_max::T
     f_max::T
-    PlanarMultigraph{T}() where {T<:Int} = new{Int64}(
-        Dict{T,T}(),
-        Dict{T,HalfEdge{T}}(),
-        Dict{T,T}(),
-        Dict{T,T}(),
-        Dict{T,T}(),
-        Dict{T,T}(),
-        0,
-        0,
-        0,
-    )
 end
+
+PlanarMultigraph{T}() where {T<:Int} = PlanarMultigraph{T}(
+    Dict{T,T}(),
+    Dict{T,HalfEdge{T}}(),
+    Dict{T,T}(),
+    Dict{T,T}(),
+    Dict{T,T}(),
+    Dict{T,T}(),
+    0,
+    0,
+    0,
+)
 
 function PlanarMultigraph{T}(qubits::Int) where {T<:Integer}
     g = PlanarMultigraph{T}()
@@ -96,7 +97,11 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
     pmg1.f_max == pmg2.f_max || return false
     # could be relaxed, idx might be different but content needs to be the same for HalfEdges
     pmg1.next == pmg2.next || return false
-    pmg2.twin == pmg2.twin || return false
+    if !(pmg2.twin == pmg2.twin)
+        println(pmg1.twin)
+        println(pmg2.twin)
+        return false
+    end
     return true
 end
 
@@ -763,20 +768,21 @@ function create_vertex!(g::PlanarMultigraph{T}; mul::Int = 1) where {T<:Integer}
 end
 
 """
-    create_edge!(g::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
-Create an a pair of halfedge from vs to vd, add to PlanarMultigraph g.
-f2he, he2f, next not updated
+    create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
+Create an a pair of halfedge from vs to vd, add to PlanarMultigraph pmg.
+Facet information is not updated yet.
+Vertex to halfedge is updated and set to the two newly added half edges.
 """
 function create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
     hes = new_edge(vs, vd)
-    g.he_max += 2
-    hes_id = T[g.he_max-1, g.he_max]
-    set_opposite!(pmg, hes_id...)
+    pmg.he_max += 2
+    hes_id = T[pmg.he_max-1, pmg.he_max]
     for (he_id, he) in zip(hes_id, hes)
-        g.half_edges[he_id] = he
+        pmg.half_edges[he_id] = he
     end
-    g.v2he[vs] = hes_id[1]
-    g.v2he[vd] = hes_id[2]
+    set_opposite!(pmg, hes_id...)
+    pmg.v2he[vs] = hes_id[1]
+    pmg.v2he[vd] = hes_id[2]
     return hes_id, hes
 end
 
@@ -797,27 +803,31 @@ end
 
 function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     !(h in half_edges(pmg)) && error("Half edge $h not in graph")
-    twin_h = twin(g, h)
+    twin_h = twin(pmg, h)
     pmg.v2he[src(pmg, h)] = σ_inv(pmg, h)
     pmg.v2he[dst(pmg, h)] = σ_inv(pmg, twin_h)
     delete!(pmg.half_edges, h)
     delete!(pmg.half_edges, twin_h)
     delete!(pmg.twin, h)
     delete!(pmg.twin, twin_h)
+    delete!(pmg.next, h)
+    delete!(pmg.next, twin_h)
+    pmg.he_max -= 2
     return pmg
 end
 
 function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     face(pmg, h) == face(pmg, g) || error("h and g are not in the same face")
-    h == g || error("h and g are the same half edge")
-    (next(pmg, h) == g && next(pmg, g) == h) && error("Should use #TODO to add multiedge")
+    h == g && error("h and g can't be the same half edge")
+    (next(pmg, h) == g && next(pmg, g) == h) &&
+        error("Should use #TODO to add multiedge and split facet!")
 
     hn = next(pmg, h)
     gn = next(pmg, g)
 
     new_hes, _ = create_edge!(pmg, dst(pmg, h), dst(pmg, g))
 
-    f_old = face(g, h)
+    f_old = face(pmg, h)
     f_new = create_face!(pmg)
 
     hes_f = trace_face(pmg, f_old; safe_trace = true)
@@ -830,17 +840,16 @@ function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     set_face!(pmg, new_hes[1], f_new)
     set_face!(pmg, new_hes[2], f_old)
 
-
     set_next!(pmg, [h, g, new_hes...], [new_hes..., gn, hn])
-    return h
+    return new_hes[1]
 end
 
-function join_facets!(pmg::PlanarMultigraph{T}, h::T) where {T}
+function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     vs = src(pmg, h)
     vd = dst(pmg, h)
 
-    length(trace_vertex(pmg, vs)) == 3 && error("Src vtx must have degree 3 or above")
-    length(trace_vertex(pmg, vd)) == 3 && error("Dst vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vs)) <= 3 && error("Src vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vd)) <= 3 && error("Dst vtx must have degree 3 or above")
 
     twin_h = twin(pmg, h)
     hp = prev(pmg, h)
@@ -850,16 +859,16 @@ function join_facets!(pmg::PlanarMultigraph{T}, h::T) where {T}
 
     set_next!(pmg, [thp, hp], [hn, thn])
 
-    f1_id = face(g, h)
-    f2_id = face(g, twin_h)
+    f1_id = face(pmg, h)
+    f2_id = face(pmg, twin_h)
 
-    hes_f = trace_face(g, f2_id; safe_trace = true)
+    hes_f = trace_face(pmg, f2_id; safe_trace = true)
     set_face!(pmg, hes_f, f1_id; both = true)
 
-    delete!(g.f2he, f2_id)
+    delete!(pmg.f2he, f2_id)
 
     destroy_edge!(pmg, h)
-
+    pmg.f_max -= 1
     return hp
 end
 

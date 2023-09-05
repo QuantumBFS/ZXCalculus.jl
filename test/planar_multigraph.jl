@@ -1,4 +1,4 @@
-using ZXCalculus: create_vertex!, create_edge!, split_vertex!, split_facet!
+using ZXCalculus: create_vertex!, create_edge!, split_vertex!, split_facet!, join_facet!
 
 @testset "Half edge constructor" begin
 
@@ -11,7 +11,7 @@ using ZXCalculus: create_vertex!, create_edge!, split_vertex!, split_facet!
 end
 
 @testset "Facet Split/Join" begin
-    pmg1 = PlanarMultigraph{Int64}(
+    pmg1 = PlanarMultigraph(
         # v2he
         Dict(1 => 1, 2 => 3, 3 => 5, 4 => 7, 5 => 9, 6 => 11),
         # hes
@@ -80,7 +80,7 @@ end
         12, # he_max
         1, # f_max
     )
-    pmg2 = PlanarMultigraph{Int64}(
+    pmg2 = PlanarMultigraph(
         # v2he
         Dict(1 => 13, 2 => 3, 3 => 5, 4 => 14, 5 => 9, 6 => 11),
         # hes
@@ -157,6 +157,12 @@ end
         14, # he_max
         2, # f_max
     )
+    pmg3 = copy(pmg1)
+    @test split_facet!(pmg3, 11, 5) == 13
+    @test pmg3 == pmg2
+    pmg4 = copy(pmg2)
+    @test join_facet!(pmg4, 13) == 11
+    @test pmg4 == pmg1
 end
 
 # @testset "PlanarMultigraph Utils" begin
