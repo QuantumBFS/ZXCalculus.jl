@@ -1,4 +1,5 @@
-using ZXCalculus: create_vertex!, create_edge!, split_vertex!, split_facet!, join_facet!
+using ZXCalculus:
+    create_vertex!, create_edge!, split_vertex!, split_facet!, join_facet!, join_vertex!
 
 @testset "Half edge constructor" begin
 
@@ -164,6 +165,91 @@ end
     @test join_facet!(pmg4, 13) == 11
     @test pmg4 == pmg1
 end
+
+@testset "Join/Split Vertex" begin
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 4, 4 => 6, 5 => 8),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(2, 4),
+            6 => HalfEdge(4, 2),
+            7 => HalfEdge(2, 5),
+            8 => HalfEdge(5, 2),
+        ),
+        Dict{Int64,Int64}(),
+        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0),
+        Dict(1 => 3, 3 => 4, 4 => 5, 5 => 6, 6 => 7, 7 => 8, 8 => 2, 2 => 1),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5, 7 => 8, 8 => 7),
+        5,
+        8,
+        0,
+    )
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 4, 4 => 6, 6 => 9, 5 => 8),
+        Dict(
+            1 => HalfEdge(1, 6),
+            2 => HalfEdge(6, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(2, 4),
+            6 => HalfEdge(4, 2),
+            7 => HalfEdge(6, 5),
+            8 => HalfEdge(5, 6),
+            9 => HalfEdge(6, 2),
+            10 => HalfEdge(2, 6),
+        ),
+        Dict{Int64,Int64}(),
+        Dict(
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 0,
+            9 => 0,
+            10 => 0,
+        ),
+        Dict(
+            1 => 9,
+            9 => 3,
+            3 => 4,
+            4 => 5,
+            5 => 6,
+            6 => 10,
+            10 => 7,
+            7 => 8,
+            8 => 2,
+            2 => 1,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+        ),
+        6,
+        10,
+        0,
+    )
+    pmg3 = copy(pmg1)
+    pmg4 = copy(pmg2)
+    @test split_vertex!(pmg3, 6, 1) == 9
+    @test pmg3 == pmg2
+    @test join_vertex!(pmg4, 9) == 6
+    @test pmg4 == pmg1
+end
+
 
 # @testset "PlanarMultigraph Utils" begin
 #     g = PlanarMultigraph{Int64}()
