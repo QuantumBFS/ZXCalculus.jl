@@ -1,24 +1,4 @@
 """
-    Parameter
-The Algebraic Data Type for representing parameter related to spider.
-`PiUnit(x)` represents the the phase of a number `exp(im*x*π)`.
-`Factor(x)` represents a number `x`.
-"""
-@adt public Parameter begin
-
-    struct PiUnit
-        pu
-        pu_type::Type
-    end
-
-    struct Factor
-        f::Number
-        f_type::Type
-    end
-
-end
-
-"""
    Parameter
 Constructors for `Parameter` type.
 """

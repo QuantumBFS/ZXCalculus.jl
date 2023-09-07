@@ -6,13 +6,14 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using Expronicon.ADT: @adt, variant_type
+using Expronicon.ADT:@const_use, variant_type
 using Graphs, Multigraphs
 
 using Graphs: nv, ne, outneighbors, inneighbors, neighbors, rem_edge!,
     add_edge!, has_edge, degree, indegree, outdegree
 
-export SpiderType, EdgeType, ZXWSpiderType
+
+export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
 export ZXWDiagram
 export Rule, Match
@@ -26,7 +27,13 @@ export rewrite!, simplify!, clifford_simplification, full_reduction,
     circuit_extraction, phase_teleportation
 export substitute_variables!, expval_circ!, stack_zxwd!, concat!
 
+include("adts.jl")
+using .ZXW
+@const_use ZXWSpiderType:W, H, D, Z, X, Input, Output
+@const_use Parameter:PiUnit, Factor
+
 include("parameter.jl")
+
 include("phase.jl")
 include("scalar.jl")
 
