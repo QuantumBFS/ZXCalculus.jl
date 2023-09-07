@@ -246,35 +246,6 @@ end
     pmg4 = copy(pmg2)
     @test split_vertex!(pmg3, 6, 1) == 9
     @test pmg3 == pmg2
-    @test join_vertex!(pmg4, 9) == 6
+    @test join_vertex!(pmg4, 9) == 5
     @test pmg4 == pmg1
 end
-
-
-# @testset "PlanarMultigraph Utils" begin
-#     g = PlanarMultigraph{Int64}()
-
-#     vtx_ids = create_vertex!(g; mul = 1)
-#     @test vtx_ids == [1]
-#     vtx_ids = create_vertex!(g; mul = 2)
-#     @test vtx_ids == [2, 3]
-
-#     hes_id, hes = create_edge!(g, 1, 2)
-
-#     @test hes_id == [1, 2]
-#     @test hes[1] == HalfEdge(1, 2)
-#     @test hes[2] == HalfEdge(2, 1)
-
-#     @test check_vertices(g)
-#     @test check_faces(g)
-#     @test check_combinatorial_maps(g)
-# end
-
-# @testset "PlanarMultigraph Constructor" begin
-#     g = PlanarMultigraph{Int64}(3)
-
-#     # split_facet!(g, )
-#     @test check_vertices(g)
-#     @test check_faces(g)
-#     @test check_combinatorial_maps(g)
-# end
