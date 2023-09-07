@@ -1,6 +1,6 @@
 module ZXW
 
-using Expronicon.ADT: @adt
+using Expronicon.ADT: @adt, @const_use
 
 export ZXWSpiderType
 
@@ -49,5 +49,7 @@ The Algebraic Data Type for representing parameter related to spider.
 
 end
 
+@const_use ZXWSpiderType:W, H, D, Z, X, Input, Output
+@const_use Parameter:PiUnit, Factor
 
 end
