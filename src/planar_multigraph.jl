@@ -847,13 +847,9 @@ function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     pmg.f2he[twin_he_face] = next(pmg, twin(pmg, h))
     destroy_edge!(pmg, h)
 
-    set_next!(
-        pmg,
-        [prev(pmg, h), prev(pmg, twin(pmg, h))],
-        [next(pmg, h), next(pmg, twin(pmg, h))],
-    )
+    set_next!(pmg, [hprev, twin_h_prev], [hnext, twin_h_next])
 
-    return hes_del[2]
+    return hes_kp[2]
 end
 
 function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
