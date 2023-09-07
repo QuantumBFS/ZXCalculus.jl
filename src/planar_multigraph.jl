@@ -92,9 +92,19 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
-    pmg1.v_max == pmg2.v_max || return false
-    pmg1.he_max == pmg2.he_max || return false
-    pmg1.f_max == pmg2.f_max || return false
+    if nv(pmg1) != nv(pmg2)
+        println("nv", nv(pmg1), nv(pmg2))
+        return false
+    end
+    if nhe(pmg1) != nhe(pmg2)
+        println("nhe", nhe(pmg1), nhe(pmg2))
+        return false
+    end
+    if nf(pmg1) != nf(pmg2)
+        println("nf", nf(pmg1), nf(pmg2))
+        return false
+    end
+
     # could be relaxed, idx might be different but content needs to be the same for HalfEdges
     if !(pmg1.next == pmg2.next)
         println(pmg1.next)
@@ -163,10 +173,10 @@ Get next_at_source
 """
 σ_inv(pmg::PlanarMultigraph{T}, h::T) where {T} = next(pmg, twin(pmg, h))
 
-nv(g::PlanarMultigraph) = length(g.v2he)
-nf(g::PlanarMultigraph) = length(g.f2he)
-nhe(g::PlanarMultigraph) = length(g.half_edges)
-ne(g::PlanarMultigraph) = nhe(g) ÷ 2
+nv(pmg::PlanarMultigraph) = length(pmg.v2he)
+nf(pmg::PlanarMultigraph) = length(pmg.f2he)
+nhe(pmg::PlanarMultigraph) = length(pmg.half_edges)
+ne(pmg::PlanarMultigraph) = nhe(pmg) ÷ 2
 
 """
     out_half_edge(g::PlanarMultigraph{T}, v::T)
@@ -543,10 +553,10 @@ function create_face!(pmg::PlanarMultigraph{T}) where {T<:Integer}
     return pmg.f_max
 end
 
-function destroy_vertex!(g::PlanarMultigraph{T}, v::T) where {T<:Integer}
-    !(v in vertices(g)) && error("Vertex $v not in graph")
-    delete!(g.v2he, v)
-    return g
+function destroy_vertex!(pmg::PlanarMultigraph{T}, v::T) where {T<:Integer}
+    !(v in vertices(pmg)) && error("Vertex $v not in graph")
+    delete!(pmg.v2he, v)
+    return pmg
 end
 
 function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
@@ -560,7 +570,6 @@ function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     delete!(pmg.twin, twin_h)
     delete!(pmg.next, h)
     delete!(pmg.next, twin_h)
-    pmg.he_max -= 2
     return pmg
 end
 
@@ -660,8 +669,8 @@ end
 Join two vertices connected by a HalfEdge into one.
 """
 function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-    hes_del = trace_orbit(he -> σ_inv(pmg, he), h; rev = true)
-    hes_kp = trace_orbit(he -> σ_inv(pmg, he), twin(pmg, h); rev = true)
+    hes_del = trace_orbit(he -> σ_inv(pmg, he), h; rev = false)
+    hes_kp = trace_orbit(he -> σ_inv(pmg, he), twin(pmg, h); rev = false)
     hprev = prev(pmg, h)
     hnext = next(pmg, h)
     twin_h_prev = prev(pmg, twin(pmg, h))
@@ -685,13 +694,18 @@ function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     he_face = face(pmg, next(pmg, h))
     twin_he_face = face(pmg, next(pmg, twin(pmg, h)))
     # add test here
-    pmg.f2he[he_face] = next(pmg, h)
-    pmg.f2he[twin_he_face] = next(pmg, twin(pmg, h))
+    if haskey(pmg.f2he, he_face)
+        pmg.f2he[he_face] = next(pmg, h)
+    end
+    if haskey(pmg.f2he, twin_he_face)
+        pmg.f2he[twin_he_face] = next(pmg, twin(pmg, h))
+    end
     destroy_edge!(pmg, h)
 
     set_next!(pmg, [hprev, twin_h_prev], [hnext, twin_h_next])
+    destroy_vertex!(pmg, vdel)
 
-    return hes_kp[2]
+    return hes_kp[end]
 end
 
 function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
