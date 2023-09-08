@@ -574,8 +574,11 @@ function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 end
 
 function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
+
     face(pmg, h) == face(pmg, g) || error("h and g are not in the same face")
+
     h == g && error("h and g can't be the same half edge")
+
     (next(pmg, h) == g && next(pmg, g) == h) &&
         error("Should use #TODO to add multiedge and split facet!")
 
@@ -594,8 +597,8 @@ function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
         set_face!(pmg, he, f_new)
         (he == g) && break
     end
-    set_face!(pmg, new_hes[1], f_new)
-    set_face!(pmg, new_hes[2], f_old)
+    set_face!(pmg, new_hes[1], f_new; both = true)
+    set_face!(pmg, new_hes[2], f_old; both = true)
 
     set_next!(pmg, [h, g, new_hes...], [new_hes..., gn, hn])
     return new_hes[1]
@@ -674,7 +677,7 @@ function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     hprev = prev(pmg, h)
     hnext = next(pmg, h)
     twin_h_prev = prev(pmg, twin(pmg, h))
-    twin_h_next = prev(pmg, twin(pmg, h))
+    twin_h_next = next(pmg, twin(pmg, h))
 
     # do i support single vertex splitting here?
     length(hes_del) + length(hes_kp) < 6 &&
