@@ -48,7 +48,7 @@ mutable struct PlanarMultigraph{T<:Integer}
     f2he::Dict{T,T}  # f_id -> he_id
     he2f::Dict{T,T}    # he_id -> f_id, if cannot find, then it's a boundary
 
-    next::Dict{T,T}    # he_id -> he_id
+    next::Dict{T,T}    # he_id -> he_id, counter clockwise
     twin::Dict{T,T}    # he_id -> he_id
 
     v_max::T
@@ -169,7 +169,7 @@ Get prev_at_source
 """
     σ_inv(pmg::PlanarMultigraph{T}, h::T) where {T}
 
-Get next_at_source
+Get next_at_source, clockwise
 """
 σ_inv(pmg::PlanarMultigraph{T}, h::T) where {T} = next(pmg, twin(pmg, h))
 
@@ -573,6 +573,16 @@ function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     return pmg
 end
 
+"""
+    split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
+
+Split a facet incident to h and g into two facets.
+
+## Precondition
+1. h and g are in the same facet
+2. h and g are not the same half edge
+3. Cannot be used to split the faces incident to the multiedge.
+"""
 function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     face(pmg, h) == face(pmg, g) || error("h and g are not in the same face")

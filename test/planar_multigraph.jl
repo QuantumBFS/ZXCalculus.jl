@@ -166,6 +166,29 @@ end
     @test pmg4 == pmg1
 end
 
+@testset "Split Vertex fail" begin
+    pmg1 = PlanarMultigraph(
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(1, 2),
+            4 => HalfEdge(2, 1),
+        ),
+        Dict(1 => 1, 0 => 2),
+        Dict(1 => 1, 4 => 1, 3 => 0, 2 => 0),
+        Dict(1 => 4, 4 => 1, 3 => 2, 2 => 3),
+        Dict(1 => 2, 2 => 1, 4 => 3, 3 => 4),
+        2,
+        4,
+        1,
+    )
+    @test_throws "Should use #TODO to add multiedge and split facet!" split_facet!(
+        pmg1,
+        1,
+        4,
+    )
+end
+
 @testset "Join/Split Vertex" begin
     pmg1 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 4, 4 => 6, 5 => 8),
