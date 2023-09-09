@@ -310,6 +310,7 @@ function create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
     for (he_id, he) in zip(hes_id, hes)
         pmg.half_edges[he_id] = he
     end
+    set_face!(pmg, hes_id, 0; both = false)
     set_opposite!(pmg, hes_id...)
     pmg.v2he[vs] = hes_id[1]
     pmg.v2he[vd] = hes_id[2]
@@ -434,26 +435,31 @@ he1 and he2 are half edges that marks the start and end
 of half edges that remain on v1.
 """
 function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
+
     dst(pmg, h) == dst(pmg, g) || error("h and g don't have the same destination")
+
     h == g && error("h and g can't be the same half edge")
+
+    gn = next(pmg, g)
+    hn = next(pmg, h)
+
     v1 = dst(pmg, h)
 
     # add new vertex into g
     v2 = create_vertex!(pmg)[1]
 
-    # add new half edges from v1 to v2
-    hes_id, _ = create_edge!(pmg, v1, v2)
+    # add new half edges from v2 to v1
+    hes_id, _ = create_edge!(pmg, v2, v1)
 
-    he_vec = trace_orbit(h -> σ_inv(pmg, h), h; rev = true)
+    he_vec = trace_orbit(he -> σ_inv(pmg, he), twin(pmg, h); rev = false)
+    he_vec = circshift(he_vec, -findfirst(he -> he == twin(pmg, h), he_vec))
 
-    he_vec = circshift(he_vec, findfirst(he -> he == h, he_vec) - 1)
-
-    for he in he_vec[2:end]
+    for he in he_vec
         set_dst!(pmg, he, v2)
-        (he == g) && break
+        (he == twin(pmg, g)) && break
     end
 
-    set_next!(pmg, [g, h, hes_id...], [hes_id..., next(pmg, g), next(pmg, h)])
+    set_next!(pmg, [g, h, hes_id...], [hes_id..., gn, hn])
     return hes_id[1]
 end
 
