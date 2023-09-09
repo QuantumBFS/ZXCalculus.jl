@@ -447,6 +447,12 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     gn = next(pmg, g)
     hn = next(pmg, h)
 
+    tg = twin(pmg, g)
+    th = twin(pmg, h)
+
+    he_vec = trace_orbit(he -> σ_inv(pmg, he), th; rev = false)
+    he_vec = circshift(he_vec, -findfirst(he -> he == th, he_vec))
+
     v1 = dst(pmg, h)
 
     # add new vertex into g
@@ -455,20 +461,26 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     # add new half edges from v2 to v1
     hes_id, _ = create_edge!(pmg, v2, v1)
 
-    he_vec = trace_orbit(he -> σ_inv(pmg, he), twin(pmg, h); rev = false)
-    he_vec = circshift(he_vec, -findfirst(he -> he == twin(pmg, h), he_vec))
 
     for he in he_vec
         set_dst!(pmg, he, v2)
-        (he == twin(pmg, g)) && break
+        (he == tg) && break
     end
 
     set_next!(pmg, [g, h, hes_id...], [hes_id..., gn, hn])
     return hes_id[1]
 end
 
+
+"""
+    split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+Split an edge into two consecutive ones.
+1->2->3 becomes 1->4->2->3
+"""
 function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-    h
+    nhe = split_vertex!(pmg, twin(pmg, h), prev(pmg, h))
+    return twin(pmg, nhe)
 end
 
 """

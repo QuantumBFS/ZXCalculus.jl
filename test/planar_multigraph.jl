@@ -1,5 +1,11 @@
 using ZXCalculus:
-    create_vertex!, create_edge!, split_vertex!, split_facet!, join_facet!, join_vertex!
+    create_vertex!,
+    create_edge!,
+    split_vertex!,
+    split_facet!,
+    join_facet!,
+    join_vertex!,
+    split_edge!
 
 @testset "Half edge constructor" begin
 
@@ -293,4 +299,44 @@ end
     @test pmg3 == pmg2
     @test join_vertex!(pmg4, 9) == 6
     @test pmg4 == pmg1
+end
+
+@testset "Split Edge" begin
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 4),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+        ),
+        Dict(0 => 1),
+        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0),
+        Dict(1 => 3, 3 => 4, 4 => 2, 2 => 1),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3),
+        3,
+        4,
+        0,
+    )
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 4, 4 => 5),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(4, 2),
+            6 => HalfEdge(2, 4),
+        ),
+        Dict(0 => 1),
+        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
+        Dict(1 => 5, 5 => 3, 3 => 4, 4 => 6, 6 => 2, 2 => 1),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
+        4,
+        6,
+        0,
+    )
+
+    @test split_edge!(pmg1, 3) == 6
+    @test pmg1 == pmg2
 end
