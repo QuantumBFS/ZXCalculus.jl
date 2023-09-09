@@ -103,6 +103,8 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
     end
     if nf(pmg1) != nf(pmg2)
         println("nf of pmg1 is: ", nf(pmg1), "nf of pmg2 is: ", nf(pmg2))
+        println(pmg1.f2he)
+        println(pmg2.f2he)
         return false
     end
 
@@ -343,6 +345,8 @@ function destroy_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     delete!(pmg.twin, twin_h)
     delete!(pmg.next, h)
     delete!(pmg.next, twin_h)
+    delete!(pmg.he2f, h)
+    delete!(pmg.he2f, twin_h)
     return pmg
 end
 
@@ -468,48 +472,48 @@ function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 end
 
 """
-    join_vertices!(g::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 
 Join two vertices connected by a HalfEdge into one.
 """
 function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    # start obtaining original graph information
+    # has to be this order other wise setting updating v2he later breaks
     hes_del = trace_orbit(he -> σ_inv(pmg, he), h; rev = false)
     hes_kp = trace_orbit(he -> σ_inv(pmg, he), twin(pmg, h); rev = false)
+    he_face = face(pmg, h)
+    twin_he_face = face(pmg, twin(pmg, h))
+
     hprev = prev(pmg, h)
     hnext = next(pmg, h)
     twin_h_prev = prev(pmg, twin(pmg, h))
     twin_h_next = next(pmg, twin(pmg, h))
 
-    # do i support single vertex splitting here?
-    length(hes_del) + length(hes_kp) < 6 &&
-        error("Cann't have isolated vertex after vertex merging")
+    length(trace_face(pmg, face(pmg, h); safe_trace = false)) < 4 &&
+        length(trace_face(pmg, face(pmg, twin(pmg, h)); safe_trace = false)) < 4 &&
+        error("Facets incident to halfedge needs to have size at least 4")
 
-    pmg.v2he[src(pmg, h)] = hes_kp[2]
-    delete!(pmg.v2he, dst(pmg, h))
+    # start modifying
+    pmg.v2he[dst(pmg, h)] = hes_kp[2]
+    delete!(pmg.v2he, src(pmg, h))
 
-    vkp = src(pmg, h)
-    vdel = dst(pmg, h)
+    vkp = dst(pmg, h)
+    vdel = src(pmg, h)
     for he in hes_del[2:end]
         twin_he = twin(pmg, he)
         pmg.half_edges[he] = HalfEdge(vkp, dst(pmg, he))
         pmg.half_edges[twin_he] = HalfEdge(src(pmg, twin_he), vkp)
     end
 
-    he_face = face(pmg, next(pmg, h))
-    twin_he_face = face(pmg, next(pmg, twin(pmg, h)))
     # add test here
-    if haskey(pmg.f2he, he_face)
-        pmg.f2he[he_face] = next(pmg, h)
-    end
-    if haskey(pmg.f2he, twin_he_face)
-        pmg.f2he[twin_he_face] = next(pmg, twin(pmg, h))
-    end
+    set_face!(pmg, next(pmg, h), he_face; both = true)
+    set_face!(pmg, next(pmg, twin(pmg, h)), twin_he_face; both = true)
     destroy_edge!(pmg, h)
 
     set_next!(pmg, [hprev, twin_h_prev], [hnext, twin_h_next])
     destroy_vertex!(pmg, vdel)
 
-    return hes_kp[end]
+    return twin(pmg, hes_kp[end])
 end
 
 function set_opposite!(g::PlanarMultigraph{T}, he1::T, he2::T) where {T<:Integer}
