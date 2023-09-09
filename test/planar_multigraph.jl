@@ -187,10 +187,12 @@ end
     pmg3 = copy(pmg1)
     @test split_facet!(pmg3, 11, 5) == 13
     @test pmg3 == pmg2
-    # pmg4 = copy(pmg2)
-    # @test join_facet!(pmg4, 13) == 11
-    # @test pmg4 == pmg1
+    pmg4 = copy(pmg2)
+    @test join_facet!(pmg4, 13) == 11
+    @test pmg4 == pmg1
 end
+
+# test if split facet can join arbitrary vertex
 
 @testset "Split Vertex fail" begin
     pmg1 = PlanarMultigraph(

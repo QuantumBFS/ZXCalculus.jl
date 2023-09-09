@@ -414,12 +414,12 @@ function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     hn = next(pmg, h)
     thn = next(pmg, twin_h)
 
-    set_next!(pmg, [thp, hp], [hn, thn])
-
     f1_id = face(pmg, h)
     f2_id = face(pmg, twin_h)
-
     hes_f = trace_face(pmg, f2_id; safe_trace = false)
+
+    set_next!(pmg, [thp, hp], [hn, thn])
+
     set_face!(pmg, hes_f, f1_id; both = true)
 
     delete!(pmg.f2he, f2_id)
@@ -481,6 +481,42 @@ Split an edge into two consecutive ones.
 function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     nhe = split_vertex!(pmg, twin(pmg, h), prev(pmg, h))
     return twin(pmg, nhe)
+end
+
+"""
+    join_egde!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+The inverse procedure of split_edge!()
+"""
+function join_egde!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+end
+
+"""
+    erase_facet!(pmg::PlanarMultigraph{T}, h::T)
+
+TBW
+
+## Reference
+- [CGAL Library](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#ac67041483c1e7c67c8dfd87716feebea)
+"""
+function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+end
+
+"""
+    flip_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+Flip an edge.
+Change the src and dst of an edge to the next vertex in the facet.
+"""
+function flip_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    length(trace_face(pmg, face(pmg, h); safe_trace = false)) != 3 &&
+        error("Only flipable for triangle facets")
+    length(trace_face(pmg, face(pmg, twin(pmg, h)); safe_trace = false)) != 3 &&
+        error("Only flipable for triangle facets")
+
+
 end
 
 """
