@@ -31,7 +31,7 @@ end
             12 => HalfEdge(1, 6),
         ),
         # f2he
-        Dict(1 => 1),
+        Dict(1 => 1, 0 => 2),
         # he2f
         Dict(
             1 => 1,
@@ -102,7 +102,7 @@ end
             14 => HalfEdge(4, 1),
         ),
         # f2he
-        Dict(1 => 14, 2 => 13),
+        Dict(1 => 14, 2 => 13, 0 => 2),
         #he2f
         Dict(
             1 => 1,
@@ -168,6 +168,7 @@ end
 
 @testset "Split Vertex fail" begin
     pmg1 = PlanarMultigraph(
+        Dict(1=>1, 2=>2),
         Dict(
             1 => HalfEdge(1, 2),
             2 => HalfEdge(2, 1),
