@@ -374,21 +374,28 @@ function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     # I require the order to be ccw
     hes_f = trace_face(pmg, f_old; safe_trace = false)
-    hes_f = circshift(hes_f, -findfirst(he -> he == g, hes_f))
+    hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
 
     # update face information for righ half of the old face
     for he in hes_f
         set_face!(pmg, he, f_new)
-        (he == h) && break
+        (he == g) && break
     end
 
-    set_face!(pmg, new_hes[1], f_new; both = true)
-    set_face!(pmg, new_hes[2], f_old; both = true)
+    set_face!(pmg, new_hes[1], f_old; both = true)
+    set_face!(pmg, new_hes[2], f_new; both = true)
 
     set_next!(pmg, [h, g, new_hes...], [new_hes..., gn, hn])
     return new_hes[1]
 end
 
+"""
+    join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
+
+Join two facets incident to h and it's twin into one.
+
+The facet incident to h is removed.
+"""
 function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     vs = src(pmg, h)
     vd = dst(pmg, h)
@@ -407,13 +414,12 @@ function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     f1_id = face(pmg, h)
     f2_id = face(pmg, twin_h)
 
-    hes_f = trace_face(pmg, f2_id; safe_trace = true)
+    hes_f = trace_face(pmg, f2_id; safe_trace = false)
     set_face!(pmg, hes_f, f1_id; both = true)
 
     delete!(pmg.f2he, f2_id)
 
     destroy_edge!(pmg, h)
-    pmg.f_max -= 1
     return hp
 end
 
@@ -452,7 +458,7 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 end
 
 function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-    res_he
+    h
 end
 
 """
