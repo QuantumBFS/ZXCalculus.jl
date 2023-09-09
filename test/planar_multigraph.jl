@@ -81,6 +81,7 @@ end
         12, # he_max
         1, # f_max
     )
+
     pmg2 = PlanarMultigraph(
         # v2he
         Dict(1 => 13, 2 => 3, 3 => 5, 4 => 14, 5 => 9, 6 => 11),
@@ -158,10 +159,10 @@ end
         14, # he_max
         2, # f_max
     )
-    pmg3 = copy(pmg1)
+    pmg3 = deepcopy(pmg1)
     @test split_facet!(pmg3, 11, 5) == 13
     @test pmg3 == pmg2
-    pmg4 = copy(pmg2)
+    pmg4 = deepcopy(pmg2)
     @test join_facet!(pmg4, 13) == 11
     @test pmg4 == pmg1
 end
@@ -266,8 +267,8 @@ end
         10,
         0,
     )
-    pmg3 = copy(pmg1)
-    pmg4 = copy(pmg2)
+    pmg3 = deepcopy(pmg1)
+    pmg4 = deepcopy(pmg2)
     @test split_vertex!(pmg3, 6, 1) == 9
     @test pmg3 == pmg2
     @test join_vertex!(pmg4, 9) == 5

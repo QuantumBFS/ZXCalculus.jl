@@ -11,6 +11,7 @@ Datatype to represent a Half Edge
 
 * Brönnimann, Hervé [Designing and Implementing a General Purpose Halfedge Data Structure]
 (https://doi.org/10.1007/3-540-44688-5_5)
+* [CGAL Library HalfEdge Data Structure](https://doc.cgal.org/latest/Arrangement_on_surface_2/classCGAL_1_1Arrangement__on__surface__2_1_1Halfedge.html)
 """
 struct HalfEdge{T<:Integer} <: AbstractEdge{T}
     src::T
@@ -93,28 +94,37 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
     if nv(pmg1) != nv(pmg2)
-        println("nv", nv(pmg1), nv(pmg2))
+        println("nv of pmg1 is: ", nv(pmg1), " nv of pmg2 is: ", nv(pmg2))
         return false
     end
     if nhe(pmg1) != nhe(pmg2)
-        println("nhe", nhe(pmg1), nhe(pmg2))
+        println("nhe of pmg1 is: ", nhe(pmg1), " nhe of pmg2 is: ", nhe(pmg2))
         return false
     end
     if nf(pmg1) != nf(pmg2)
-        println("nf", nf(pmg1), nf(pmg2))
+        println("nf of pmg1 is: ", nf(pmg1), "nf of pmg2 is: ", nf(pmg2))
         return false
     end
 
     # could be relaxed, idx might be different but content needs to be the same for HalfEdges
-    if !(pmg1.next == pmg2.next)
+    if pmg1.next != pmg2.next
+        println("Next in face information is wrong")
         println(pmg1.next)
         println(pmg2.next)
         return false
     end
 
-    if !(pmg2.twin == pmg2.twin)
+    if pmg1.twin != pmg2.twin
+        println("Twin information is wrong")
         println(pmg1.twin)
         println(pmg2.twin)
+        return false
+    end
+
+    if pmg1.he2f != pmg2.he2f
+        println("HalfEdge to Face information is wrong")
+        println(pmg1.he2f)
+        println(pmg2.he2f)
         return false
     end
     return true
@@ -206,6 +216,15 @@ function trace_orbit(f::Function, a::T; rev::Bool = false) where {T}
     return perm
 end
 
+"""
+    trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
+
+Return the half edges of a face.
+
+If `safe_trace` is true, then the half edges are returned in scrambled order.
+Otherwise, the returned half edges are in counter clockwise order
+but is not guaranteed to be consitent with he2f.
+"""
 function trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
     !safe_trace && return trace_orbit(h -> g.next[h], surrounding_half_edge(g, f))
     hes_f = T[]
@@ -253,253 +272,6 @@ function check_combinatorial_maps(g::PlanarMultigraph)
         (he == α(g, ϕ(g, σ(g, he)))) || return false
     end
     return true
-end
-
-function update_face!(g::PlanarMultigraph{T}, he_id::T) where {T<:Integer}
-    face_id = face(g, he_id)
-    fs_rm = Int[]
-    g.f2he[face_id] = he_id
-    curr_he = next(g, he_id)
-    while curr_he != he_id
-        if g.he2f[curr_he] != face_id
-            push!(fs_rm, g.he2f[curr_he])
-            g.he2f[curr_he] = face_id
-        end
-        curr_he = next(g, curr_he)
-    end
-    for (v, f) in g.vs_isolated
-        (f in fs_rm) && (g.vs_isolated[v] = face_id)
-    end
-    return g
-end
-
-function add_edge_isolated_1!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
-    f == g.vs_isolated[v1] || return (0, 0)
-    hes = trace_vertex(g, v2)
-    he2_in = 0
-    he2_out = 0
-    for he in hes
-        if face(g, twin(g, he)) == f
-            he2_in = twin(g, he)
-            he2_out = next(g, he2_in)
-            break
-        end
-    end
-    he2_in * he2_out != 0 || return (0, 0)
-
-    g.he_max += 2
-    new_he1 = g.he_max - 1
-    new_he2 = g.he_max
-    g.v2he[v1] = new_he2
-    g.twin[new_he1] = new_he2
-    g.twin[new_he2] = new_he1
-    g.next[he2_in] = new_he1
-    g.next[new_he1] = new_he2
-    g.next[new_he2] = he2_out
-    g.he2f[new_he1] = f
-    g.he2f[new_he2] = f
-    g.half_edges[new_he1] = HalfEdge(v2, v1)
-    g.half_edges[new_he2] = HalfEdge(v1, v2)
-    delete!(g.vs_isolated, v1)
-
-    return (new_he1, new_he2)
-end
-
-function add_edge_isolated_2!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
-    f == g.vs_isolated[v1] == g.vs_isolated[v2] || return (0, 0)
-    g.he_max += 2
-    new_he1 = g.he_max - 1
-    new_he2 = g.he_max
-    g.twin[new_he1] = new_he2
-    g.twin[new_he2] = new_he1
-    g.next[new_he1] = new_he2
-    g.next[new_he2] = new_he1
-    g.v2he[v1] = new_he1
-    g.v2he[v2] = new_he2
-    g.he2f[new_he1] = f
-    g.he2f[new_he2] = f
-    g.half_edges[new_he1] = HalfEdge(v1, v2)
-    g.half_edges[new_he2] = HalfEdge(v2, v1)
-    delete!(g.vs_isolated, v1)
-    delete!(g.vs_isolated, v2)
-
-    return (new_he1, new_he2)
-end
-
-function add_edge!(g::PlanarMultigraph{T}, v1::T, v2::T, f::T) where {T<:Integer}
-    if is_isolated(g, v1)
-        if is_isolated(g, v2)
-            return add_edge_isolated_2!(g, v1, v2, f)
-        else
-            return add_edge_isolated_1!(g, v1, v2, f)
-        end
-    elseif is_isolated(g, v2)
-        return add_edge_isolated_1!(g, v2, v1, f)
-    end
-    hes_f = trace_face(g, f)
-    he1_in, he1_out, he2_in, he2_out = (0, 0, 0, 0)
-    for he in hes_f
-        dst(g, he) == v1 && (he1_in = he; he1_out = next(g, he))
-        dst(g, he) == v2 && (he2_in = he; he2_out = next(g, he))
-    end
-    he1_in * he1_out * he2_in * he2_out != 0 || return (0, 0)
-    new_he1 = g.he_max + 1
-    new_he2 = g.he_max + 2
-    g.he_max += 2
-    g.twin[new_he1] = new_he2
-    g.twin[new_he2] = new_he1
-    g.half_edges[new_he1] = HalfEdge(v1, v2)
-    g.half_edges[new_he2] = HalfEdge(v2, v1)
-    g.next[he1_in] = new_he1
-    g.next[new_he1] = he2_out
-    g.next[he2_in] = new_he2
-    g.next[new_he2] = he1_out
-    g.he2f[new_he1] = f
-    g.f2he[f] = new_he1
-    g.f_max += 1
-    g.he2f[new_he2] = g.f_max
-    g.f2he[g.f_max] = new_he2
-    update_face!(g, new_he2)
-    return (new_he1, new_he2)
-end
-
-function contract_edge!(g::PlanarMultigraph, he_id::Integer)
-    twin_id = twin(g, he_id)
-    he_prev = prev(g, he_id)
-    he_next = next(g, he_id)
-    twin_prev = prev(g, twin_id)
-    twin_next = next(g, twin_id)
-
-    v1 = src(g, he_id)
-    v2 = dst(g, he_id)
-    if v1 == v2
-        rem_edge!(g, he_id; update = true)
-        return (v1, v2)
-    end
-    if length(trace_vertex(g, v1)) == 1
-        if length(trace_vertex(g, v2)) > 1
-            (v11, v22) = contract_edge!(g, twin_id)
-            return (v22, v11)
-        else
-            rem_vertex!(g, v1; update = true)
-            return (v1, v2)
-        end
-    end
-
-    # update out half edge of v1
-    out_half_edge(g, v1) == he_id && (g.v2he[v1] = twin_next)
-    for he in trace_vertex(g, v2)
-        v0 = dst(g, he)
-        g.half_edges[he] = HalfEdge(v1, v0)
-        g.half_edges[twin(g, he)] = HalfEdge(v0, v1)
-    end
-
-    if he_next == twin_id
-        g.next[he_prev] = twin_next
-        g.f2he[face(g, he_id)] = he_prev
-    else
-        g.next[he_prev] = he_next
-        g.next[twin_prev] = twin_next
-        g.f2he[face(g, he_id)] = he_prev
-        g.f2he[face(g, twin_id)] = twin_prev
-    end
-    delete!(g.next, he_id)
-    delete!(g.next, twin_id)
-    delete!(g.half_edges, he_id)
-    delete!(g.half_edges, twin_id)
-    delete!(g.twin, he_id)
-    delete!(g.twin, twin_id)
-    delete!(g.he2f, he_id)
-    delete!(g.he2f, twin_id)
-    delete!(g.v2he, v2)
-    # v2 is removed
-    return (v1, v2)
-end
-
-"""
-    split_edge!(g::PlanarMultigraph, he_id)
-
-Split the edge corresponding to `he` into 2 edges.
-This is used for creating planar simple graphs from planar multigraphs.
-"""
-function split_edge!(g::PlanarMultigraph{T}, he_id::T) where {T<:Integer}
-    he1 = he_id
-    he2 = twin(g, he_id)
-    next1 = next(g, he1)
-    next2 = next(g, he2)
-    f1 = face(g, he1)
-    f2 = face(g, he2)
-    s = src(g, he_id)
-    d = dst(g, he_id)
-    g.v_max += 1
-    v = g.v_max
-    g.he_max += 2
-    nhe1 = g.he_max - 1
-    nhe2 = g.he_max
-
-    g.next[he1] = nhe1
-    g.next[nhe1] = next1
-    g.next[he2] = nhe2
-    g.next[nhe2] = next2
-    g.twin[nhe1] = he2
-    g.twin[he2] = nhe1
-    g.twin[nhe2] = he1
-    g.twin[he1] = nhe2
-
-    g.half_edges[he1] = HalfEdge(s, v)
-    g.half_edges[nhe2] = HalfEdge(v, s)
-    g.half_edges[nhe1] = HalfEdge(v, d)
-    g.half_edges[he2] = HalfEdge(d, v)
-
-    g.he2f[nhe1] = f1
-    g.he2f[nhe2] = f2
-
-    g.v2he[v] = nhe1
-
-    return v, nhe1, nhe2
-end
-
-"""
-    normalize(g)
-
-Return a relabeled planar graph.
-"""
-function normalize(g::PlanarMultigraph)
-    f_max = nf(g) - 1
-    he_max = nhe(g)
-    v_max = nv(g)
-
-    f_map = Dict(zip(faces(g), 0:f_max))
-    he_map = Dict(zip(half_edges(g), 1:he_max))
-    v_map = Dict(zip(sort!(vertices(g)), 1:v_max))
-
-    v2he = Dict{Int,Int}(v_map[v] => he_map[he] for (v, he) in g.v2he)
-    halfedges = Dict{Int,HalfEdge}(
-        he_map[he_id] => HalfEdge(v_map[he.src], v_map[he.dst]) for
-        (he_id, he) in g.half_edges
-    )
-
-    f2he = Dict{Int,Int}(f_map[f] => he_map[he] for (f, he) in g.f2he)
-    he2f = Dict{Int,Int}(he_map[he] => f_map[f] for (he, f) in g.he2f)
-
-    next = Dict{Int,Int}(he_map[cur] => he_map[nxt] for (cur, nxt) in g.next)
-    twin = Dict{Int,Int}(he_map[cur] => he_map[twn] for (cur, twn) in g.twin)
-
-    vs_isolated = Dict{Int,Int}(v_map[v] => f_map[f] for (v, f) in g.vs_isolated)
-
-    g_new = PlanarMultigraph(
-        v2he,
-        halfedges,
-        f2he,
-        he2f,
-        next,
-        twin,
-        vs_isolated,
-        v_max,
-        he_max,
-        f_max,
-    )
-    return g_new, v_map, he_map, f_map
 end
 
 """
@@ -597,16 +369,19 @@ function split_facet!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     new_hes, _ = create_edge!(pmg, dst(pmg, h), dst(pmg, g))
 
-    f_old = face(pmg, h)
+    f_old = face(pmg, g)
     f_new = create_face!(pmg)
 
-    hes_f = trace_face(pmg, f_old; safe_trace = true)
-    hes_f = circshift(hes_f, findfirst(he -> he == h, hes_f) - 1)
+    # I require the order to be ccw
+    hes_f = trace_face(pmg, f_old; safe_trace = false)
+    hes_f = circshift(hes_f, -findfirst(he -> he == g, hes_f))
 
-    for he in hes_f[2:end]
+    # update face information for righ half of the old face
+    for he in hes_f
         set_face!(pmg, he, f_new)
-        (he == g) && break
+        (he == h) && break
     end
+
     set_face!(pmg, new_hes[1], f_new; both = true)
     set_face!(pmg, new_hes[2], f_old; both = true)
 
@@ -674,6 +449,10 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     set_next!(pmg, [g, h, hes_id...], [hes_id..., next(pmg, g), next(pmg, h)])
     return hes_id[1]
+end
+
+function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    res_he
 end
 
 """
