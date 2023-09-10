@@ -629,22 +629,36 @@ end
 """
     erase_facet!(pmg::PlanarMultigraph{T}, h::T)
 
-TBW
+Erase the facet incident on h.
 
 ## Reference
 - [CGAL Library](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#ac67041483c1e7c67c8dfd87716feebea)
 """
 function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-    is_boundary(pmg, h) && error("Can't erase boundary incident to halfedge")
-    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
-    for he in hes_f
-        if he == h
-            set_face!(pmg, he, 0; both = false)
-            continue
-        end
-        twin_he = twin(pmg, he)
+    # precondition
+    is_boundary(pmg, h) && error("There's no facet incident to boundary halfedge")
 
+    # grab combinatorial info
+    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    hes_ft = [twin(pmg, he) for he in hes_f]
+    touched_vtx = [dst(pmg, he) for he in hes_f]
+
+    is_bry = [is_boundary(pmg, he) for he in hes_ft]
+
+    # modify old graph
+    make_hole!(pmg, h)
+    for idx = 1:length(hes_ft)
+        if is_bry[idx]
+            he_f_prev = prev(pmg, hes_f[idx])
+            he_ft_prev = prev(pmg, hes_ft[idx])
+            he_ft_next = next(pmg, hes_ft[idx])
+            he_f_next = next(pmg, hes_f[idx])
+            destroy_edge!(pmg, hes_ft[idx])
+            set_next!(pmg, [he_f_prev, he_ft_prev], [he_ft_next, he_f_next])
+        end
     end
+
+    gc_vertex!(pmg, touched_vtx)
 
     return h
 end
@@ -713,7 +727,9 @@ function set_next!(
     hds::Vector{T},
 ) where {T<:Integer}
     for (hs, hd) in zip(hss, hds)
-        g.next[hs] = hd
+        if (hs ∈ keys(g.half_edges) && hd ∈ keys(g.half_edges))
+            g.next[hs] = hd
+        end
     end
     return g
 end
@@ -747,4 +763,25 @@ function set_face!(
     both::Bool = false,
 ) where {T<:Integer}
     return set_face!(pmg, [he], f; both = both)
+end
+
+"""
+    gc_vertex!(pmg::PlanarMultigraph{T}, vs::Vector{T}) where {T<:Integer}
+
+Garbage collect vertices that's no longer connected to any edge.
+"""
+function gc_vertex!(pmg::PlanarMultigraph{T}, vs::Vector{T}) where {T<:Integer}
+    to_rm = [true for _ in vs]
+    for key in keys(pmg.half_edges)
+        he_dst = dst(pmg, key)
+        dst_idx = findfirst(v -> v == he_dst, vs)
+        isnothing(dst_idx) && continue
+        to_rm[dst_idx] = false
+    end
+    for ii = 1:length(to_rm)
+        if to_rm[ii]
+            delete!(pmg.v2he, vs[ii])
+        end
+    end
+    return to_rm
 end
