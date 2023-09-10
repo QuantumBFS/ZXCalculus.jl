@@ -456,13 +456,19 @@ Split a vertex into 2 vertices.
 Connect the two vertices with a new pair of half edges.
 he1 and he2 are half edges that marks the start and end
 of half edges that remain on v1.
+
+After splitting, h points to the newly added vertex
+
+## Reference
+- [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a2b17d7bd2045397167b00616f3b4d622)
 """
 function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
+    # Preconditions
     dst(pmg, h) == dst(pmg, g) || error("h and g don't have the same destination")
-
     h == g && error("h and g can't be the same half edge")
 
+    # Get combinatorial info before modifying graph
     gn = next(pmg, g)
     hn = next(pmg, h)
 
@@ -471,6 +477,9 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
     he_vec = trace_orbit(he -> σ_inv(pmg, he), th; rev = false)
     he_vec = circshift(he_vec, -findfirst(he -> he == th, he_vec))
+
+    hf = face(pmg, h)
+    gf = face(pmg, g)
 
     v1 = dst(pmg, h)
 
@@ -487,6 +496,9 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     end
 
     set_next!(pmg, [g, h, hes_id...], [hes_id..., gn, hn])
+    set_face!(pmg, hes_id[1], gf; both = true)
+    set_face!(pmg, hes_id[2], hf; both = true)
+
     return hes_id[1]
 end
 
