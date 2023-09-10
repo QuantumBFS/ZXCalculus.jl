@@ -41,10 +41,28 @@ Implements a planar multigraph with a maximal HDS Structure.
 1. Stores Forward Half Edge pointer in facet
 2. Vertex linked
 3. Face Linked
+## References:
+Our implementation is based heavily on the [CGAL
+Library](https://www.cgal.org/). A good introduction on the HDS Structure and
+the Polyhedron3 Object which gives the boundary representation of a 2-manifold
+can be found in this
+[paper](https://linkinghub.elsevier.com/retrieve/pii/S0925772199000073).
+
+### TODO: Proof of Completeness for Euler Operations with Preconditions In the
+CGAL Library, the Euler Operations are implemented with preconditions. It was
+pointed out that Euler Operations are closed for orientable 2-manifolds in
+[paper](https://www.sciencedirect.com/science/article/pii/S0925772199000073?via%3Dihub)
+where the detailed proof is in
+[book](https://books.google.co.jp/books?id=CJVRAAAAMAAJ).
+It was further pointed out in
+[paper](https://www.sciencedirect.com/science/article/abs/pii/0734189X84901294)
+that Euler Operations are complete in Theorem 4.4.
+
+The question remains whether the completeness remains for the preconditions
+attached.
 """
-mutable struct PlanarMultigraph{T<:Integer}
-    v2he::Dict{T,T}  # v_id -> he_id
-    half_edges::Dict{T,HalfEdge{T}} # he_id -> he
+mutable struct PlanarMultigraph{T<:Integer} v2he::Dict{T,T} # v_id
+-> he_id half_edges::Dict{T,HalfEdge{T}} # he_id -> he
 
     f2he::Dict{T,T}  # f_id -> he_id
     he2f::Dict{T,T}    # he_id -> f_id, if cannot find, then it's a boundary
