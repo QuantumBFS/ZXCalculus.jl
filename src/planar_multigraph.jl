@@ -593,7 +593,37 @@ function add_vertex_and_facet_to_boarder!(
     h::T,
     g::T,
 ) where {T<:Integer}
+    # preconditions
+    is_boundary(pmg, h) && is_boundary(pmg, g) || error("Can't add facet on top of facet")
+    h != g || error("Can't add a loop as a facet!")
+    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
+    g ∉ hes_f && error("Can't add edge across facet")
 
+    # get combinatorial info
+    hv = dst(pmg, h)
+    gv = dst(pmg, g)
+    hn = next(pmg, h)
+    gn = next(pmg, g)
+
+
+    # modify old graph
+    new_v = create_vertex!(pmg)[1]
+
+    hes_hv2newv, _ = create_edge!(pmg, hv, new_v)
+    hes_gv2newv, _ = create_edge!(pmg, gv, new_v)
+    set_next!(
+        pmg,
+        [h, hes_hv2newv..., hes_gv2newv..., g],
+        [hes_hv2newv[1], hes_gv2newv[2], hn, hes_hv2newv[2], gn, hes_gv2newv[1]],
+    )
+    new_f = create_face!(pmg)
+    for he in hes_f
+        set_face!(pmg, he, new_f; both = false)
+        (he == g) && break
+    end
+    set_face!(pmg, [hes_hv2newv[2], hes_gv2newv[1]], new_f; both = true)
+    return hes_gv2newv[1]
 end
 
 """

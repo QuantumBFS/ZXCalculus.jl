@@ -7,7 +7,8 @@ using ZXCalculus:
     join_vertex!,
     split_edge!,
     make_hole!,
-    add_facet_to_boarder!
+    add_facet_to_boarder!,
+    add_vertex_and_facet_to_boarder!
 
 @testset "Half edge constructor" begin
 
@@ -512,6 +513,86 @@ end
     )
 
     @test add_facet_to_boarder!(pmg1, 1, 5) == 8
+    @test pmg1 == pmg2
+end
+
+@testset "Add Facet and Vertex to Boarder" begin
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 5, 4 => 6),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(3, 4),
+            6 => HalfEdge(4, 3),
+        ),
+        Dict(0 => 1),
+        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
+        Dict(1 => 3, 3 => 5, 5 => 6, 6 => 4, 4 => 2, 2 => 1),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
+        4,
+        6,
+        0,
+    )
+
+
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 5, 4 => 6, 5 => 10),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(3, 4),
+            6 => HalfEdge(4, 3),
+            7 => HalfEdge(2, 5),
+            8 => HalfEdge(5, 2),
+            9 => HalfEdge(3, 5),
+            10 => HalfEdge(5, 3),
+        ),
+        Dict(0 => 1, 1 => 3),
+        Dict(
+            1 => 0,
+            2 => 0,
+            3 => 1,
+            4 => 0,
+            5 => 0,
+            6 => 0,
+            7 => 0,
+            8 => 1,
+            9 => 1,
+            10 => 0,
+        ),
+        Dict(
+            1 => 7,
+            7 => 10,
+            10 => 5,
+            5 => 6,
+            6 => 4,
+            4 => 2,
+            2 => 1,
+            8 => 3,
+            3 => 9,
+            9 => 8,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+        ),
+        5,
+        10,
+        1,
+    )
+    @test add_vertex_and_facet_to_boarder!(pmg1, 1, 3) == 9
     @test pmg1 == pmg2
 end
 
