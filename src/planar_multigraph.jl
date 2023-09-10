@@ -1,5 +1,5 @@
 import Graphs: AbstractEdge, src, dst, nv, ne, neighbors
-import Graphs.SimpleGraphs: rem_edge!, rem_vertex!, add_edge!, add_vertex!
+import Graphs.SimpleGraphs: rem_edge!, rem_vertex!, add_edge!, add_vertex!, vertices
 export HalfEdge, src, dst, new_edge, PlanarMultigraph
 
 """

@@ -22,6 +22,8 @@ using Graphs:
     indegree,
     outdegree
 
+# using Multigraphs: vertices
+
 
 export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
@@ -43,7 +45,7 @@ export substitute_variables!, expval_circ!, stack_zxwd!, concat!
 
 include("adts.jl")
 using .ZXW: ZXWSpiderType, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X
-
+export ZXWSpiderType, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X
 
 include("parameter.jl")
 
