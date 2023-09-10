@@ -357,18 +357,16 @@ Convert the facet incident to a half edge into a hole.
 
 Makes all the half edges in the facet a boundary halfedge.
 
-# TODO
 ## Reference
 - [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a228add3cae2d328bcdd67192a98fb636)
 """
-function make_hole!(pmg::PlanarMultigraph{T}, f::T) where {T<:Integer}
-    hes_f = trace_face(pmg, f)
-    hes_f = circshift(hes_f, -findfirst(he -> he == pmg.f2he[f], hes_f))
-    hes_f = hes_f[1:end-1]
-    for he in hes_f
-        set_face!(pmg, he, 0; both = false)
-    end
-    return pmg
+function make_hole!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    any(he -> is_boundary(pmg, he), hes_f) && error("Can't make hole for boundary halfedge")
+
+    delete!(pmg.f2he, face(pmg, h))
+    set_face!(pmg, hes_f, 0; both = false)
+    return h
 end
 
 function destroy_vertex!(pmg::PlanarMultigraph{T}, v::T) where {T<:Integer}

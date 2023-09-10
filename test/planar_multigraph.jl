@@ -5,7 +5,8 @@ using ZXCalculus:
     split_facet!,
     join_facet!,
     join_vertex!,
-    split_edge!
+    split_edge!,
+    make_hole!
 
 @testset "Half edge constructor" begin
 
@@ -423,6 +424,49 @@ end
     pmg2f1 = copy(pmg1)
     @test split_vertex!(pmg2f1, 4, 1) == 9
     @test pmg2f1 == pmg2
+end
+
+@testset "Make hole" begin
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 5),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(3, 1),
+            6 => HalfEdge(1, 3),
+        ),
+        Dict(0 => 2, 1 => 1),
+        Dict(1 => 1, 2 => 0, 3 => 1, 4 => 0, 5 => 1, 6 => 0),
+        Dict(1 => 3, 3 => 5, 5 => 1, 2 => 6, 6 => 4, 4 => 2),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
+        3,
+        6,
+        1,
+    )
+
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 3 => 5),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 3),
+            4 => HalfEdge(3, 2),
+            5 => HalfEdge(3, 1),
+            6 => HalfEdge(1, 3),
+        ),
+        Dict(0 => 2),
+        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
+        Dict(1 => 3, 3 => 5, 5 => 1, 2 => 6, 6 => 4, 4 => 2),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
+        3,
+        6,
+        0,
+    )
+    @test_throws "Can't make hole for boundary halfedge" make_hole!(pmg1, 2)
+    @test make_hole!(pmg1, 1) == 1
+    @test pmg1 == pmg2
 end
 
 # test if split facet can join arbitrary vertex
