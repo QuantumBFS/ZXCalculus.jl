@@ -324,7 +324,7 @@ end
 """
     create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
 Create an a pair of halfedge from vs to vd, add to PlanarMultigraph pmg.
-Facet information is not updated yet.
+Facet information is not updated yet but set to default value of 0.
 Vertex to halfedge is updated and set to the two newly added half edges.
 """
 function create_edge!(pmg::PlanarMultigraph{T}, vs::T, vd::T) where {T<:Integer}
@@ -539,19 +539,39 @@ end
 """
     add_facet_to_boarder!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
-TBW
+Creates a facet with edge connecting the destination of h and g.
 
-
+h and g needs to be in ccw order
 ## Reference
+- [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a73119c0c90bf8612da003305af25a52a)
 """
 function add_facet_to_boarder!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
-    hes_f = trace_face(pmg, f)
+    # preconditions
+    is_boundary(pmg, h) && is_boundary(pmg, g) || error("Can't add facet on top of facet")
+    h != g || error("Can't add a loop as a facet!")
+    next(pmg, h) != g || error("Can't add a multiedge as a facet!")
+    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
     hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
-    hes_f = hes_f[1:end-1]
+    g ∉ hes_f && error("Can't add edge across facet")
+
+    # grab combinatorial info
+    v1 = dst(pmg, h)
+    v2 = dst(pmg, g)
+    gn = next(pmg, g)
+    hn = next(pmg, h)
+
+    # start modifying old graph
+    h_news, _ = create_edge!(pmg, v1, v2)
+    new_f = create_face!(pmg)
     for he in hes_f
-        set_face!(pmg, he, 0; both = false)
+        set_face!(pmg, he, new_f; both = false)
+        (he == g) && break
     end
-    return pmg
+    set_face!(pmg, h_news[1], 0; both = true)
+    set_face!(pmg, h_news[2], new_f; both = true)
+    set_next!(pmg, [h, g, h_news...], [h_news..., gn, hn])
+    return h_news[2]
+
 end
 
 
@@ -585,23 +605,18 @@ TBW
 - [CGAL Library](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#ac67041483c1e7c67c8dfd87716feebea)
 """
 function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    is_boundary(pmg, h) && error("Can't erase boundary incident to halfedge")
+    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    for he in hes_f
+        if he == h
+            set_face!(pmg, he, 0; both = false)
+            continue
+        end
+        twin_he = twin(pmg, he)
 
-end
+    end
 
-"""
-    flip_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-
-Flip an edge.
-Change the src and dst of an edge to the next vertex in the facet.
-
-Doesn't appear necessary now
-"""
-function flip_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
-    length(trace_face(pmg, face(pmg, h); safe_trace = false)) != 3 &&
-        error("Only flipable for triangle facets")
-    length(trace_face(pmg, face(pmg, twin(pmg, h)); safe_trace = false)) != 3 &&
-        error("Only flipable for triangle facets")
-    #TODO
+    return h
 end
 
 """
