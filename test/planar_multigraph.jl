@@ -192,7 +192,6 @@ end
     @test pmg4 == pmg1
 end
 
-# test if split facet can join arbitrary vertex
 
 @testset "Split Vertex fail" begin
     pmg1 = PlanarMultigraph(
@@ -342,3 +341,88 @@ end
     @test split_edge!(pmg1, 3) == 6
     @test pmg1 == pmg2
 end
+
+@testset "Simple Quantum Circuit Creation Operations" begin
+    # Insert Vertex along A qubit input output
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 4 => 5, 3 => 8),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(2, 4),
+            4 => HalfEdge(4, 2),
+            5 => HalfEdge(4, 3),
+            6 => HalfEdge(3, 4),
+            7 => HalfEdge(1, 3),
+            8 => HalfEdge(3, 1),
+        ),
+        Dict(0 => 1, 1 => 2),
+        Dict(1 => 0, 2 => 1, 3 => 0, 4 => 1, 5 => 0, 6 => 1, 7 => 1, 8 => 0),
+        Dict(1 => 3, 3 => 5, 5 => 8, 8 => 1, 2 => 7, 7 => 6, 6 => 4, 4 => 2),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5, 7 => 8, 8 => 7),
+        4,
+        8,
+        1,
+    )
+
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 3, 4 => 5, 3 => 8, 5 => 9),
+        Dict(
+            1 => HalfEdge(1, 5),
+            2 => HalfEdge(5, 1),
+            3 => HalfEdge(2, 4),
+            4 => HalfEdge(4, 2),
+            5 => HalfEdge(4, 3),
+            6 => HalfEdge(3, 4),
+            7 => HalfEdge(1, 3),
+            8 => HalfEdge(3, 1),
+            9 => HalfEdge(5, 2),
+            10 => HalfEdge(2, 5),
+        ),
+        Dict(0 => 1, 1 => 2),
+        Dict(
+            1 => 0,
+            2 => 1,
+            3 => 0,
+            4 => 1,
+            5 => 0,
+            6 => 1,
+            7 => 1,
+            8 => 0,
+            9 => 0,
+            10 => 1,
+        ),
+        Dict(
+            1 => 9,
+            9 => 3,
+            3 => 5,
+            5 => 8,
+            8 => 1,
+            2 => 7,
+            7 => 6,
+            6 => 4,
+            4 => 10,
+            10 => 2,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+        ),
+        5,
+        10,
+        1,
+    )
+    pmg2f1 = copy(pmg1)
+    @test split_vertex!(pmg2f1, 4, 1) == 9
+    @test pmg2f1 == pmg2
+end
+
+# test if split facet can join arbitrary vertex
