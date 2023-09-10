@@ -60,6 +60,9 @@ that Euler Operations are complete in Theorem 4.4.
 
 The question remains whether the completeness remains for the preconditions
 attached.
+One way of proving is to show that for the Euler Operations used in Theorem 4.4,
+we could always construct them out of the Euler Operations in CGAL Library with
+preconditions?
 """
 mutable struct PlanarMultigraph{T<:Integer}
     v2he::Dict{T,T} # v_id -> he_id
@@ -347,6 +350,27 @@ function create_face!(pmg::PlanarMultigraph{T}) where {T<:Integer}
     return pmg.f_max
 end
 
+"""
+    make_hole!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+
+Convert the facet incident to a half edge into a hole.
+
+Makes all the half edges in the facet a boundary halfedge.
+
+# TODO
+## Reference
+- [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a228add3cae2d328bcdd67192a98fb636)
+"""
+function make_hole!(pmg::PlanarMultigraph{T}, f::T) where {T<:Integer}
+    hes_f = trace_face(pmg, f)
+    hes_f = circshift(hes_f, -findfirst(he -> he == pmg.f2he[f], hes_f))
+    hes_f = hes_f[1:end-1]
+    for he in hes_f
+        set_face!(pmg, he, 0; both = false)
+    end
+    return pmg
+end
+
 function destroy_vertex!(pmg::PlanarMultigraph{T}, v::T) where {T<:Integer}
     !(v in vertices(pmg)) && error("Vertex $v not in graph")
     delete!(pmg.v2he, v)
@@ -515,11 +539,42 @@ function split_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 end
 
 """
-    join_egde!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+    add_facet_to_boarder!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
 
-The inverse procedure of split_edge!()
+TBW
+
+
+## Reference
 """
-function join_egde!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
+function add_facet_to_boarder!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
+    hes_f = trace_face(pmg, f)
+    hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
+    hes_f = hes_f[1:end-1]
+    for he in hes_f
+        set_face!(pmg, he, 0; both = false)
+    end
+    return pmg
+end
+
+
+"""
+    add_vertex_and_facet_to_boarder!(
+    pmg::PlanarMultigraph{T},
+    h::T,
+    g::T,
+) where {T<:Integer}
+
+TBW
+
+## Reference
+- [CGAl](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a684bc8315f9e97d59e10bf896f0a166c)
+
+"""
+function add_vertex_and_facet_to_boarder!(
+    pmg::PlanarMultigraph{T},
+    h::T,
+    g::T,
+) where {T<:Integer}
 
 end
 
@@ -540,20 +595,23 @@ end
 
 Flip an edge.
 Change the src and dst of an edge to the next vertex in the facet.
+
+Doesn't appear necessary now
 """
 function flip_edge!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     length(trace_face(pmg, face(pmg, h); safe_trace = false)) != 3 &&
         error("Only flipable for triangle facets")
     length(trace_face(pmg, face(pmg, twin(pmg, h)); safe_trace = false)) != 3 &&
         error("Only flipable for triangle facets")
-
-
+    #TODO
 end
 
 """
     join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 
 Join two vertices connected by a HalfEdge into one.
+
+Provides the removal of an edge.
 """
 function join_vertex!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     # start obtaining original graph information
