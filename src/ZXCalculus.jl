@@ -22,8 +22,6 @@ using Graphs:
     indegree,
     outdegree
 
-# using Multigraphs: vertices
-
 
 export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
@@ -42,6 +40,10 @@ export rewrite!,
     circuit_extraction,
     phase_teleportation
 export substitute_variables!, expval_circ!, stack_zxwd!, concat!
+
+export spider_type, rem_spiders!, scalar, rem_spider!, phase, spiders
+
+import Graphs: has_vertex
 
 include("adts.jl")
 using .ZXW: ZXWSpiderType, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X
