@@ -61,8 +61,9 @@ that Euler Operations are complete in Theorem 4.4.
 The question remains whether the completeness remains for the preconditions
 attached.
 """
-mutable struct PlanarMultigraph{T<:Integer} v2he::Dict{T,T} # v_id
--> he_id half_edges::Dict{T,HalfEdge{T}} # he_id -> he
+mutable struct PlanarMultigraph{T<:Integer}
+    v2he::Dict{T,T} # v_id -> he_id
+    half_edges::Dict{T,HalfEdge{T}} # he_id -> he
 
     f2he::Dict{T,T}  # f_id -> he_id
     he2f::Dict{T,T}    # he_id -> f_id, if cannot find, then it's a boundary
