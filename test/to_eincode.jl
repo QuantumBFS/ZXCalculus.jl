@@ -1,5 +1,5 @@
 using LinearAlgebra
-using ZXCalculus: z_tensor, x_tensor, w_tensor, h_tensor, d_tensor
+using ZXCalculus.ZXW: z_tensor, x_tensor, w_tensor, h_tensor, d_tensor
 @testset "Tensors" begin
     @test z_tensor(2, Parameter(Val(:PiUnit), 1 // 2)) == [1 0; 0 exp(im * π / 2)]
     @test z_tensor(2, Parameter(Val(:Factor), 1)) == [1 0; 0 1]
