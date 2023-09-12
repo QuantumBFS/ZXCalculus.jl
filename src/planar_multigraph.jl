@@ -115,7 +115,7 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
     g.v_max,
     g.he_max,
     g.f_max,
-    copy(g.boundary)
+    copy(g.boundary),
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
@@ -359,7 +359,7 @@ function make_hole!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
     any(he -> is_boundary(pmg, he), hes_f) && error("Can't make hole for boundary halfedge")
 
-    push!(pmg.boundary,face(pmg,h))
+    push!(pmg.boundary, face(pmg, h))
     return h
 end
 
@@ -640,8 +640,8 @@ function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     is_bry = [is_boundary(pmg, he) for he in hes_ft]
 
     # modify old graph
-    set_face!(pmg, hes_f, 0; both=false)
-    delete!(pmg.f2he, face(pmg,h))
+    set_face!(pmg, hes_f, 0; both = false)
+    delete!(pmg.f2he, face(pmg, h))
     for idx = 1:length(hes_ft)
         if is_bry[idx]
             he_f_prev = prev(pmg, hes_f[idx])
@@ -779,4 +779,28 @@ function gc_vertex!(pmg::PlanarMultigraph{T}, vs::Vector{T}) where {T<:Integer}
         end
     end
     return to_rm
+end
+
+function add_multiedge!(pmg::PlanarMultigraph{T}, h::T, multi::Int) where {T<:Integer}
+    # grab combinatorial information
+    hp = prev(pmg, h)
+    hn = next(pmg, h)
+    f_id = face(pmg, h)
+
+
+    # modify old graph
+    hes_id, _ = create_edge!(pmg, src(pmg, h), dst(pmg, h))
+    set_next!(pmg, [h, hes_id[2]], [hes_id[2], h])
+    new_f_id = create_face!(pmg)
+    set_face!(pmg, [h, hes_id[2]], new_f_id; both = true)
+    for _ = 2:multi
+        next_hes_id, _ = create_edge!(pmg, src(pmg, h), dst(pmg, h))
+        set_next!(pmg, [hes_id[1], next_hes_id[2]], [next_hes_id[2], hes_id[1]])
+        new_f_id = create_face!(pmg)
+        set_face!(pmg, [next_hes_id[2], hes_id[1]], new_f_id; both = true)
+        hes_id = next_hes_id
+    end
+    set_next!(pmg, [hp, hes_id[1]], [hes_id[1], hn])
+    set_face!(pmg, [hes_id[1]], f_id; both = true)
+    return h
 end

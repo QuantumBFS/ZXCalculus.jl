@@ -9,7 +9,8 @@ using ZXCalculus:
     make_hole!,
     add_facet_to_boarder!,
     add_vertex_and_facet_to_boarder!,
-    erase_facet!
+    erase_facet!,
+    add_multiedge!
 
 @testset "Half edge constructor" begin
 
@@ -742,4 +743,42 @@ end
     )
     @test erase_facet!(pmg3, 7) == 7
     @test pmg3 == pmg4
+end
+
+@testset "Add MultiEdge" begin
+    pmg1 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 2),
+        Dict(1 => HalfEdge(1, 2), 2 => HalfEdge(2, 1)),
+        Dict(0 => 1),
+        Dict(1 => 0, 2 => 0),
+        Dict(1 => 2, 2 => 1),
+        Dict(1 => 2, 2 => 1),
+        2,
+        2,
+        0,
+        [0],
+    )
+
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 2),
+        Dict(
+            1 => HalfEdge(1, 2),
+            2 => HalfEdge(2, 1),
+            3 => HalfEdge(1, 2),
+            4 => HalfEdge(2, 1),
+            5 => HalfEdge(1, 2),
+            6 => HalfEdge(2, 1),
+        ),
+        Dict(0 => 1, 1 => 3, 2 => 5),
+        Dict(1 => 0, 2 => 1, 4 => 1, 3 => 2, 6 => 2, 5 => 0),
+        Dict(1 => 5, 5 => 1, 2 => 4, 4 => 2, 3 => 6, 6 => 3),
+        Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
+        2,
+        2,
+        0,
+        [0],
+    )
+
+    @test add_multiedge!(pmg1, 2, 2) == 2
+    @test pmg1 == pmg2
 end
