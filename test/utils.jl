@@ -1,4 +1,28 @@
-using ZXCalculus: Parameter, _round_phase, round_phases!, print_spider
+using ZXCalculus.ZXW:
+    Parameter,
+    _round_phase,
+    round_phases!,
+    print_spider,
+    push_gate!,
+    pushfirst_gate!,
+    add_spider!,
+    insert_wtrig!,
+    expval_circ!,
+    substitute_variables!,
+    set_phase!,
+    add_spider!,
+    spider_type,
+    rem_spiders!,
+    parameter,
+    add_inout!,
+    get_inputs,
+    get_outputs,
+    scalar,
+    nin,
+    nout,
+    nqubits
+
+
 using MLStyle: @match
 
 @testset "Phase rounding" begin
@@ -43,12 +67,12 @@ end
     @test_throws ErrorException("Spider 10 does not exist!") spider_type(zxwd, 10)
 
     @test parameter(zxwd, 1) == 1
-    @test ZXCalculus.set_phase!(zxwd, 1, Parameter(Val(:PiUnit), 2 // 3))
-    @test !ZXCalculus.set_phase!(zxwd, 10, Parameter(Val(:PiUnit), 2 // 3))
+    @test set_phase!(zxwd, 1, Parameter(Val(:PiUnit), 2 // 3))
+    @test !set_phase!(zxwd, 10, Parameter(Val(:PiUnit), 2 // 3))
 
-    @test ZXCalculus.nqubits(zxwd) == 3
-    @test ZXCalculus.nin(zxwd) == 3 && ZXCalculus.nout(zxwd) == 3
-    @test scalar(zxwd) == ZXCalculus.Scalar{Number}()
+    @test nqubits(zxwd) == 3
+    @test nin(zxwd) == 3 && nout(zxwd) == 3
+    @test scalar(zxwd) == Scalar{Number}()
     @test nv(zxwd) == 6 && ne(zxwd) == 3
 
     @test rem_edge!(zxwd, 5, 6)
@@ -59,13 +83,13 @@ end
     @test neighbors(zxwd, 5) == [6]
 
 
-    @test_throws ErrorException("The vertex to connect does not exist.") ZXCalculus.add_spider!(
+    @test_throws ErrorException("The vertex to connect does not exist.") add_spider!(
         zxwd,
         W,
         [10, 15],
     )
 
-    new_v = ZXCalculus.add_spider!(zxwd, W, [2, 3])
+    new_v = add_spider!(zxwd, W, [2, 3])
 
 
     @test @match zxwd.st[new_v] begin
@@ -74,13 +98,13 @@ end
     end
     @test parameter(zxwd, new_v) == Parameter(Val(:PiUnit), 0)
 
-    new_v2 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1 // 2)), [2, 3])
+    new_v2 = add_spider!(zxwd, Z(Parameter(Val(:PiUnit), 1 // 2)), [2, 3])
 
     @test @match zxwd.st[new_v] begin
         Z => true
         _ => false
     end
-    @test ZXCalculus.set_phase!(zxwd, new_v2, Parameter(Val(:PiUnit), 3 // 2)) &&
+    @test set_phase!(zxwd, new_v2, Parameter(Val(:PiUnit), 3 // 2)) &&
           parameter(zxwd, new_v2) == Parameter(Val(:PiUnit), 3 // 2)
 
     io = IOBuffer()
@@ -92,7 +116,7 @@ end
     @test String(take!(io)) ==
           "S_8{phase = Parameter.PiUnit(pu=3//2, pu_type=Rational{Int64})}"
 
-    new_v3 = ZXCalculus.add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
+    new_v3 = add_spider!(zxwd, Z(Parameter(Val(:Factor), 1)), [2, 3])
     print_spider(io, zxwd, new_v3)
     @test String(take!(io)) == "S_9{phase = Parameter.Factor(f=1, f_type=Int64)}"
 
@@ -103,15 +127,14 @@ end
     @test nv(zxwd) == 6 && ne(zxwd) == 1
 
     zxwd = ZXWDiagram(3)
-    nqubits_prior = ZXCalculus.nqubits(zxwd)
-    ZXCalculus.add_inout!(zxwd, 3)
-    @test ZXCalculus.nqubits(zxwd) == nqubits_prior + 3
-    @test ZXCalculus.nin(zxwd) == nqubits_prior + 3
-    @test ZXCalculus.nout(zxwd) == nqubits_prior + 3
-    nspiders = ZXCalculus.nv(zxwd)
-    @test sort!(
-        [ZXCalculus.get_inputs(zxwd)[end-2:end]; ZXCalculus.get_outputs(zxwd)[end-2:end]],
-    ) == collect(nspiders-5:nspiders)
+    nqubits_prior = nqubits(zxwd)
+    add_inout!(zxwd, 3)
+    @test nqubits(zxwd) == nqubits_prior + 3
+    @test nin(zxwd) == nqubits_prior + 3
+    @test nout(zxwd) == nqubits_prior + 3
+    nspiders = nv(zxwd)
+    @test sort!([get_inputs(zxwd)[end-2:end]; get_outputs(zxwd)[end-2:end]]) ==
+          collect(nspiders-5:nspiders)
 
 
 

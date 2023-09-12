@@ -57,20 +57,22 @@ include("deprecations.jl")
 
 module ZXW
 using Expronicon.ADT: @const_use, @adt
-using MLStyle, Multigraphs
+using MLStyle, Multigraphs, Graphs
 using OMEinsum
 import Multigraphs: has_vertex
 using ..ZXCalculus
-import ..add_edge!, ..vertices, ..nv, ..round_phases!
-import ..rewrite!
+using ..ZXCalculus: safe_convert, add_phase!
+import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
+
 
 include("adts.jl")
 include("zxw_diagram.jl")
 include("zxw_rules.jl")
 include("to_eincode.jl")
+include("utils.jl")
 
 
-export ZXWDiagram, CalcRule, rewrite!
+export ZXWDiagram, CalcRule
 end # module ZXW
 
 using .ZXW:
@@ -90,27 +92,25 @@ using .ZXW:
     rewrite!
 export ZXWSpiderType,
     ZXWDiagram, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X, CalcRule, rewrite!
-export substitute_variables!, expval_circ!, stack_zxwd!, concat!, rewrite!
-export parameter,
-    insert_wtrig!,
-    symbol_vertices,
-    spiders,
-    degree,
-    spider_type,
-    neighbors,
-    set_phase!,
-    add_global_phase!,
-    add_spider!,
-    rem_spider!,
-    get_outputs,
-    add_power!,
-    get_inputs,
-    scalar,
-    nin,
-    nout,
-    rem_spiders!,
-    phase
-include("utils.jl")
+export substitute_variables!, expval_circ!, stack_zxwd!, concat!
+# export parameter,
+#     insert_wtrig!,
+#     spiders,
+#     degree,
+#     spider_type,
+#     neighbors,
+#     set_phase!,
+#     add_global_phase!,
+#     add_spider!,
+#     rem_spider!,
+#     get_outputs,
+#     add_power!,
+#     get_inputs,
+#     scalar,
+#     nin,
+#     nout,
+#     phase
+#     rem_spiders!,
 include("parameter.jl")
 
 include("planar_multigraph.jl")
