@@ -32,6 +32,7 @@ end
         2,
         2,
         0,
+        [0],
     )
     pmg2 = copy(pmg1)
 
@@ -109,6 +110,7 @@ end
         6, # v_max
         12, # he_max
         1, # f_max
+        [0],
     )
 
     pmg2 = PlanarMultigraph(
@@ -187,6 +189,7 @@ end
         6, # v_max
         14, # he_max
         2, # f_max
+        [0],
     )
     pmg3 = copy(pmg1)
     @test split_facet!(pmg3, 11, 5) == 13
@@ -213,6 +216,7 @@ end
         2,
         4,
         1,
+        [0],
     )
     @test_throws "Should use #TODO to add multiedge and split facet!" split_facet!(
         pmg1,
@@ -241,6 +245,7 @@ end
         5,
         8,
         0,
+        [0],
     )
 
     pmg2 = PlanarMultigraph(
@@ -297,6 +302,7 @@ end
         6,
         10,
         0,
+        [0],
     )
     pmg3 = copy(pmg1)
     pmg4 = copy(pmg2)
@@ -322,6 +328,7 @@ end
         3,
         4,
         0,
+        [0],
     )
     pmg2 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 4, 4 => 5),
@@ -340,6 +347,7 @@ end
         4,
         6,
         0,
+        [0],
     )
 
     @test split_edge!(pmg1, 3) == 6
@@ -367,6 +375,7 @@ end
         4,
         8,
         1,
+        [0],
     )
 
     pmg2 = PlanarMultigraph(
@@ -423,6 +432,7 @@ end
         5,
         10,
         1,
+        [0],
     )
     pmg2f1 = copy(pmg1)
     @test split_vertex!(pmg2f1, 4, 1) == 9
@@ -447,7 +457,9 @@ end
         3,
         6,
         1,
+        [0],
     )
+
 
     pmg2 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 5),
@@ -459,13 +471,14 @@ end
             5 => HalfEdge(3, 1),
             6 => HalfEdge(1, 3),
         ),
-        Dict(0 => 2),
-        Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
+        Dict(0 => 2, 1 => 1),
+        Dict(1 => 1, 2 => 0, 3 => 1, 4 => 0, 5 => 1, 6 => 0),
         Dict(1 => 3, 3 => 5, 5 => 1, 2 => 6, 6 => 4, 4 => 2),
         Dict(1 => 2, 2 => 1, 3 => 4, 4 => 3, 5 => 6, 6 => 5),
         3,
         6,
-        0,
+        1,
+        [0, 1],
     )
     @test_throws "Can't make hole for boundary halfedge" make_hole!(pmg1, 2)
     @test make_hole!(pmg1, 1) == 1
@@ -490,6 +503,7 @@ end
         4,
         6,
         0,
+        [0],
     )
 
     pmg2 = PlanarMultigraph(
@@ -511,6 +525,7 @@ end
         4,
         8,
         1,
+        [0],
     )
 
     @test add_facet_to_boarder!(pmg1, 1, 5) == 8
@@ -535,6 +550,7 @@ end
         4,
         6,
         0,
+        [0],
     )
 
 
@@ -592,6 +608,7 @@ end
         5,
         10,
         1,
+        [0],
     )
     @test add_vertex_and_facet_to_boarder!(pmg1, 1, 3) == 9
     @test pmg1 == pmg2
@@ -660,6 +677,7 @@ end
         5,
         12,
         2,
+        [0],
     )
 
     pmg2 = PlanarMultigraph(
@@ -681,6 +699,7 @@ end
         5,
         12,
         2,
+        [0],
     )
 
     @test erase_facet!(pmg1, 6) == 6
@@ -706,6 +725,7 @@ end
         4,
         8,
         1,
+        [0],
     )
 
     pmg4 = PlanarMultigraph(
@@ -718,6 +738,7 @@ end
         2,
         2,
         0,
+        [0],
     )
     @test erase_facet!(pmg3, 7) == 7
     @test pmg3 == pmg4

@@ -74,9 +74,11 @@ mutable struct PlanarMultigraph{T<:Integer}
     next::Dict{T,T}    # he_id -> he_id, counter clockwise
     twin::Dict{T,T}    # he_id -> he_id
 
+
     v_max::T
     he_max::T
     f_max::T
+    boundary::Vector{T} # f_id
 end
 
 PlanarMultigraph{T}() where {T<:Int} = PlanarMultigraph{T}(
@@ -89,6 +91,7 @@ PlanarMultigraph{T}() where {T<:Int} = PlanarMultigraph{T}(
     0,
     0,
     0,
+    [0],
 )
 
 function PlanarMultigraph{T}(qubits::Int) where {T<:Integer}
@@ -112,6 +115,7 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
     g.v_max,
     g.he_max,
     g.f_max,
+    copy(g.boundary)
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
@@ -135,6 +139,10 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
     end
 
     if pmg1.he2f != pmg2.he2f
+        return false
+    end
+
+    if sort(pmg1.boundary) != sort(pmg2.boundary)
         return false
     end
     return true
@@ -255,7 +263,8 @@ neighbors(g::PlanarMultigraph{T}, v::T) where {T} =
 
 If the half edge is on the boundary of entire manifold
 """
-is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T} = (face(g, he_id) == 0)
+is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T} = (face(g, he_id) ∈ g.boundary)
+
 
 function check_faces(g::PlanarMultigraph)
     for f in faces(g)
@@ -350,8 +359,7 @@ function make_hole!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
     any(he -> is_boundary(pmg, he), hes_f) && error("Can't make hole for boundary halfedge")
 
-    delete!(pmg.f2he, face(pmg, h))
-    set_face!(pmg, hes_f, 0; both = false)
+    push!(pmg.boundary,face(pmg,h))
     return h
 end
 
@@ -632,7 +640,8 @@ function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
     is_bry = [is_boundary(pmg, he) for he in hes_ft]
 
     # modify old graph
-    make_hole!(pmg, h)
+    set_face!(pmg, hes_f, 0; both=false)
+    delete!(pmg.f2he, face(pmg,h))
     for idx = 1:length(hes_ft)
         if is_bry[idx]
             he_f_prev = prev(pmg, hes_f[idx])
