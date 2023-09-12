@@ -1,4 +1,5 @@
 @testset "ZXWSpiderType" begin
+
     spider_vec =
         [Z(Parameter(Val(:PiUnit), 3)) Z(Parameter(Val(:Factor), exp(im * 1.5 * π))) X(
             Parameter(Val(:PiUnit), 3),

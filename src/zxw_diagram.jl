@@ -1,27 +1,3 @@
-@adt public ZXWSpiderType begin
-
-    W
-    H
-    D
-
-    struct Z
-        p::Parameter
-    end
-
-    struct X
-        p::Parameter
-    end
-
-    struct Input
-        qubit::Int
-    end
-
-    struct Output
-        qubit::Int
-    end
-end
-
-
 """
     ZXWDiagram{T, P}
 
@@ -112,4 +88,3 @@ Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.inputs),
     copy(zxwd.outputs),
 )
-
