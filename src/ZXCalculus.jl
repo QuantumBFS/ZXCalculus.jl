@@ -36,6 +36,7 @@ export rewrite!,
     full_reduction,
     circuit_extraction,
     phase_teleportation
+export phase, spiders, rem_spider!
 
 include("scalar.jl")
 
@@ -62,6 +63,7 @@ using OMEinsum
 import Multigraphs: has_vertex
 using ..ZXCalculus
 using ..ZXCalculus: safe_convert, add_phase!
+import ..pushfirst_gate!, ..push_gate!, ..rewrite
 import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
 
 
@@ -91,26 +93,9 @@ using .ZXW:
     X,
     rewrite!
 export ZXWSpiderType,
-    ZXWDiagram, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X, CalcRule, rewrite!
+    ZXWDiagram, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X, CalcRule
 export substitute_variables!, expval_circ!, stack_zxwd!, concat!
-# export parameter,
-#     insert_wtrig!,
-#     spiders,
-#     degree,
-#     spider_type,
-#     neighbors,
-#     set_phase!,
-#     add_global_phase!,
-#     add_spider!,
-#     rem_spider!,
-#     get_outputs,
-#     add_power!,
-#     get_inputs,
-#     scalar,
-#     nin,
-#     nout,
-#     phase
-#     rem_spiders!,
+
 include("parameter.jl")
 
 include("planar_multigraph.jl")
