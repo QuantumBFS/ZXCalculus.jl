@@ -1,3 +1,5 @@
+using ZXCalculus.ZXW: ZXWSpiderType, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X
+
 @testset "ZXWSpiderType" begin
 
     spider_vec =

@@ -63,7 +63,7 @@ using OMEinsum
 import Multigraphs: has_vertex
 using ..ZXCalculus
 using ..ZXCalculus: safe_convert, add_phase!
-import ..pushfirst_gate!, ..push_gate!, ..rewrite
+import ..pushfirst_gate!, ..push_gate!
 import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
 
 
@@ -73,28 +73,11 @@ include("zxw_rules.jl")
 include("to_eincode.jl")
 include("utils.jl")
 
-
-export ZXWDiagram, CalcRule
 end # module ZXW
 
-using .ZXW:
-    ZXWDiagram,
-    ZXWSpiderType,
-    Parameter,
-    CalcRule,
-    PiUnit,
-    Factor,
-    Input,
-    Output,
-    W,
-    H,
-    D,
-    Z,
-    X,
-    rewrite!
-export ZXWSpiderType,
-    ZXWDiagram, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X, CalcRule
-export substitute_variables!, expval_circ!, stack_zxwd!, concat!
+using .ZXW: ZXWDiagram, CalcRule
+
+export ZXWDiagram, CalcRule
 
 include("parameter.jl")
 
