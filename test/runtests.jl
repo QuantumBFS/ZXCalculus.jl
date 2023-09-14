@@ -1,7 +1,11 @@
-using ZXCalculus, Graphs, Multigraphs, SparseArrays, ZXCalculus.ZXW
+using ZXCalculus, Graphs, Multigraphs, SparseArrays, ZXCalculus.ZXW, ZXCalculus.ZW
 using YaoHIR: Chain
 using Documenter
 using Test
+
+@testset "ZW Diagram with Planar Multigraph" begin
+    include("zw_diagram.jl")
+end
 
 @testset "planar multigraphs.jl" begin
     include("planar_multigraph.jl")

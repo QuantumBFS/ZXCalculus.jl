@@ -82,4 +82,17 @@ export ZXWDiagram, CalcRule
 include("parameter.jl")
 
 include("planar_multigraph.jl")
+
+module ZW
+using Expronicon.ADT: @adt, @const_use
+using MLStyle
+using ..ZXCalculus
+using ..ZXCalculus.ZXW: _round_phase, Parameter
+import ..round_phases!
+
+include("zw_adt.jl")
+include("zw_diagram.jl")
+include("zw_utils.jl")
+end # module ZW
+
 end # module
