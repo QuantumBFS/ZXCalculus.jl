@@ -6,6 +6,8 @@ struct ZWDiagram{T<:Integer,P}
     scalar::Scalar{P}
     inputs::Vector{T}
     outputs::Vector{T}
+    # what else shoud I maintian
+    # 1. locations / numbers of SWAP, monoZ?
 
     function ZWDiagram{T,P}(
         pmg::PlanarMultigraph{T},
@@ -38,3 +40,31 @@ struct ZWDiagram{T<:Integer,P}
         end
     end
 end
+
+ZWDiagram(
+    pmg::PlanarMultigraph{T},
+    st::Dict{T,ZWSpiderType},
+    P::Type = Rational,
+) where {T} = ZWDiagram{T,P}(pmg, st)
+
+ZWDiagram(
+    pmg::PlanarMultigraph{T},
+    st::Vector{ZWSpiderType},
+    P::Type = Rational,
+) where {T} = ZWDiagram{T,P}(pmg, Dict(zip(sort!(vertices(pmg)), st)))
+
+function ZWDiagram(nbits::T) where {T<:Integer}
+    pmg = PlanarMultigraph{T}()
+
+    st = [i % 2 == 1 ? Input(div(i, 2) + 1) : Output(div(i, 2)) for i = 1:2*nbits]
+
+    return ZWDiagram{T,Rational}(pmg, st)
+end
+
+Base.copy(zwd::ZWDiagram{T,P}) where {T,P} = ZWDiagram{T,P}(
+    copy(zwd.pmg),
+    copy(zwd.st),
+    copy(zwd.scalar),
+    copy(zwd.inputs),
+    copy(zwd.outputs),
+)
