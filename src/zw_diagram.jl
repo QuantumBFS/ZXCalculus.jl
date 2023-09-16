@@ -58,13 +58,18 @@ function ZWDiagram(nbits::T) where {T<:Integer}
     for i = 1:2*nbits
         half_edges[i] = HalfEdge(i, iseven(i) ? (i - 1) : (i + 1))
     end
-    for i = (2*nbits+1):(6*nbits-4)
+    for i = 1:(2*nbits-2)
+        # edges connecting input qubits
+        jj = i + 2 * nbits
+        # edges connecting output qubits
+        kk = i + 4 * nbits - 2
         if iseven(i)
-            jj = i - 4 * nbits + 2
+            half_edges[jj] = HalfEdge(i - 1, i + 1)
+            half_edges[kk] = HalfEdge(i, i + 2)
         else
-            jj = i - 2 * nbits
+            half_edges[jj] = HalfEdge(i + 2, i)
+            half_edges[kk] = HalfEdge(i + 3, i + 1)
         end
-        half_edges[i] = HalfEdge(jj, iseven(jj) ? (jj - 2) : (jj + 2))
     end
 
     he2f = Dict{T,T}()

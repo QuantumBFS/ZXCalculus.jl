@@ -276,8 +276,8 @@ end
 trace_vertex(g::PlanarMultigraph{T}, v::T) where {T} =
     trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
 
-neighbors(g::PlanarMultigraph{T}, v::T) where {T} =
-    [dst(g, he) for he in trace_vertex(g, v)]
+neighbors(pmg::PlanarMultigraph{T}, v::T) where {T} =
+    [dst(pmg, he) for he in trace_vertex(pmg, v)]
 
 """
     is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T}

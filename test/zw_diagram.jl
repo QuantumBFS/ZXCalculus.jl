@@ -47,6 +47,7 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     @test zx2.inputs == [1, 3]
     @test zx2.outputs == [2, 4]
     @test zx2.pmg == pmg2
+    @test zx2.pmg.half_edges == pmg2.half_edges
 
     zx3 = ZWDiagram(3)
 
@@ -134,4 +135,5 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     @test zx3.inputs == [1, 3, 5]
     @test zx3.outputs == [2, 4, 6]
     @test zx3.pmg == pmg3
+    @test zx3.pmg.half_edges == pmg3.half_edges
 end
