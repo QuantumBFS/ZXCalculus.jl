@@ -85,12 +85,12 @@ include("planar_multigraph.jl")
 
 module ZW
 using Expronicon.ADT: @adt, @const_use
-using MLStyle
+using MLStyle, Graphs
 using ..ZXCalculus
 using ..ZXCalculus.ZXW: _round_phase, Parameter
 # these will be changed to using PlanarMultigraph: vertices after we split out package
-using ..ZXCalculus: vertices, nv
-import ..round_phases!
+using ..ZXCalculus: vertices, nv, has_vertex, ne, neighbors, rem_edge!, add_edge!, degree
+
 
 include("zw_adt.jl")
 include("zw_diagram.jl")
