@@ -60,7 +60,7 @@ end
     zxwd = ZXWDiagram(3)
 
     @test @match spider_type(zxwd, 1) begin
-        Input(_) => true
+        ZXW.Input(_) => true
         _ => false
     end
 
