@@ -88,6 +88,8 @@ using Expronicon.ADT: @adt, @const_use
 using MLStyle
 using ..ZXCalculus
 using ..ZXCalculus.ZXW: _round_phase, Parameter
+# these will be changed to using PlanarMultigraph: vertices after we split out package
+using ..ZXCalculus: vertices, nv
 import ..round_phases!
 
 include("zw_adt.jl")

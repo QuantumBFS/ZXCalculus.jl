@@ -120,29 +120,50 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
     if nv(pmg1) != nv(pmg2)
+        println("nv")
+        println(nv(pmg1))
+        println(nv(pmg2))
         return false
     end
     if nhe(pmg1) != nhe(pmg2)
+        println("nhe")
+        println(nhe(pmg1))
+        println(nhe(pmg2))
         return false
     end
     if nf(pmg1) != nf(pmg2)
+        println("nf")
+        println(nf(pmg1))
+        println(nf(pmg2))
         return false
     end
 
     # could be relaxed, idx might be different but content needs to be the same for HalfEdges
     if pmg1.next != pmg2.next
+        println("next")
+        println(pmg1.next)
+        println(pmg2.next)
         return false
     end
 
     if pmg1.twin != pmg2.twin
+        println("twin")
+        println(pmg1.twin)
+        println(pmg2.twin)
         return false
     end
 
     if pmg1.he2f != pmg2.he2f
+        println("he2f")
+        println(pmg1.he2f)
+        println(pmg2.he2f)
         return false
     end
 
     if sort(pmg1.boundary) != sort(pmg2.boundary)
+        println("boundary")
+        println(pmg1.boundary)
+        println(pmg2.boundary)
         return false
     end
     return true

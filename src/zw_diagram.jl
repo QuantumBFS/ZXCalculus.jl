@@ -6,8 +6,6 @@ struct ZWDiagram{T<:Integer,P}
     scalar::Scalar{P}
     inputs::Vector{T}
     outputs::Vector{T}
-    # what else shoud I maintian
-    # 1. locations / numbers of SWAP, monoZ?
 
     function ZWDiagram{T,P}(
         pmg::PlanarMultigraph{T},
@@ -54,11 +52,122 @@ ZWDiagram(
 ) where {T} = ZWDiagram{T,P}(pmg, Dict(zip(sort!(vertices(pmg)), st)))
 
 function ZWDiagram(nbits::T) where {T<:Integer}
-    pmg = PlanarMultigraph{T}()
+    nbits < 1 && error("We need to have at least one qubit in the system!")
+
+    half_edges = Dict{T,HalfEdge}()
+    for i = 1:2*nbits
+        half_edges[i] = HalfEdge(i, iseven(i) ? (i - 1) : (i + 1))
+    end
+    for i = (2*nbits+1):(6*nbits-4)
+        if iseven(i)
+            jj = i - 4 * nbits + 2
+        else
+            jj = i - 2 * nbits
+        end
+        half_edges[i] = HalfEdge(jj, iseven(jj) ? (jj - 2) : (jj + 2))
+    end
+
+    he2f = Dict{T,T}()
+    for i = 1:(6*nbits-4)
+        if i == 2 || i == 2 * nbits - 1
+            he2f[i] = 0
+            continue
+        end
+
+        if i <= 2 * nbits
+            if iseven(i)
+                he2f[i] = div(i, 2) - 1
+            else
+                he2f[i] = div(i + 1, 2)
+            end
+            continue
+        end
+
+        if i <= 4 * nbits - 2
+            if iseven(i)
+                he2f[i] = 0
+            else
+                he2f[i] = (i - 2 * nbits + 1) ÷ 2
+            end
+            continue
+        end
+
+        if iseven(i)
+            he2f[i] = div(i - 4 * nbits + 2, 2)
+        else
+            he2f[i] = 0
+        end
+    end
+
+    next = Dict{T,T}()
+
+    if nbits < 2
+        next[1] = 2
+        next[2] = 1
+    else
+        for i = 1:(6*nbits-4)
+            if i <= 2 * nbits
+                if isodd(i)
+                    if i == 2 * nbits - 1
+                        next[i] = 6 * nbits - 5
+                    else
+                        next[i] = i + (4 * nbits - 1)
+                    end
+                else
+                    if i == 2
+                        next[i] = 2 * nbits + 2
+                    else
+                        next[i] = i + 2 * nbits - 3
+                    end
+                end
+                continue
+            end
+
+            if i <= 4 * nbits - 2
+                if iseven(i)
+                    if i == 4 * nbits - 2
+                        next[i] = 2 * nbits - 1
+                    else
+                        next[i] = i + 2
+                    end
+                else
+                    if i == 2 * nbits + 1
+                        next[i] = 1
+                    else
+                        next[i] = i - 2 * nbits
+                    end
+                end
+                continue
+            end
+
+            if iseven(i)
+                next[i] = i - 4 * nbits + 4
+            else
+                if i == 4 * nbits - 1
+                    next[i] = 2
+                else
+                    next[i] = i - 2
+                end
+            end
+        end
+    end
+
+    pmg = PlanarMultigraph{T}(
+        Dict([i => i for i = 1:2*nbits]), # v2he
+        half_edges, # he_id -> HalfEdge
+        Dict([[0 => 2]; [i => 2 * i - 1 for i = 1:nbits-1]]), # f2he
+        he2f, # he_id -> f_id
+        next,
+        Dict([i => iseven(i) ? (i - 1) : (i + 1) for i = 1:(6*nbits-4)]),
+        2 * nbits, # v_max
+        6 * nbits - 4, # he_max
+        nbits - 1,
+        [0],
+    )
 
     st = [i % 2 == 1 ? Input(div(i, 2) + 1) : Output(div(i, 2)) for i = 1:2*nbits]
 
-    return ZWDiagram{T,Rational}(pmg, st)
+    return ZWDiagram(pmg, st)
 end
 
 Base.copy(zwd::ZWDiagram{T,P}) where {T,P} = ZWDiagram{T,P}(
