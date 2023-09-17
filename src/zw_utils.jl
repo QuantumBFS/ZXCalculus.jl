@@ -138,3 +138,174 @@ Graphs.inneighbors(zwd::ZWDiagram, v) = neighbors(zwd.pmg, v)
 Graphs.degree(zwd::ZWDiagram, v::Integer) = length(neighbors(zwd.pmg, v))
 Graphs.indegree(zwd::ZWDiagram, v::Integer) = degree(zwd, v)
 Graphs.outdegree(zwd::ZWDiagram, v::Integer) = degree(zwd, v)
+
+"""
+    neighbors(zwd, v)
+
+Returns a vector of vertices connected to `v`.
+"""
+Graphs.neighbors(zwd::ZWDiagram, v) =
+    neighbors(zwd.pmg, v)
+
+# """
+#     Graphs.rem_edge!(zwd::ZWDiagram, x...)
+
+# Remove Edge that connects vertices with indices `x...`.
+
+# You could both remove the edge from face or merge the two vertices.
+# A more suitable way to perform this action is during the process of
+# adding and removing a spider.
+# """
+# function Graphs.rem_edge!(zwd::ZWDiagram, x...)
+#     #TODO
+# end
+
+
+# """
+#     Graphs.add_edge!(zwd::ZWDiagram, x...)
+
+# Add an edge that connects vertices with indices `x...`.
+
+# Ideally, you could
+# """
+# function Graphs.add_edge!(zwd::ZWDiagram, x...)
+#     #TODO
+# end
+
+# """
+#     rem_spiders!(zwd, vs)
+
+# Remove spiders indexed by `vs`.
+# """
+# function rem_spiders!(zwd::ZWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
+#     if rem_vertices!(zwd.pmg, vs)
+#         for v in vs
+#             delete!(zwd.st, v)
+#         end
+#         return true
+#     end
+#     return false
+# end
+
+# """
+#     rem_spider!(zwd, v)
+
+# Remove a spider indexed by `v`.
+# """
+# rem_spider!(zwd::ZWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zwd, [v])
+
+# """
+#     add_spider!(zwd, spider, connect = [])
+
+# Add a new spider `spider` with appropriate parameter
+# connected to the vertices `connect`. """
+# function add_spider!(
+#     zwd::ZWDiagram{T,P},
+#     spider::ZWSpiderType,
+#     connect::Vector{T} = T[],
+# ) where {T<:Integer,P}
+#     if any(!has_vertex(zwd.mg, c) for c in connect)
+#         error("The vertex to connect does not exist.")
+#     end
+
+#     v = add_vertex!(zwd.mg)[1]
+#     zwd.st[v] = spider
+
+#     for c in connect
+#         add_edge!(zwd.pmg, v, c)
+#     end
+
+#     return v
+# end
+
+# """
+#     insert_spider!(zwd, v1, v2, spider)
+
+# Insert a spider `spider` with appropriate parameter, between two
+# vertices `v1` and `v2`. It will insert multiple times if the edge between
+# `v1` and `v2` is a multiple edge. Also it will remove the original edge between
+# `v1` and `v2`.
+# """
+# function insert_spider!(
+#     zwd::ZWDiagram{T,P},
+#     v1::T,
+#     v2::T,
+#     spider::ZWSpiderType,
+# ) where {T<:Integer,P}
+#     mt = mul(zwd.pmg, v1, v2)
+#     vs = Vector{T}(undef, mt)
+#     for i = 1:mt
+#         v = add_spider!(zwd, spider, [v1, v2])
+#         @inbounds vs[i] = v
+#         rem_edge!(zwd, v1, v2)
+#     end
+#     return vs
+# end
+
+
+"""
+    spiders(zwd::ZWDiagram)
+
+Returns a vector of spider idxs.
+"""
+spiders(zwd::ZWDiagram) = vertices(zwd.pmg)
+
+"""
+    get_inputs(zwd)
+
+Returns a vector of input ids.
+"""
+get_inputs(zwd::ZWDiagram) = zwd.inputs
+
+"""
+    get_input_idx(zwd::ZXWDiagram{T,P}, q::T) where {T,P}
+
+Get spider index of input qubit q.
+"""
+function get_input_idx(zwd::ZWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_inputs(zwd))
+        res = @match spider_type(zwd, v) begin
+            Input(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && return res
+    end
+    return -1
+end
+
+"""
+    get_outputs(zwd)
+
+Returns a vector of output ids.
+"""
+get_outputs(zwd::ZWDiagram) = zwd.outputs
+
+"""
+    get_output_idx(zwd::ZWDiagram{T,P}, q::T) where {T,P}
+
+Get spider index of output qubit q.
+"""
+function get_output_idx(zwd::ZWDiagram{T,P}, q::T) where {T,P}
+    for (i, v) in enumerate(get_outputs(zwd))
+        res = @match spider_type(zwd, v) begin
+            Output(q2) && if q2 == q
+            end => v
+            _ => nothing
+        end
+        !isnothing(res) && return res
+    end
+    return -1
+end
+
+scalar(zwd::ZWDiagram) = zwd.scalar
+
+function add_global_phase!(zwd::ZWDiagram{T,P}, p::P) where {T,P}
+    add_phase!(zwd.scalar, p)
+    return zwd
+end
+
+function add_power!(zwd::ZWDiagram, n)
+    add_power!(zwd.scalar, n)
+    return zwd
+end
