@@ -144,8 +144,7 @@ Graphs.outdegree(zwd::ZWDiagram, v::Integer) = degree(zwd, v)
 
 Returns a vector of vertices connected to `v`.
 """
-Graphs.neighbors(zwd::ZWDiagram, v) =
-    neighbors(zwd.pmg, v)
+Graphs.neighbors(zwd::ZWDiagram, v) = neighbors(zwd.pmg, v)
 
 # """
 #     Graphs.rem_edge!(zwd::ZWDiagram, x...)
@@ -161,16 +160,6 @@ Graphs.neighbors(zwd::ZWDiagram, v) =
 # end
 
 
-# """
-#     Graphs.add_edge!(zwd::ZWDiagram, x...)
-
-# Add an edge that connects vertices with indices `x...`.
-
-# Ideally, you could
-# """
-# function Graphs.add_edge!(zwd::ZWDiagram, x...)
-#     #TODO
-# end
 
 # """
 #     rem_spiders!(zwd, vs)
@@ -193,54 +182,64 @@ Graphs.neighbors(zwd::ZWDiagram, v) =
 # Remove a spider indexed by `v`.
 # """
 # rem_spider!(zwd::ZWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zwd, [v])
+#
+#
+"""
+    Graphs.add_edge!(zwd::ZWDiagram, x...)
 
-# """
-#     add_spider!(zwd, spider, connect = [])
+Add an edge that connects vertices with indices `x...`.
 
-# Add a new spider `spider` with appropriate parameter
-# connected to the vertices `connect`. """
-# function add_spider!(
-#     zwd::ZWDiagram{T,P},
-#     spider::ZWSpiderType,
-#     connect::Vector{T} = T[],
-# ) where {T<:Integer,P}
-#     if any(!has_vertex(zwd.mg, c) for c in connect)
-#         error("The vertex to connect does not exist.")
-#     end
+Ideally, you could
+"""
+function Graphs.add_edge!(zwd::ZWDiagram, x...)
+    #TODO
+    # find the out most edge between vertices
+    # use add_multiedge!
+end
 
-#     v = add_vertex!(zwd.mg)[1]
-#     zwd.st[v] = spider
+function join_spider!(zwd::ZWDiagram{T,P}, v1::T, v2::T)
+    # see if the two are in the same face
+    # if yes, use split_facet
+end
 
-#     for c in connect
-#         add_edge!(zwd.pmg, v, c)
-#     end
+"""
+    add_spider!(zwd, spider, connect = [])
 
-#     return v
-# end
+Add a new spider `spider` with appropriate parameter
+connected to the vertices `connect`. """
+function add_spider!(
+    zwd::ZWDiagram{T,P},
+    spider::ZWSpiderType,
+    connect::Vector{T},
+) where {T<:Integer,P}
+    #TODO
+    # test if connect is on the same face
+    # if yes make this face boundary, and then add_vertex_and_facet_to_border()
+    # split_facet to connect to all other vertices
 
-# """
-#     insert_spider!(zwd, v1, v2, spider)
+end
 
-# Insert a spider `spider` with appropriate parameter, between two
-# vertices `v1` and `v2`. It will insert multiple times if the edge between
-# `v1` and `v2` is a multiple edge. Also it will remove the original edge between
-# `v1` and `v2`.
-# """
-# function insert_spider!(
-#     zwd::ZWDiagram{T,P},
-#     v1::T,
-#     v2::T,
-#     spider::ZWSpiderType,
-# ) where {T<:Integer,P}
-#     mt = mul(zwd.pmg, v1, v2)
-#     vs = Vector{T}(undef, mt)
-#     for i = 1:mt
-#         v = add_spider!(zwd, spider, [v1, v2])
-#         @inbounds vs[i] = v
-#         rem_edge!(zwd, v1, v2)
-#     end
-#     return vs
-# end
+"""
+    insert_spider!(zwd, he1,he2, spider)
+
+Insert a spider `spider` with appropriate parameter on the half-edge `he1`.
+
+# Need TESTING
+
+"""
+function insert_spider!(
+    zwd::ZWDiagram{T,P},
+    he1::T,
+    spider::ZWSpiderType,
+) where {T<:Integer,P}
+    vsrc = src(zwd.pmg, he1)
+    vdst = dst(zwd.pmg, he1)
+
+    he_new = split_edge!(zwd.pmg, he1)
+    v_new = src(zwd.pmg, he_new)
+    zwd.st[v_new] = spider
+    return v_new
+end
 
 
 """
