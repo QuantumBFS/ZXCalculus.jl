@@ -65,7 +65,7 @@ end
     zw = ZWDiagram(3)
 
     pmg2 = PlanarMultigraph(
-        Dict(1 => 1, 2 => 15, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 2),
+        Dict(1 => 1, 2 => 16, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 2),
         Dict(
             1 => HalfEdge(1, 7),
             2 => HalfEdge(7, 1),
@@ -81,13 +81,13 @@ end
             12 => HalfEdge(2, 4),
             13 => HalfEdge(6, 4),
             14 => HalfEdge(4, 6),
-            15 => HalfEdge(2, 7),
-            16 => HalfEdge(7, 2),
+            15 => HalfEdge(7, 2),
+            16 => HalfEdge(2, 7),
         ),
         Dict(0 => 2, 1 => 1, 3 => 2),
         Dict(
             1 => 1,
-            16 => 1,
+            16 => 0,
             12 => 1,
             4 => 1,
             7 => 1,
@@ -96,7 +96,7 @@ end
             6 => 2,
             9 => 2,
             2 => 0,
-            15 => 0,
+            15 => 1,
             11 => 0,
             5 => 0,
             8 => 0,
@@ -104,8 +104,8 @@ end
             10 => 0,
         ),
         Dict(
-            1 => 16,
-            16 => 12,
+            1 => 15,
+            15 => 12,
             12 => 4,
             4 => 7,
             7 => 1,
@@ -118,8 +118,8 @@ end
             10 => 5,
             5 => 13,
             13 => 11,
-            11 => 15,
-            15 => 2,
+            11 => 16,
+            16 => 2,
         ),
         Dict(
             1 => 2,
@@ -146,9 +146,8 @@ end
     )
 
     println(zw)
-    println(zw.pmg.next)
     insert_spider!(zw, 2, ZW.binZ(Parameter(Val(:Factor), 2.0)))
     @test zw.pmg == pmg2
     println(zw)
-    println(zw.pmg.next)
+    println(neighbors(zw.pmg))
 end

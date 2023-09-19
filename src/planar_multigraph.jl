@@ -273,8 +273,8 @@ function trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
     return hes_f
 end
 
-trace_vertex(g::PlanarMultigraph{T}, v::T) where {T} =
-    trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
+trace_vertex(pmg::PlanarMultigraph{T}, v::T) where {T} =
+    trace_orbit(h -> σ_inv(pmg, h), out_half_edge(pmg, v); rev = true)
 
 neighbors(pmg::PlanarMultigraph{T}, v::T) where {T} =
     [dst(pmg, he) for he in trace_vertex(pmg, v)]
@@ -500,7 +500,6 @@ After splitting, h points to the newly added vertex
 - [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a2b17d7bd2045397167b00616f3b4d622)
 """
 function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
-
     # Preconditions
     dst(pmg, h) == dst(pmg, g) || error("h and g don't have the same destination")
     h == g && error("h and g can't be the same half edge")
@@ -509,7 +508,6 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     gn = next(pmg, g)
     hn = next(pmg, h)
 
-    tg = twin(pmg, g)
     th = twin(pmg, h)
 
     he_vec = trace_orbit(he -> σ_inv(pmg, he), th; rev = false)
@@ -526,15 +524,14 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     # add new half edges from v2 to v1
     hes_id, _ = create_edge!(pmg, v2, v1)
 
-
     for he in he_vec
         set_dst!(pmg, he, v2)
-        (he == tg) && break
+        (he == th) && break
     end
 
-    set_next!(pmg, [g, h, hes_id...], [hes_id..., gn, hn])
-    set_face!(pmg, hes_id[1], gf; both = true)
-    set_face!(pmg, hes_id[2], hf; both = true)
+    set_next!(pmg, [h, g, hes_id...], [hes_id..., hn, gn])
+    set_face!(pmg, hes_id[1], hf; both = true)
+    set_face!(pmg, hes_id[2], gf; both = true)
 
     return hes_id[1]
 end
