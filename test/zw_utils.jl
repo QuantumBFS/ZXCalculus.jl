@@ -21,7 +21,9 @@ using ZXCalculus.ZW:
     get_input_idx,
     get_output_idx,
     add_power!,
-    add_global_phase!
+    add_global_phase!,
+    insert_spider!
+using ZXCalculus.ZXW: Parameter
 
 @testset "utils" begin
     zw = ZWDiagram(3)
@@ -56,4 +58,12 @@ using ZXCalculus.ZW:
 
     # TODO
     # set_phase!
+end
+
+@testset "Add and Spiders" begin
+
+    zw = ZWDiagram(3)
+
+    insert_spider!(zw, 1, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    println(zw)
 end

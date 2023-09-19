@@ -249,11 +249,8 @@ function insert_spider!(
     he1::T,
     spider::ZWSpiderType,
 ) where {T<:Integer,P}
-    vsrc = src(zwd.pmg, he1)
-    vdst = dst(zwd.pmg, he1)
-
     he_new = split_edge!(zwd.pmg, he1)
-    v_new = src(zwd.pmg, he_new)
+    v_new = dst(zwd.pmg, he_new)
     zwd.st[v_new] = spider
     return v_new
 end
