@@ -185,38 +185,55 @@ Graphs.neighbors(zwd::ZWDiagram, v) = neighbors(zwd.pmg, v)
 #
 #
 """
-    Graphs.add_edge!(zwd::ZWDiagram, x...)
+    Graphs.add_edge!(zwd::ZWDiagram, he, mul)
 
-Add an edge that connects vertices with indices `x...`.
+Add `mul` of edges that connects vertices with already connected with edge`x`.
 
-Ideally, you could
 """
-function Graphs.add_edge!(zwd::ZWDiagram, x...)
-    #TODO
-    # find the out most edge between vertices
-    # use add_multiedge!
+function Graphs.add_edge!(zwd::ZWDiagram, he, mul::Int)
+    return add_multiedge!(zwd.pmg, he, mul)
 end
 
-function join_spider!(zwd::ZWDiagram{T,P}, v1::T, v2::T)
-    # see if the two are in the same face
-    # if yes, use split_facet
+function join_spider!(zwd::ZWDiagram{T,P}, he1::T, he2::T) where {T<:Integer,P}
+    face(zwd.pmg, he1) != face(zwd.pmg, he2) &&
+        error("The two half edges must be on the same face!")
+    return split_facet!(zwd.pmg, he1, he2)
 end
 
 """
     add_spider!(zwd, spider, connect = [])
 
 Add a new spider `spider` with appropriate parameter
-connected to the vertices `connect`. """
+connected to the half edges`connect`.
+
+Had to make halfedge class 1 citizen because there will be ambiguity
+Consider A to B and there are multiple edges to A and from A to B
+"""
 function add_spider!(
     zwd::ZWDiagram{T,P},
     spider::ZWSpiderType,
     connect::Vector{T},
 ) where {T<:Integer,P}
-    #TODO
-    # test if connect is on the same face
-    # if yes make this face boundary, and then add_vertex_and_facet_to_border()
-    # split_facet to connect to all other vertices
+    length(connect) < 1 && error("The new vertex must be connect to something!")
 
+    f_id = face(zwd.pmg, src(zwd.pmg, connect[1]))
+    he_on_face = trace_face(zwd.pmg, f_id)
+    if !all(x -> x ∈ he_on_face, connect)
+        error("You must connect to vertices on the same face!")
+    end
+    make_hole!(zwd.pmg, f_id)
+    connect = connect[sortperm([findfirst(x -> x == i, he_on_face) for i in connect])]
+    he_new =
+        add_vertex_and_facet_to_boarder!(zwd.pmg, prev(zwd.pmg, connect[1]), connect[1])
+    v_new = src(zwd.pmg, he_new)
+    zwd.st[v_new] = spider
+
+    he_on_trig = twin(zwd.pmg, next(zwd.pmg, he_new))
+
+    for next_he in connect[2:end]
+        join_spider!(zwd, he_on_trig, next_he)
+    end
+    return v_new
 end
 
 """

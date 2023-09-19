@@ -89,7 +89,27 @@ using MLStyle, Graphs
 using ..ZXCalculus
 using ..ZXCalculus.ZXW: _round_phase, Parameter
 # these will be changed to using PlanarMultigraph: vertices after we split out package
-using ..ZXCalculus: vertices, nv, has_vertex, ne, neighbors, rem_edge!, add_edge!, degree, next, split_vertex!, split_edge!
+using ..ZXCalculus:
+    vertices,
+    nv,
+    has_vertex,
+    ne,
+    neighbors,
+    rem_edge!,
+    add_edge!,
+    degree,
+    next,
+    split_vertex!,
+    split_edge!,
+    face,
+    trace_face,
+    make_hole!,
+    add_vertex_and_facet_to_boarder!,
+    split_facet!,
+    twin,
+    prev,
+    add_multiedge!
+
 # these remains
 using ..ZXCalculus: add_phase!
 import ..ZXCalculus: add_power!, add_global_phase!, scalar, spiders, rem_spider!
