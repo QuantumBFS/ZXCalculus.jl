@@ -240,9 +240,6 @@ end
     insert_spider!(zwd, he1,he2, spider)
 
 Insert a spider `spider` with appropriate parameter on the half-edge `he1`.
-
-# Need TESTING
-
 """
 function insert_spider!(
     zwd::ZWDiagram{T,P},

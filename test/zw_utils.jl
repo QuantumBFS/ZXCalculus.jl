@@ -64,6 +64,91 @@ end
 
     zw = ZWDiagram(3)
 
-    insert_spider!(zw, 1, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    pmg2 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 15, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 2),
+        Dict(
+            1 => HalfEdge(1, 7),
+            2 => HalfEdge(7, 1),
+            3 => HalfEdge(3, 4),
+            4 => HalfEdge(4, 3),
+            5 => HalfEdge(5, 6),
+            6 => HalfEdge(6, 5),
+            7 => HalfEdge(3, 1),
+            8 => HalfEdge(1, 3),
+            9 => HalfEdge(5, 3),
+            10 => HalfEdge(3, 5),
+            11 => HalfEdge(4, 2),
+            12 => HalfEdge(2, 4),
+            13 => HalfEdge(6, 4),
+            14 => HalfEdge(4, 6),
+            15 => HalfEdge(2, 7),
+            16 => HalfEdge(7, 2),
+        ),
+        Dict(0 => 2, 1 => 1, 3 => 2),
+        Dict(
+            1 => 1,
+            16 => 1,
+            12 => 1,
+            4 => 1,
+            7 => 1,
+            3 => 2,
+            14 => 2,
+            6 => 2,
+            9 => 2,
+            2 => 0,
+            15 => 0,
+            11 => 0,
+            5 => 0,
+            8 => 0,
+            13 => 0,
+            10 => 0,
+        ),
+        Dict(
+            1 => 16,
+            16 => 12,
+            12 => 4,
+            4 => 7,
+            7 => 1,
+            3 => 14,
+            14 => 6,
+            6 => 9,
+            9 => 3,
+            2 => 8,
+            8 => 10,
+            10 => 5,
+            5 => 13,
+            13 => 11,
+            11 => 15,
+            15 => 2,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+            11 => 12,
+            12 => 11,
+            13 => 14,
+            14 => 13,
+            15 => 16,
+            16 => 15,
+        ),
+        7,
+        16,
+        3,
+        [0],
+    )
+
     println(zw)
+    println(zw.pmg.next)
+    insert_spider!(zw, 2, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    @test zw.pmg == pmg2
+    println(zw)
+    println(zw.pmg.next)
 end
