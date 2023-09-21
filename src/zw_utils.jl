@@ -237,9 +237,11 @@ function add_spider!(
 end
 
 """
-    insert_spider!(zwd, he1,he2, spider)
+    insert_spider!(zwd, he1, spider)
 
-Insert a spider `spider` with appropriate parameter on the half-edge `he1`.
+Insert a spider `spider` with appropriate parameter on the half-edge prior to `he1`.
+v1 <- he1 - v2 becomes
+v1 <- he1 - v2 <- he_new - v_new
 """
 function insert_spider!(
     zwd::ZWDiagram{T,P},

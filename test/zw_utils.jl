@@ -22,7 +22,9 @@ using ZXCalculus.ZW:
     get_output_idx,
     add_power!,
     add_global_phase!,
-    insert_spider!
+    insert_spider!,
+    neighbors
+using ZXCalculus: trace_vertex
 using ZXCalculus.ZXW: Parameter
 
 @testset "utils" begin
@@ -65,7 +67,7 @@ end
     zw = ZWDiagram(3)
 
     pmg2 = PlanarMultigraph(
-        Dict(1 => 1, 2 => 16, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 7 => 2),
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
         Dict(
             1 => HalfEdge(1, 7),
             2 => HalfEdge(7, 1),
@@ -84,7 +86,7 @@ end
             15 => HalfEdge(7, 2),
             16 => HalfEdge(2, 7),
         ),
-        Dict(0 => 2, 1 => 1, 3 => 2),
+        Dict(0 => 2, 1 => 1, 3 => 3),
         Dict(
             1 => 1,
             16 => 0,
@@ -145,9 +147,9 @@ end
         [0],
     )
 
-    println(zw)
-    insert_spider!(zw, 2, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    insert_spider!(zw, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
     @test zw.pmg == pmg2
-    println(zw)
-    println(neighbors(zw.pmg))
+
+    set_phase!(zw, 7, Parameter(Val(:PiUnit), 1))
+    @test zw.st[7] == ZW.binZ(Parameter(Val(:PiUnit), 1))
 end

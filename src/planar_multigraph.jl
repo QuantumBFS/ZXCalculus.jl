@@ -119,6 +119,26 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
+    function print_nonoverlaping(dict1, dict2)
+        # Print elements in dict1 not in dict2
+        println("Elements in dict1 not in dict2:")
+        for (key, value) in dict1
+            if !haskey(dict2, key) || dict2[key] != value
+                println("Key: ", key, ", Value: ", value)
+            end
+        end
+
+        println()
+
+        # Print elements in dict2 not in dict1
+        println("Elements in dict2 not in dict1:")
+        for (key, value) in dict2
+            if !haskey(dict1, key) || dict1[key] != value
+                println("Key: ", key, ", Value: ", value)
+            end
+        end
+
+    end
     if nv(pmg1) != nv(pmg2)
         println("nv")
         println(nv(pmg1))
@@ -138,25 +158,27 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
         return false
     end
 
-    # could be relaxed, idx might be different but content needs to be the same for HalfEdges
+    if pmg1.half_edges != pmg2.half_edges
+        println("HalfEdges")
+        print_nonoverlaping(pmg1.half_edges, pmg2.half_edges)
+        return false
+    end
+
     if pmg1.next != pmg2.next
         println("next")
-        println(pmg1.next)
-        println(pmg2.next)
+        print_nonoverlaping(pmg1.next, pmg2.next)
         return false
     end
 
     if pmg1.twin != pmg2.twin
         println("twin")
-        println(pmg1.twin)
-        println(pmg2.twin)
+        print_nonoverlaping(pmg1.twin, pmg2.twin)
         return false
     end
 
     if pmg1.he2f != pmg2.he2f
         println("he2f")
-        println(pmg1.he2f)
-        println(pmg2.he2f)
+        print_nonoverlaping(pmg1.he2f, pmg2.he2f)
         return false
     end
 
@@ -508,6 +530,7 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     gn = next(pmg, g)
     hn = next(pmg, h)
 
+    tg = twin(pmg, g)
     th = twin(pmg, h)
 
     he_vec = trace_orbit(he -> σ_inv(pmg, he), th; rev = false)
@@ -525,13 +548,13 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     hes_id, _ = create_edge!(pmg, v2, v1)
 
     for he in he_vec
-        set_dst!(pmg, he, v2)
-        (he == th) && break
+        set_dst!(pmg, twin(pmg, he), v2)
+        (he == tg) && break
     end
 
-    set_next!(pmg, [h, g, hes_id...], [hes_id..., hn, gn])
-    set_face!(pmg, hes_id[1], hf; both = true)
-    set_face!(pmg, hes_id[2], gf; both = true)
+    set_next!(pmg, [g, h, hes_id...], [hes_id..., gn, hn])
+    set_face!(pmg, hes_id[1], gf; both = true)
+    set_face!(pmg, hes_id[2], hf; both = true)
 
     return hes_id[1]
 end
