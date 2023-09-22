@@ -108,11 +108,14 @@ using ..ZXCalculus:
     split_facet!,
     twin,
     prev,
-    add_multiedge!
+    add_multiedge!,
+    join_facet!
+
 
 # these remains
 using ..ZXCalculus: add_phase!
 import ..ZXCalculus: add_power!, add_global_phase!, scalar, spiders, rem_spider!
+import Graphs.rem_edge!
 
 
 include("zw_adt.jl")

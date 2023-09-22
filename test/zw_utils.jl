@@ -23,7 +23,13 @@ using ZXCalculus.ZW:
     add_power!,
     add_global_phase!,
     insert_spider!,
-    neighbors
+    neighbors,
+    join_spider!,
+    add_edge!,
+    add_spider!,
+    rem_edge!
+
+
 using ZXCalculus: trace_vertex
 using ZXCalculus.ZXW: Parameter
 
@@ -86,7 +92,7 @@ end
             15 => HalfEdge(7, 2),
             16 => HalfEdge(2, 7),
         ),
-        Dict(0 => 2, 1 => 1, 3 => 3),
+        Dict(0 => 2, 1 => 1, 2 => 3),
         Dict(
             1 => 1,
             16 => 0,
@@ -152,4 +158,101 @@ end
 
     set_phase!(zw, 7, Parameter(Val(:PiUnit), 1))
     @test zw.st[7] == ZW.binZ(Parameter(Val(:PiUnit), 1))
+
+    join_spider!(zw, 1, 4)
+    pmg3 = PlanarMultigraph(
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
+        Dict(
+            1 => HalfEdge(1, 7),
+            2 => HalfEdge(7, 1),
+            3 => HalfEdge(3, 4),
+            4 => HalfEdge(4, 3),
+            5 => HalfEdge(5, 6),
+            6 => HalfEdge(6, 5),
+            7 => HalfEdge(3, 1),
+            8 => HalfEdge(1, 3),
+            9 => HalfEdge(5, 3),
+            10 => HalfEdge(3, 5),
+            11 => HalfEdge(4, 2),
+            12 => HalfEdge(2, 4),
+            13 => HalfEdge(6, 4),
+            14 => HalfEdge(4, 6),
+            15 => HalfEdge(7, 2),
+            16 => HalfEdge(2, 7),
+            17 => HalfEdge(7, 3),
+            18 => HalfEdge(3, 7),
+        ),
+        Dict(0 => 2, 1 => 17, 2 => 3, 3 => 18),
+        Dict(
+            1 => 1,
+            16 => 0,
+            12 => 3,
+            4 => 3,
+            7 => 1,
+            3 => 2,
+            14 => 2,
+            6 => 2,
+            9 => 2,
+            2 => 0,
+            15 => 3,
+            11 => 0,
+            5 => 0,
+            8 => 0,
+            13 => 0,
+            10 => 0,
+            17 => 1,
+            18 => 3,
+        ),
+        Dict(
+            1 => 17,
+            17 => 7,
+            7 => 1,
+            2 => 8,
+            8 => 10,
+            10 => 5,
+            5 => 13,
+            13 => 11,
+            11 => 16,
+            16 => 2,
+            15 => 12,
+            12 => 4,
+            4 => 18,
+            18 => 15,
+            3 => 14,
+            14 => 6,
+            6 => 9,
+            9 => 3,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+            11 => 12,
+            12 => 11,
+            13 => 14,
+            14 => 13,
+            15 => 16,
+            16 => 15,
+            17 => 18,
+            18 => 17,
+        ),
+        7,
+        18,
+        3,
+        [0],
+    )
+    @test pmg3 == zw.pmg
+
+    rem_edge!(zw, 17)
+
+    @test pmg2 == zw.pmg
+
+    add_spider!(zw, ZW.fSWAP(), [1, 3, 7, 4])
 end

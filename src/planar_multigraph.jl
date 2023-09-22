@@ -477,14 +477,14 @@ end
 
 Join two facets incident to h and it's twin into one.
 
-The facet incident to h is removed.
+The facet incident to h's twin is removed.
 """
 function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     vs = src(pmg, h)
     vd = dst(pmg, h)
 
-    length(trace_vertex(pmg, vs)) <= 3 && error("Src vtx must have degree 3 or above")
-    length(trace_vertex(pmg, vd)) <= 3 && error("Dst vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vs)) < 3 && error("Src vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vd)) < 3 && error("Dst vtx must have degree 3 or above")
 
     twin_h = twin(pmg, h)
     hp = prev(pmg, h)

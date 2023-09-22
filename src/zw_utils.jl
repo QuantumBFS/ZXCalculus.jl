@@ -146,44 +146,15 @@ Returns a vector of vertices connected to `v`.
 """
 Graphs.neighbors(zwd::ZWDiagram, v) = neighbors(zwd.pmg, v)
 
-# """
-#     Graphs.rem_edge!(zwd::ZWDiagram, x...)
+"""
+    rem_edge!(zwd::ZWDiagram, x)
 
-# Remove Edge that connects vertices with indices `x...`.
+Remove Edge with indices `x`.
+"""
+function rem_edge!(zwd::ZWDiagram, x)
+    return join_facet!(zwd.pmg, x)
+end
 
-# You could both remove the edge from face or merge the two vertices.
-# A more suitable way to perform this action is during the process of
-# adding and removing a spider.
-# """
-# function Graphs.rem_edge!(zwd::ZWDiagram, x...)
-#     #TODO
-# end
-
-
-
-# """
-#     rem_spiders!(zwd, vs)
-
-# Remove spiders indexed by `vs`.
-# """
-# function rem_spiders!(zwd::ZWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
-#     if rem_vertices!(zwd.pmg, vs)
-#         for v in vs
-#             delete!(zwd.st, v)
-#         end
-#         return true
-#     end
-#     return false
-# end
-
-# """
-#     rem_spider!(zwd, v)
-
-# Remove a spider indexed by `v`.
-# """
-# rem_spider!(zwd::ZWDiagram{T,P}, v::T) where {T<:Integer,P} = rem_spiders!(zwd, [v])
-#
-#
 """
     Graphs.add_edge!(zwd::ZWDiagram, he, mul)
 
