@@ -185,6 +185,7 @@ function add_spider!(
     spider::ZWSpiderType,
     connect::Vector{T},
 ) where {T<:Integer,P}
+
     length(connect) < 1 && error("The new vertex must be connect to something!")
 
     f_id = face(zwd.pmg, src(zwd.pmg, connect[1]))
@@ -192,6 +193,8 @@ function add_spider!(
     if !all(x -> x ∈ he_on_face, connect)
         error("You must connect to vertices on the same face!")
     end
+
+
     make_hole!(zwd.pmg, f_id)
     connect = connect[sortperm([findfirst(x -> x == i, he_on_face) for i in connect])]
     he_new =

@@ -68,7 +68,7 @@ using ZXCalculus.ZXW: Parameter
     # set_phase!
 end
 
-@testset "Add and Spiders" begin
+@testset "Add and Rem Spiders" begin
 
     zw = ZWDiagram(3)
 
@@ -254,5 +254,122 @@ end
 
     @test pmg2 == zw.pmg
 
-    add_spider!(zw, ZW.fSWAP(), [1, 3, 7, 4])
+    zw2 = ZWDiagram(3)
+    insert_spider!(zw2, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+
+    add_spider!(zw2, ZW.fSWAP, [1, 7, 4])
+
+    pmg4 = PlanarMultigraph(
+        Dict(1 => 1, 2 => 16, 3 => 7, 4 => 4, 5 => 5, 6 => 6, 7 => 2, 8 => 18),
+        Dict(
+            1 => HalfEdge(1, 7),
+            2 => HalfEdge(7, 1),
+            3 => HalfEdge(3, 4),
+            4 => HalfEdge(4, 3),
+            5 => HalfEdge(5, 6),
+            6 => HalfEdge(6, 5),
+            7 => HalfEdge(3, 1),
+            8 => HalfEdge(1, 3),
+            9 => HalfEdge(5, 3),
+            10 => HalfEdge(3, 5),
+            11 => HalfEdge(4, 2),
+            12 => HalfEdge(2, 4),
+            13 => HalfEdge(6, 4),
+            14 => HalfEdge(4, 6),
+            15 => HalfEdge(7, 2),
+            16 => HalfEdge(2, 7),
+            17 => HalfEdge(4, 8),
+            18 => HalfEdge(8, 4),
+            19 => HalfEdge(3, 8),
+            20 => HalfEdge(8, 3),
+            21 => HalfEdge(8, 1),
+            22 => HalfEdge(1, 8),
+            23 => HalfEdge(8, 7),
+            24 => HalfEdge(7, 8),
+        ),
+        Dict(1 => 15, 2 => 3, 3 => 4, 4 => 7, 5 => 1, 0 => 2),
+        Dict(
+            18 => 3,
+            4 => 3,
+            19 => 3,
+            3 => 2,
+            14 => 2,
+            6 => 2,
+            9 => 2,
+            22 => 4,
+            20 => 4,
+            7 => 4,
+            1 => 5,
+            24 => 5,
+            21 => 5,
+            15 => 1,
+            12 => 1,
+            17 => 1,
+            23 => 1,
+            2 => 0,
+            8 => 0,
+            10 => 0,
+            5 => 0,
+            13 => 0,
+            11 => 0,
+            16 => 0,
+        ),
+        Dict(
+            1 => 24,
+            24 => 21,
+            21 => 1,
+            2 => 8,
+            8 => 10,
+            10 => 5,
+            5 => 13,
+            13 => 11,
+            11 => 16,
+            16 => 2,
+            15 => 12,
+            12 => 17,
+            17 => 23,
+            23 => 15,
+            18 => 4,
+            4 => 19,
+            19 => 18,
+            22 => 20,
+            20 => 7,
+            7 => 22,
+            3 => 14,
+            14 => 6,
+            6 => 9,
+            9 => 3,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+            11 => 12,
+            12 => 11,
+            13 => 14,
+            14 => 13,
+            15 => 16,
+            16 => 15,
+            17 => 18,
+            18 => 17,
+            19 => 20,
+            20 => 19,
+            21 => 22,
+            22 => 21,
+            23 => 24,
+            24 => 23,
+        ),
+        8,
+        24,
+        5,
+        [0, 1],
+    )
+    @test zw2.pmg == pmg4
 end

@@ -631,7 +631,8 @@ function add_vertex_and_facet_to_boarder!(
     # preconditions
     is_boundary(pmg, h) && is_boundary(pmg, g) || error("Can't add facet on top of facet")
     h != g || error("Can't add a loop as a facet!")
-    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    old_f = face(pmg, h)
+    hes_f = trace_face(pmg, old_f; safe_trace = false)
     hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
     g ∉ hes_f && error("Can't add edge across facet")
 
@@ -658,6 +659,7 @@ function add_vertex_and_facet_to_boarder!(
         (he == g) && break
     end
     set_face!(pmg, [hes_hv2newv[2], hes_gv2newv[1]], new_f; both = true)
+    set_face!(pmg, [hes_hv2newv[1], hes_gv2newv[2]], old_f; both=false)
     return hes_gv2newv[1]
 end
 
