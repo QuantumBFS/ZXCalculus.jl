@@ -154,9 +154,6 @@ Remove Edge with indices `x`.
 function rem_edge!(zwd::ZWDiagram, x)
     vs = src(zwd.pmg, x)
     vd = dst(zwd.pmg, x)
-    println("removing edge $x")
-    println("$vs has $(degree(zwd, vs)) edges")
-    println("$vd has $(degree(zwd, vd)) edges")
     if degree(zwd, vs) < 3 || degree(zwd, vd) < 3
         return join_vertex!(zwd.pmg, x)
     else
@@ -247,7 +244,6 @@ function rem_spiders!(zwd::ZWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
 
     for v in vs
         out_hes = trace_vertex(zwd.pmg, v)
-        println(out_hes)
         for he in out_hes
             rem_edge!(zwd, he)
         end

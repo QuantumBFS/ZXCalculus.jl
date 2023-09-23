@@ -119,6 +119,14 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
+    return pmg_equiv(pmg1, pmg2, false)
+end
+
+function pmg_equiv(
+    pmg1::PlanarMultigraph{T},
+    pmg2::PlanarMultigraph{T},
+    verbose::Bool,
+) where {T<:Integer}
     function print_nonoverlaping(dict1, dict2)
         # Print elements in dict1 not in dict2
         println("Elements in dict1 not in dict2:")
@@ -139,53 +147,91 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
         end
 
     end
-    if nv(pmg1) != nv(pmg2)
-        println("nv")
-        println(nv(pmg1))
-        println(nv(pmg2))
+    function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+        if length(keys(pmg1.v2he)) != length(keys(pmg2.v2he))
+            return false
+        end
+
+        for (v, _) in pmg1.v2he
+            if !haskey(pmg2.v2he, v)
+                return false
+            end
+            if pmg2.v2he[v] ∉ trace_vertex(pmg1, v)
+                return false
+            end
+        end
+        return true
+    end
+    if !equiv_v2he(pmg1, pmg2)
+        if verbose
+            println("v2he")
+            print_nonoverlaping(pmg1.v2he, pmg2.v2he)
+        end
         return false
     end
-    if nhe(pmg1) != nhe(pmg2)
-        println("nhe")
-        println(nhe(pmg1))
-        println(nhe(pmg2))
-        return false
+
+    function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+        if length(keys(pmg1.f2he)) != length(keys(pmg2.f2he))
+            return false
+        end
+
+        for (f_id, _) in pmg1.f2he
+            if !haskey(pmg2.f2he, f_id)
+                return false
+            end
+            if pmg2.f2he[f_id] ∉ trace_face(pmg1, f_id)
+                return false
+            end
+        end
+        return true
     end
-    if nf(pmg1) != nf(pmg2)
-        println("nf")
-        println(nf(pmg1))
-        println(nf(pmg2))
+
+    if !equiv_f2he(pmg1, pmg2)
+        if verbose
+            println("f2he")
+            print_nonoverlaping(pmg1.f2he, pmg2.f2he)
+        end
         return false
     end
 
     if pmg1.half_edges != pmg2.half_edges
-        println("HalfEdges")
-        print_nonoverlaping(pmg1.half_edges, pmg2.half_edges)
+        if verbose
+            println("HalfEdges")
+            print_nonoverlaping(pmg1.half_edges, pmg2.half_edges)
+        end
         return false
     end
 
     if pmg1.next != pmg2.next
-        println("next")
-        print_nonoverlaping(pmg1.next, pmg2.next)
+        if verbose
+            println("next")
+            print_nonoverlaping(pmg1.next, pmg2.next)
+        end
         return false
     end
 
     if pmg1.twin != pmg2.twin
-        println("twin")
-        print_nonoverlaping(pmg1.twin, pmg2.twin)
+        if verbose
+            println("twin")
+            print_nonoverlaping(pmg1.twin, pmg2.twin)
+        end
         return false
     end
 
     if pmg1.he2f != pmg2.he2f
-        println("he2f")
-        print_nonoverlaping(pmg1.he2f, pmg2.he2f)
+        if verbose
+            println("he2f")
+            print_nonoverlaping(pmg1.he2f, pmg2.he2f)
+        end
         return false
     end
 
     if sort(pmg1.boundary) != sort(pmg2.boundary)
-        println("boundary")
-        println(pmg1.boundary)
-        println(pmg2.boundary)
+        if verbose
+            println("boundary")
+            println(pmg1.boundary)
+            println(pmg2.boundary)
+        end
         return false
     end
     return true
@@ -663,7 +709,7 @@ function add_vertex_and_facet_to_boarder!(
         (he == g) && break
     end
     set_face!(pmg, [hes_hv2newv[2], hes_gv2newv[1]], new_f; both = true)
-    set_face!(pmg, [hes_hv2newv[1], hes_gv2newv[2]], old_f; both=false)
+    set_face!(pmg, [hes_hv2newv[1], hes_gv2newv[2]], old_f; both = false)
     return hes_gv2newv[1]
 end
 
@@ -686,9 +732,11 @@ function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 
     is_bry = [is_boundary(pmg, he) for he in hes_ft]
 
+    f_id = face(pmg, h)
+
     # modify old graph
     set_face!(pmg, hes_f, 0; both = false)
-    delete!(pmg.f2he, face(pmg, h))
+    delete!(pmg.f2he, f_id)
     for idx = 1:length(hes_ft)
         if is_bry[idx]
             he_f_prev = prev(pmg, hes_f[idx])

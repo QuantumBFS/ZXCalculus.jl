@@ -75,7 +75,7 @@ end
     zw = ZWDiagram(3)
 
     pmg2 = PlanarMultigraph(
-        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 16),
         Dict(
             1 => HalfEdge(1, 7),
             2 => HalfEdge(7, 1),
@@ -151,7 +151,7 @@ end
         ),
         7,
         16,
-        3,
+        2,
         [0],
     )
 
@@ -163,7 +163,7 @@ end
 
     join_spider!(zw, 1, 4)
     pmg3 = PlanarMultigraph(
-        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 16),
         Dict(
             1 => HalfEdge(1, 7),
             2 => HalfEdge(7, 1),
@@ -253,7 +253,6 @@ end
     @test pmg3 == zw.pmg
 
     rem_edge!(zw, 17)
-
     @test pmg2 == zw.pmg
 
     zw2 = ZWDiagram(3)
@@ -388,7 +387,7 @@ end
     rem_spider!(zw2, 8)
 
     pmg5 = PlanarMultigraph(
-        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 16),
         Dict(
             1 => HalfEdge(1, 7),
             2 => HalfEdge(7, 1),
@@ -407,7 +406,7 @@ end
             15 => HalfEdge(7, 2),
             16 => HalfEdge(2, 7),
         ),
-        Dict(0 => 2, 1 => 1, 2 => 3),
+        Dict(0 => 2, 4 => 1, 2 => 3),
         Dict(
             1 => 4,
             16 => 0,
@@ -462,9 +461,9 @@ end
             15 => 16,
             16 => 15,
         ),
-        7,
-        16,
-        3,
+        8,
+        24,
+        5,
         [0, 4],
     )
     @test zw2.pmg == pmg5
