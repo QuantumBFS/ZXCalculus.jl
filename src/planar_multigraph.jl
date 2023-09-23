@@ -495,12 +495,16 @@ function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     f1_id = face(pmg, h)
     f2_id = face(pmg, twin_h)
     hes_f = trace_face(pmg, f2_id; safe_trace = false)
+    circshift!(hes_f, -findfirst(he -> he == twin_h, hes_f))
 
     set_next!(pmg, [thp, hp], [hn, thn])
 
-    set_face!(pmg, hes_f, f1_id; both = true)
+    set_face!(pmg, hes_f[1:end-1], f1_id; both = true)
 
     delete!(pmg.f2he, f2_id)
+    if f2_id in pmg.boundary
+        pmg.boundary[findfirst(x -> x == f2_id, pmg.boundary)] = f1_id
+    end
 
     destroy_edge!(pmg, h)
     return hp
