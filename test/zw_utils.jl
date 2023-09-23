@@ -1,5 +1,6 @@
 using ZXCalculus.ZW:
     ZWDiagram,
+    ZWSpiderType,
     spider_type,
     set_phase!,
     parameter,
@@ -27,7 +28,8 @@ using ZXCalculus.ZW:
     join_spider!,
     add_edge!,
     add_spider!,
-    rem_edge!
+    rem_edge!,
+    rem_spider!
 
 
 using ZXCalculus: trace_vertex
@@ -258,7 +260,16 @@ end
     insert_spider!(zw2, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
 
     add_spider!(zw2, ZW.fSWAP, [1, 7, 4])
-
+    st2 = Dict(
+        5 => ZWSpiderType.Input(qubit = 3),
+        4 => ZWSpiderType.Output(qubit = 2),
+        6 => ZWSpiderType.Output(qubit = 3),
+        7 => ZWSpiderType.binZ(r = Parameter.Factor(f = 2.0, f_type = Float64)),
+        2 => ZWSpiderType.Output(qubit = 1),
+        3 => ZWSpiderType.Input(qubit = 2),
+        8 => ZWSpiderType.fSWAP,
+        1 => ZWSpiderType.Input(qubit = 1),
+    )
     pmg4 = PlanarMultigraph(
         Dict(1 => 1, 2 => 16, 3 => 7, 4 => 4, 5 => 5, 6 => 6, 7 => 2, 8 => 18),
         Dict(
@@ -372,4 +383,89 @@ end
         [0, 1],
     )
     @test zw2.pmg == pmg4
+    @test zw2.st == st2
+
+    rem_spider!(zw2, 8)
+
+    pmg5 = PlanarMultigraph(
+        Dict(1 => 1, 7 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6, 2 => 15),
+        Dict(
+            1 => HalfEdge(1, 7),
+            2 => HalfEdge(7, 1),
+            3 => HalfEdge(3, 4),
+            4 => HalfEdge(4, 3),
+            5 => HalfEdge(5, 6),
+            6 => HalfEdge(6, 5),
+            7 => HalfEdge(3, 1),
+            8 => HalfEdge(1, 3),
+            9 => HalfEdge(5, 3),
+            10 => HalfEdge(3, 5),
+            11 => HalfEdge(4, 2),
+            12 => HalfEdge(2, 4),
+            13 => HalfEdge(6, 4),
+            14 => HalfEdge(4, 6),
+            15 => HalfEdge(7, 2),
+            16 => HalfEdge(2, 7),
+        ),
+        Dict(0 => 2, 1 => 1, 2 => 3),
+        Dict(
+            1 => 1,
+            16 => 0,
+            12 => 1,
+            4 => 1,
+            7 => 1,
+            3 => 2,
+            14 => 2,
+            6 => 2,
+            9 => 2,
+            2 => 0,
+            15 => 1,
+            11 => 0,
+            5 => 0,
+            8 => 0,
+            13 => 0,
+            10 => 0,
+        ),
+        Dict(
+            1 => 15,
+            15 => 12,
+            12 => 4,
+            4 => 7,
+            7 => 1,
+            3 => 14,
+            14 => 6,
+            6 => 9,
+            9 => 3,
+            2 => 8,
+            8 => 10,
+            10 => 5,
+            5 => 13,
+            13 => 11,
+            11 => 16,
+            16 => 2,
+        ),
+        Dict(
+            1 => 2,
+            2 => 1,
+            3 => 4,
+            4 => 3,
+            5 => 6,
+            6 => 5,
+            7 => 8,
+            8 => 7,
+            9 => 10,
+            10 => 9,
+            11 => 12,
+            12 => 11,
+            13 => 14,
+            14 => 13,
+            15 => 16,
+            16 => 15,
+        ),
+        7,
+        16,
+        3,
+        [0],
+    )
+    @test zw2.pmg == pmg5
 end

@@ -109,7 +109,11 @@ using ..ZXCalculus:
     twin,
     prev,
     add_multiedge!,
-    join_facet!
+    join_facet!,
+    trace_vertex,
+    join_vertex!
+
+
 
 
 # these remains

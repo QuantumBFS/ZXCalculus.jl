@@ -152,7 +152,13 @@ Graphs.neighbors(zwd::ZWDiagram, v) = neighbors(zwd.pmg, v)
 Remove Edge with indices `x`.
 """
 function rem_edge!(zwd::ZWDiagram, x)
-    return join_facet!(zwd.pmg, x)
+    vs = src(zwd.pmg, x)
+    vd = dst(zwd.pmg, x)
+    if length(trace_vertex(zwd.pmg, vs)) < 3 || length(trace_vertex(zwd.pmg, vd)) < 3
+        return join_vertex!(zwd.pmg, x)
+    else
+        return join_facet!(zwd.pmg, x)
+    end
 end
 
 """
@@ -199,7 +205,7 @@ function add_spider!(
     connect = connect[sortperm([findfirst(x -> x == i, he_on_face) for i in connect])]
     he_new =
         add_vertex_and_facet_to_boarder!(zwd.pmg, prev(zwd.pmg, connect[1]), connect[1])
-    v_new = src(zwd.pmg, he_new)
+    v_new = dst(zwd.pmg, he_new)
     zwd.st[v_new] = spider
 
     he_on_trig = twin(zwd.pmg, next(zwd.pmg, he_new))
@@ -226,6 +232,28 @@ function insert_spider!(
     v_new = dst(zwd.pmg, he_new)
     zwd.st[v_new] = spider
     return v_new
+end
+
+function rem_spiders!(zwd::ZWDiagram{T,P}, vs::Vector{T}) where {T<:Integer,P}
+
+    for v in vs
+        if !has_vertex(zwd.pmg, v) || !haskey(zwd.st, v)
+            error("Spider $v does not exist!")
+        end
+    end
+
+    for v in vs
+        out_hes = trace_vertex(zwd.pmg, v)
+        for he in out_hes
+            rem_edge!(zwd, he)
+        end
+        delete!(zwd.st, v)
+    end
+    return
+end
+
+function rem_spider!(zwd::ZWDiagram{T,P}, v::T) where {T<:Integer,P}
+    return rem_spiders!(zwd, [v])
 end
 
 
