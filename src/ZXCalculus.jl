@@ -37,6 +37,7 @@ export rewrite!,
     circuit_extraction,
     phase_teleportation
 export phase, spiders, rem_spider!
+export plot
 
 include("scalar.jl")
 
@@ -99,4 +100,7 @@ export substitute_variables!, expval_circ!, stack_zxwd!, concat!
 include("parameter.jl")
 
 include("planar_multigraph.jl")
+
+
+include("plots/zx_plot.jl")
 end # module

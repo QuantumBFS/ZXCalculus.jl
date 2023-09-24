@@ -3,6 +3,10 @@ using YaoHIR: Chain
 using Documenter
 using Test
 
+@testset "plotting" begin
+  include("zx_plots.jl")
+end
+
 @testset "planar multigraphs.jl" begin
     include("planar_multigraph.jl")
 end
