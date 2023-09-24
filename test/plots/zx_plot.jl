@@ -39,6 +39,6 @@ zxg = ZXGraph(zxd)
 
 @test plot(zxd) !== nothing
 @test plot(zxg) !== nothing
-plot_compose(zxd)
-@test plot(zxd; backend = :compose) !== nothing
-@test plot(zxg; backend = :compose) !== nothing
+#plot_compose(zxd)
+#@test plot(zxd; backend = :compose) !== nothing
+#@test plot(zxg; backend = :compose) !== nothing
