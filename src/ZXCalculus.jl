@@ -22,6 +22,7 @@ export convert_to_chain, convert_to_zxd
 export rewrite!, simplify!, clifford_simplification, full_reduction, 
     circuit_extraction, phase_teleportation
 export random_circuit
+export plot
 
 include("phases/pi_unit.jl")
 include("phases/scalar.jl")
@@ -42,5 +43,7 @@ include("deprecations.jl")
 
 using OMEinsum, OMEinsumContractionOrders
 include("omeinsum/to_eincode.jl")
+
+include("plots/zx_plot.jl")
 
 end # module

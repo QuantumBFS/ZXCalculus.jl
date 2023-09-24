@@ -51,4 +51,8 @@ end
     include("omeinsum/to_eincode.jl")
 end
 
+@testset "Plots" begin
+  include("plots/zx_plot.jl")
+end
+
 doctest(ZXCalculus)

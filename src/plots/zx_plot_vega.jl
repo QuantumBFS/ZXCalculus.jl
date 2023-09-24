@@ -1,3 +1,8 @@
+using Vega
+using DataFrames
+
+export plot_vega
+
 function spider_type_string(st1)
     st1 == SpiderType.X && return "X"
     st1 == SpiderType.Z && return "Z"

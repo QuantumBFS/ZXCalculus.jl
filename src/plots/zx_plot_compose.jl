@@ -1,3 +1,5 @@
+export plot_compose
+
 function plot_compose(zxd::Union{ZXDiagram, ZXGraph}; scale = 2)
     zxd = copy(zxd)
     ZXCalculus.generate_layout!(zxd)
