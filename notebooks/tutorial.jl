@@ -11,8 +11,8 @@ begin
 	Pkg.add(url="https://github.com/JuliaCompilerPlugins/CompilerPluginTools.jl")
 	Pkg.add(url="https://github.com/QuantumBFS/YaoHIR.jl", rev="master")
 	Pkg.add(url="https://github.com/QuantumBFS/YaoLocations.jl", rev="master")
+	Pkg.add(url="https://github.com/QuantumBFS/Multigraphs.jl")
 	Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
-#	Pkg.add(url="/home/liam/src/quantum-circuits/software/YaoPlots.jl")
 end
 
 # ╔═╡ 512ac070-335e-45e9-a75d-e689af3ea59d
@@ -22,6 +22,9 @@ begin
 	  using YaoHIR.IntrinsicOperation
 	  using CompilerPluginTools
 end
+
+# ╔═╡ a9bf8e31-686a-4057-acec-bd04e8b5a3dc
+using Multigraphs
 
 # ╔═╡ fdfa8ed2-f19c-4b80-b64e-f4bb22d09327
 function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
@@ -34,6 +37,20 @@ md"# Construct a ZX diagram"
 
 # ╔═╡ 49d6e6ac-e994-11ea-2ac5-27ab8242e297
 z1 = ZXDiagram(4)
+
+# ╔═╡ ba769665-063b-4a17-8aa8-afa1fffc574c
+md"""
+# Multigraph ZXDigram
+"""
+
+
+# ╔═╡ b9d32b41-8bff-4faa-b198-db096582fb2e
+begin
+	g = Multigraph([0 1 0; 1 0 1; 0 1 0])
+	ps = [Rational(0) for i = 1:3]
+	v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
+	zxd_m = ZXDiagram(g, v_t, ps)
+end
 
 # ╔═╡ 90b83d5e-e99a-11ea-1fb2-95c907668262
 md"# Simplify the ZX diagram"
@@ -270,6 +287,9 @@ ZXDiagram(4) |> typeof
 # ╠═51e72d20-e994-11ea-1a50-854039f728aa
 # ╠═e1dbb828-e995-11ea-385d-fb20b58d1b49
 # ╠═60c59c0a-e994-11ea-02da-7360cbcf81f7
+# ╟─ba769665-063b-4a17-8aa8-afa1fffc574c
+# ╠═a9bf8e31-686a-4057-acec-bd04e8b5a3dc
+# ╠═b9d32b41-8bff-4faa-b198-db096582fb2e
 # ╟─90b83d5e-e99a-11ea-1fb2-95c907668262
 # ╠═64bff9ec-e9b5-11ea-3b23-c51d2149697a
 # ╠═5dbf9f96-e9a4-11ea-19d7-e15e7f2327c9
@@ -299,7 +319,7 @@ ZXDiagram(4) |> typeof
 # ╠═a5b21163-7e60-409f-ad59-66ca72375094
 # ╟─2082486e-e9fd-11ea-1a46-6395b4b34657
 # ╠═d1789ff9-3628-4fd3-aa39-823191e78ee0
-# ╠═9ba5aa18-9e6b-4f75-a35c-e7a3e548d557
+# ╟─9ba5aa18-9e6b-4f75-a35c-e7a3e548d557
 # ╠═71fc6836-3c30-43de-aa2b-2d3d48bdb3da
 # ╠═31753c83-847a-4c2a-a6b3-8be6aaa8f792
 # ╟─4a189a46-9ae6-458c-94c4-7cc8d5dab788
