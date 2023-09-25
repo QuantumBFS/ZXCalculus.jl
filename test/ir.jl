@@ -43,6 +43,7 @@ ir = @make_ircode begin
 end
 bir = BlockIR(ir, 4, chain)
 zxd = convert_to_zxd(bir)
+@test plot(zxd) !== nothing
 convert_to_chain(zxd)
 pt_zxd = phase_teleportation(zxd)
 @test tcount(pt_zxd) <= tcount(zxd)
@@ -50,9 +51,11 @@ pt_chain = convert_to_chain(pt_zxd)
 @test length(pt_chain) <= length(chain)
 
 zxg = clifford_simplification(zxd)
+@test plot(zxg) !== nothing
 cl_chain = circuit_extraction(zxg)
 
 zxg = full_reduction(zxd)
+@test plot(zxg) !== nothing
 fl_chain = circuit_extraction(zxg)
 ZXCalculus.generate_layout!(zxg)
 @test ZXCalculus.qubit_loc(zxg, 40) == 0//1
@@ -85,6 +88,7 @@ end
     zxg = ZXGraph(zxd)
     full_reduction(zxg)
     ZXCalculus.generate_layout!(zxg)
+    @test plot(zxg) !== nothing
     @test ZXCalculus.generate_layout!(zxg) !== nothing
 end
 
@@ -139,7 +143,10 @@ function random_identity(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
     return bir
 end
 
+@testset 
 circ = random_identity(5, 50);
 zxd = convert_to_zxd(circ)
+@test plot(zxd) !== nothing
 zxg = ZXGraph(zxd)
-zxg |> clifford_simplification |> full_reduction
+@test plot(zxg) !== nothing
+@test plot(zxg |> clifford_simplification |> full_reduction) !==nothing

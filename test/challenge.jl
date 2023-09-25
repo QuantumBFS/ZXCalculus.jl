@@ -205,4 +205,6 @@ for i = 1:5
     push!(zxg.outputs, i+23)
 end
 
-ZXCalculus.ancilla_extraction(zxg)
+@test plot(zxg) !== nothing
+zxg1 = ZXCalculus.ancilla_extraction(zxg)
+@test plot(zxg1) !== nothing

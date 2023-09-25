@@ -3,6 +3,8 @@ ps = [Rational(0) for i = 1:3]
 v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 zxd2 = ZXDiagram(g, Dict(zip(1:3,v_t)), Dict(zip(1:3,ps)))
+@test plot(zxd) !== nothing
+@test plot(zxd2) !== nothing
 @test zxd.mg == zxd2.mg && zxd.st == zxd2.st && zxd.ps == zxd2.ps
 
 zxd2 = copy(zxd)
@@ -21,6 +23,7 @@ zxd3 = ZXDiagram(3)
 ZXCalculus.insert_spider!(zxd3, 1, 2, SpiderType.H)
 pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
 push_gate!(zxd3, Val{:SWAP}(), [2, 3])
+@test plot(zxd3)  !== nothing
 @test ZXCalculus.qubit_loc(zxd3, 1) == ZXCalculus.qubit_loc(zxd3, 2)
 
 @testset "float to rational" begin
@@ -41,11 +44,15 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
 end
 
 zxd4 = ZXDiagram(2)
+@test plot(zxd4)  !== nothing
 ZXCalculus.add_global_phase!(zxd4, ZXCalculus.Phase(1//2))
+@test plot(zxd4) !== nothing
 ZXCalculus.add_power!(zxd4, 2)
+plot(zxd4) !== nothing
 @test ZXCalculus.scalar(zxd4) == ZXCalculus.Scalar(2, 1//2)
 pushfirst_gate!(zxd4, Val(:X), 1)
 pushfirst_gate!(zxd4, Val(:H), 1)
 pushfirst_gate!(zxd4, Val(:CNOT), 2, 1)
 pushfirst_gate!(zxd4, Val(:CZ), 1, 2)
+@test plot(zxd4) !== nothing
 @test indegree(zxd4, 5) == outdegree(zxd4, 5) == degree(zxd4, 5)
