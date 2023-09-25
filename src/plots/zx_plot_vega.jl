@@ -14,8 +14,8 @@ end
 function generate_d_spiders(vs, st, ps, x_locs_normal, y_locs_normal)
     return DataFrame(
         id = [v for v in vs],
-        x = [x_locs_normal[v] for v in vs],
-        y = [y_locs_normal[v] for v in vs],
+        x = [get(x_locs_normal, v, nothing) for v in vs],
+        y = [get(y_locs_normal, v, nothing) for v in vs],
         spider_type = [spider_type_string(st[v]) for v in vs],
         phase = [iszero(ps[v]) ? "" : "$(ps[v])" for v in vs]
     )
@@ -50,12 +50,12 @@ function plot_vega(zxd::Union{ZXDiagram, ZXGraph}; scale = 2)
     ZXCalculus.generate_layout!(zxd)
     vs = spiders(zxd)
     x_locs = zxd.layout.spider_col
-    x_min = minimum(values(x_locs))
-    x_max = maximum(values(x_locs))
+    x_min = minimum(values(x_locs), init=0)
+    x_max = maximum(values(x_locs), init=1)
     x_range = (x_max - x_min) * lattice_unit
     y_locs = zxd.layout.spider_q
-    y_min = minimum(values(y_locs))
-    y_max = maximum(values(y_locs))
+    y_min = minimum(values(y_locs), init=0)
+    y_max = maximum(values(y_locs), init=1)
     y_range = (y_max - y_min) * lattice_unit
     x_locs_normal = copy(x_locs)
     for (k, v) in x_locs_normal
@@ -68,6 +68,7 @@ function plot_vega(zxd::Union{ZXDiagram, ZXGraph}; scale = 2)
     
     st = zxd.st
     ps = zxd.ps
+
     d_spiders = generate_d_spiders(vs, st, ps, x_locs_normal, y_locs_normal)
     d_edges = generate_d_edges(zxd)
 
