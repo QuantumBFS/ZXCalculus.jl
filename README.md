@@ -29,6 +29,8 @@ pkg> add ZXCalculus
 
 This project is highly inpsired by [PyZX](https://github.com/Quantomatic/pyzx)
 
+The `ZXWDiagram` and `ZWDiagram` part is supported by the [OSPP 2023](https://summer-ospp.ac.cn/)
+
 ## License
 
 MIT License
