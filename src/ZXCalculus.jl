@@ -1,5 +1,6 @@
 module ZXCalculus
-
+# TODO: add docs and improve package structure
+## this is a place holder
 using OMEinsum
 using YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
