@@ -122,11 +122,11 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
     return pmg_equiv(pmg1, pmg2, false)
 end
 
-"""
-    print_nonoverlaping(dict1, dict2)
+# """
+#     print_nonoverlaping(dict1, dict2)
 
-Helper function to print nonoverlaping elements in two dictionaries.
-"""
+# Helper function to print nonoverlaping elements in two dictionaries.
+# """
 function print_nonoverlaping(dict1, dict2)
     # Print elements in dict1 not in dict2
     println("Elements in dict1 not in dict2:")
@@ -148,11 +148,11 @@ function print_nonoverlaping(dict1, dict2)
 
 end
 
-"""
-    equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+# """
+#     equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
 
-Checking if the vertex to half edge mapping is equivalent.
-"""
+# Checking if the vertex to half edge mapping is equivalent.
+# """
 function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
     if length(keys(pmg1.v2he)) != length(keys(pmg2.v2he))
         return false
@@ -169,11 +169,11 @@ function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
     return true
 end
 
-"""
-    equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+# """
+#     equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
 
-Checking if the face to half edge mapping is equivalent.
-"""
+# Checking if the face to half edge mapping is equivalent.
+# """
 function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
     if length(keys(pmg1.f2he)) != length(keys(pmg2.f2he))
         return false
@@ -190,17 +190,17 @@ function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
     return true
 end
 
-"""
-    pmg_equiv(
-    pmg1::PlanarMultigraph{T},
-    pmg2::PlanarMultigraph{T},
-    verbose::Bool,
-) where {T<:Integer}
+# """
+#     pmg_equiv(
+#     pmg1::PlanarMultigraph{T},
+#     pmg2::PlanarMultigraph{T},
+#     verbose::Bool,
+# ) where {T<:Integer}
 
-Checking if two PlanarMultigraphs are equivalent.
+# Checking if two PlanarMultigraphs are equivalent.
 
-If verbose is true, then print out the nonoverlaping elements in the two.
-"""
+# If verbose is true, then print out the nonoverlaping elements in the two.
+# """
 function pmg_equiv(
     pmg1::PlanarMultigraph{T},
     pmg2::PlanarMultigraph{T},

@@ -131,6 +131,7 @@ ZXCalculus.join_vertex!
 
 # ZW-diagrams
 ```@docs
+ZXCalculus.ZW.ZWDiagram
 ZXCalculus.ZW.insert_spider!
 ZXCalculus.ZW.get_output_idx
 ZXCalculus.ZW.nqubits

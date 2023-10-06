@@ -52,7 +52,7 @@ ZWDiagram(
 ) where {T,P} = ZWDiagram{T,P}(pmg, Dict(zip(sort!(vertices(pmg)), st)), scalar)
 
 """
-    ZWDiagram(::Type{P}, nbits::T) where {T<:Integer}
+    ZWDiagram(nbits::T, ::Type{P}) where {T<:Integer}
 
 Create a ZW-diagram with `nbits` input and output qubits.
 
