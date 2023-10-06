@@ -2,11 +2,12 @@ using Documenter
 using DocThemeIndigo
 
 using ZXCalculus
+using ZXCalculus: ZXW, ZW
 using Multigraphs
 
 indigo = DocThemeIndigo.install(ZXCalculus)
 makedocs(;
-    modules = [ZXCalculus],
+    modules = [ZXCalculus, ZXW, ZW],
     format=Documenter.HTML(;
         # ...
         # put your indigo css in assets
