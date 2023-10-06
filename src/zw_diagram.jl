@@ -42,16 +42,23 @@ end
 ZWDiagram(
     pmg::PlanarMultigraph{T},
     st::Dict{T,ZWSpiderType},
-    P::Type = Rational,
-) where {T} = ZWDiagram{T,P}(pmg, st)
+    scalar::Scalar{P},
+) where {T,P} = ZWDiagram{T,P}(pmg, st, scalar)
 
 ZWDiagram(
     pmg::PlanarMultigraph{T},
     st::Vector{ZWSpiderType},
-    P::Type = Rational,
-) where {T} = ZWDiagram{T,P}(pmg, Dict(zip(sort!(vertices(pmg)), st)))
+    scalar::Scalar{P},
+) where {T,P} = ZWDiagram{T,P}(pmg, Dict(zip(sort!(vertices(pmg)), st)), scalar)
 
-function ZWDiagram(nbits::T) where {T<:Integer}
+"""
+    ZWDiagram(::Type{P}, nbits::T) where {T<:Integer}
+
+Create a ZW-diagram with `nbits` input and output qubits.
+
+Scalar is parameterized to be `P`.
+"""
+function ZWDiagram(nbits::T, ::Type{P} = Rational) where {T<:Integer,P}
     nbits < 1 && error("We need to have at least one qubit in the system!")
 
     half_edges = Dict{T,HalfEdge}()
@@ -172,7 +179,7 @@ function ZWDiagram(nbits::T) where {T<:Integer}
 
     st = [i % 2 == 1 ? Input(div(i, 2) + 1) : Output(div(i, 2)) for i = 1:2*nbits]
 
-    return ZWDiagram(pmg, st)
+    return ZWDiagram(pmg, st, Scalar{P}())
 end
 
 Base.copy(zwd::ZWDiagram{T,P}) where {T,P} = ZWDiagram{T,P}(

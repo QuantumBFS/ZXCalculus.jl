@@ -19,8 +19,9 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     @test zx1.inputs == [1]
     @test zx1.outputs == [2]
     @test zx1.pmg == pmg1
+    @test zx1.scalar == Scalar{Rational}()
 
-    zx2 = ZWDiagram(2)
+    zx2 = ZWDiagram(2, Float64)
     pmg2 = PlanarMultigraph(
         Dict([1 => 1, 2 => 2, 3 => 3, 4 => 4]),
         Dict([
@@ -48,6 +49,7 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     @test zx2.outputs == [2, 4]
     @test zx2.pmg == pmg2
     @test zx2.pmg.half_edges == pmg2.half_edges
+    @test zx2.scalar == Scalar{Float64}()
 
     zx3 = ZWDiagram(3)
 

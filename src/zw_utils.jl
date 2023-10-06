@@ -38,7 +38,7 @@ function parameter(zwd::ZWDiagram{T,P}, v::T) where {T<:Integer,P}
         binZ(p) => p
         monoZ(p) => p
         Input(q) || Output(q) => q
-        _ => Parameter(Val(:PiUnit), 0)
+        _ => nothing
     end
 end
 
@@ -181,7 +181,7 @@ end
     add_spider!(zwd, spider, connect = [])
 
 Add a new spider `spider` with appropriate parameter
-connected to the half edges`connect`.
+connected to the half edges `connect`.
 
 Had to make halfedge class 1 citizen because there will be ambiguity
 Consider A to B and there are multiple edges to A and from A to B

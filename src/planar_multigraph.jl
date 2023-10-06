@@ -122,68 +122,96 @@ function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where 
     return pmg_equiv(pmg1, pmg2, false)
 end
 
+"""
+    print_nonoverlaping(dict1, dict2)
+
+Helper function to print nonoverlaping elements in two dictionaries.
+"""
+function print_nonoverlaping(dict1, dict2)
+    # Print elements in dict1 not in dict2
+    println("Elements in dict1 not in dict2:")
+    for (key, value) in dict1
+        if !haskey(dict2, key) || dict2[key] != value
+            println("Key: ", key, ", Value: ", value)
+        end
+    end
+
+    println()
+
+    # Print elements in dict2 not in dict1
+    println("Elements in dict2 not in dict1:")
+    for (key, value) in dict2
+        if !haskey(dict1, key) || dict1[key] != value
+            println("Key: ", key, ", Value: ", value)
+        end
+    end
+
+end
+
+"""
+    equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+
+Checking if the vertex to half edge mapping is equivalent.
+"""
+function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+    if length(keys(pmg1.v2he)) != length(keys(pmg2.v2he))
+        return false
+    end
+
+    for (v, _) in pmg1.v2he
+        if !haskey(pmg2.v2he, v)
+            return false
+        end
+        if pmg2.v2he[v] ∉ trace_vertex(pmg1, v)
+            return false
+        end
+    end
+    return true
+end
+
+"""
+    equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+
+Checking if the face to half edge mapping is equivalent.
+"""
+function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+    if length(keys(pmg1.f2he)) != length(keys(pmg2.f2he))
+        return false
+    end
+
+    for (f_id, _) in pmg1.f2he
+        if !haskey(pmg2.f2he, f_id)
+            return false
+        end
+        if pmg2.f2he[f_id] ∉ trace_face(pmg1, f_id)
+            return false
+        end
+    end
+    return true
+end
+
+"""
+    pmg_equiv(
+    pmg1::PlanarMultigraph{T},
+    pmg2::PlanarMultigraph{T},
+    verbose::Bool,
+) where {T<:Integer}
+
+Checking if two PlanarMultigraphs are equivalent.
+
+If verbose is true, then print out the nonoverlaping elements in the two.
+"""
 function pmg_equiv(
     pmg1::PlanarMultigraph{T},
     pmg2::PlanarMultigraph{T},
     verbose::Bool,
 ) where {T<:Integer}
-    function print_nonoverlaping(dict1, dict2)
-        # Print elements in dict1 not in dict2
-        println("Elements in dict1 not in dict2:")
-        for (key, value) in dict1
-            if !haskey(dict2, key) || dict2[key] != value
-                println("Key: ", key, ", Value: ", value)
-            end
-        end
-
-        println()
-
-        # Print elements in dict2 not in dict1
-        println("Elements in dict2 not in dict1:")
-        for (key, value) in dict2
-            if !haskey(dict1, key) || dict1[key] != value
-                println("Key: ", key, ", Value: ", value)
-            end
-        end
-
-    end
-    function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
-        if length(keys(pmg1.v2he)) != length(keys(pmg2.v2he))
-            return false
-        end
-
-        for (v, _) in pmg1.v2he
-            if !haskey(pmg2.v2he, v)
-                return false
-            end
-            if pmg2.v2he[v] ∉ trace_vertex(pmg1, v)
-                return false
-            end
-        end
-        return true
-    end
     if !equiv_v2he(pmg1, pmg2)
         if verbose
             println("v2he")
             print_nonoverlaping(pmg1.v2he, pmg2.v2he)
         end
         return false
-    end
-
-    function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
-        if length(keys(pmg1.f2he)) != length(keys(pmg2.f2he))
-            return false
-        end
-
-        for (f_id, _) in pmg1.f2he
-            if !haskey(pmg2.f2he, f_id)
-                return false
-            end
-            if pmg2.f2he[f_id] ∉ trace_face(pmg1, f_id)
-                return false
-            end
-        end
-        return true
     end
 
     if !equiv_f2he(pmg1, pmg2)
