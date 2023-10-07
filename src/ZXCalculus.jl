@@ -64,7 +64,7 @@ using OMEinsum
 import Multigraphs: has_vertex
 using ..ZXCalculus
 using ..ZXCalculus: safe_convert, add_phase!
-import ..pushfirst_gate!, ..push_gate!, ..rewrite
+import ..pushfirst_gate!, ..push_gate!
 import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
 
 
@@ -74,30 +74,58 @@ include("zxw_rules.jl")
 include("to_eincode.jl")
 include("utils.jl")
 
-
-export ZXWDiagram, CalcRule
 end # module ZXW
 
-using .ZXW:
-    ZXWDiagram,
-    ZXWSpiderType,
-    Parameter,
-    CalcRule,
-    PiUnit,
-    Factor,
-    Input,
-    Output,
-    W,
-    H,
-    D,
-    Z,
-    X,
-    rewrite!
-export ZXWSpiderType,
-    ZXWDiagram, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X, CalcRule
-export substitute_variables!, expval_circ!, stack_zxwd!, concat!
+using .ZXW: ZXWDiagram, CalcRule
+
+export ZXWDiagram, CalcRule
 
 include("parameter.jl")
 
 include("planar_multigraph.jl")
+
+module ZW
+using Expronicon.ADT: @adt, @const_use
+using MLStyle, Graphs
+using ..ZXCalculus
+using ..ZXCalculus.ZXW: _round_phase, Parameter
+# these will be changed to using PlanarMultigraph: vertices after we split out package
+using ..ZXCalculus:
+    vertices,
+    nv,
+    has_vertex,
+    ne,
+    neighbors,
+    rem_edge!,
+    add_edge!,
+    degree,
+    next,
+    split_vertex!,
+    split_edge!,
+    face,
+    trace_face,
+    make_hole!,
+    add_vertex_and_facet_to_boarder!,
+    split_facet!,
+    twin,
+    prev,
+    add_multiedge!,
+    join_facet!,
+    trace_vertex,
+    join_vertex!
+
+
+
+
+# these remains
+using ..ZXCalculus: add_phase!
+import ..ZXCalculus: add_power!, add_global_phase!, scalar, spiders, rem_spider!
+import Graphs.rem_edge!
+
+
+include("zw_adt.jl")
+include("zw_diagram.jl")
+include("zw_utils.jl")
+end # module ZW
+
 end # module
