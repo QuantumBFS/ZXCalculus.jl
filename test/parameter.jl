@@ -1,5 +1,5 @@
 using Base: CodegenParams
-using ZXCalculus.ZXW: Parameter
+using ZXCalculus.Utils: Parameter
 
 @testset "Constructor" begin
     p1 = Parameter(Val(:PiUnit))

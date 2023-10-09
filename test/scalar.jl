@@ -1,4 +1,4 @@
-using ZXCalculus: Scalar, add_power!, add_phase!
+using ZXCalculus.Utils: Scalar, add_power!, add_phase!
 
 s = Scalar()
 @test s * s == s

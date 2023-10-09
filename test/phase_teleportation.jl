@@ -1,4 +1,3 @@
-using ZXCalculus, Graphs
 
 function gen_cir()
     cir = ZXDiagram(5)
