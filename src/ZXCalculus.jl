@@ -4,8 +4,6 @@ module ZXCalculus
 
 # import Graphs: has_vertex
 
-
-
 # using Graphs:
 #     nv,
 #     ne,
@@ -71,24 +69,28 @@ include("ir.jl")
 end
 
 
-# module ZXW
-# using Expronicon.ADT: @const_use, @adt
-# using MLStyle, Multigraphs, Graphs
+module ZXW
+using Expronicon.ADT: @const_use, @adt
+using MLStyle, Multigraphs, Graphs
+using ..Utils: Scalar, Phase, Parameter, PiUnit, Factor, add_phase!
+using ..ZX: safe_convert, AbstractRule, Rule, Match
+import ..Utils: add_power!
+import ..ZX:
+    rewrite!, simplify!, push_gate!, pushfirst_gate!, spiders, rem_spider!, rem_spiders!
 # using OMEinsum
 # import Multigraphs: has_vertex
-# using ..ZXCalculus
-# using ..ZXCalculus: safe_convert, add_phase!
-# import ..pushfirst_gate!, ..push_gate!
 # import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
 
 
-# include("adts.jl")
-# include("zxw_diagram.jl")
-# include("zxw_rules.jl")
-# include("to_eincode.jl")
-# include("utils.jl")
+export ZXWDiagram
 
-# end # module ZXW
+include("adts.jl")
+include("zxw_diagram.jl")
+include("zxw_rules.jl")
+# include("to_eincode.jl")
+include("utils.jl")
+
+end # module ZXW
 
 # using .ZXW: ZXWDiagram, CalcRule
 

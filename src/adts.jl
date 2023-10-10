@@ -1,4 +1,3 @@
-
 @adt ZXWSpiderType begin
     W
     H

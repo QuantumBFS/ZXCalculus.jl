@@ -1,13 +1,15 @@
 using Test: match_logs
-using ZXCalculus: insert_spider!, rewrite!
 using ZXCalculus.ZXW:
+    rewrite!,
     symbol_vertices,
     dagger,
     concat!,
     expval_circ!,
     push_gate!,
     stack_zxwd!,
-    substitute_variables!
+    substitute_variables!,
+    insert_spider!
+
 
 @testset "Calculus Rule" begin
     deri_rule = CalcRule(:diff, :p)

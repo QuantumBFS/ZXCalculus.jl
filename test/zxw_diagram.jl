@@ -1,4 +1,5 @@
-using ZXCalculus.ZXW: ZXWSpiderType, Parameter, PiUnit, Factor, Input, Output, W, H, D, Z, X
+using ZXCalculus.ZXW: ZXWSpiderType, Input, Output, W, H, D, Z, X
+using ZXCalculus.Utils: Parameter, PiUnit, Factor
 
 @testset "ZXWSpiderType" begin
 
