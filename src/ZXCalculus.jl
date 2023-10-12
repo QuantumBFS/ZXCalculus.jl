@@ -1,7 +1,5 @@
 module ZXCalculus
 
-# using OMEinsum
-
 # import Graphs: has_vertex
 
 # using Graphs:
@@ -77,17 +75,15 @@ using ..ZX: safe_convert, AbstractRule, Rule, Match
 import ..Utils: add_power!
 import ..ZX:
     rewrite!, simplify!, push_gate!, pushfirst_gate!, spiders, rem_spider!, rem_spiders!
-# using OMEinsum
 # import Multigraphs: has_vertex
 # import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
 
 
-export ZXWDiagram
+export ZXWDiagram, substitute_variables!
 
 include("adts.jl")
 include("zxw_diagram.jl")
 include("zxw_rules.jl")
-# include("to_eincode.jl")
 include("utils.jl")
 
 end # module ZXW
@@ -143,9 +139,14 @@ end # module ZXW
 # include("zw_utils.jl")
 # end # module ZW
 
-# module Application
+module Application
+using OMEinsum, MLStyle
+using ..ZXW: ZXWDiagram, Z, X, W, H, D, Input, Output
+using ..Utils: PiUnit, Factor, Parameter, unwrap_scalar
+using ..ZXW: get_outputs, get_inputs, degree, neighbors, vertices, scalar, nin, nout
 
-# end # module APP
+include("to_eincode.jl")
+end # module Application
 
 include("deprecations.jl")
 end # module

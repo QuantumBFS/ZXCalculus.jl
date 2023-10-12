@@ -1,5 +1,6 @@
 using Test: match_logs
 using ZXCalculus.ZXW:
+    CalcRule,
     rewrite!,
     symbol_vertices,
     dagger,

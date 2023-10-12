@@ -1,5 +1,12 @@
 using ZXCalculus,
-    Graphs, Multigraphs, SparseArrays, ZXCalculus.Utils, ZXCalculus.ZX, ZXCalculus.ZXW #, ZXCalculus.ZW
+    Graphs,
+    Multigraphs,
+    SparseArrays,
+    ZXCalculus.Utils,
+    ZXCalculus.ZX,
+    ZXCalculus.ZXW,
+    ZXCalculus.Application #, ZXCalculus.ZW
+
 import ZXCalculus.ZX as ZX
 import ZXCalculus.ZXW as ZXW
 using YaoHIR: Chain
@@ -80,8 +87,8 @@ end
     include("zxw_rules.jl")
 end
 
-# @testset "to_eincode.jl" begin
-#     include("to_eincode.jl")
-# end
+@testset "to_eincode.jl" begin
+    include("to_eincode.jl")
+end
 
-# doctest(ZXCalculus)
+doctest(ZXCalculus)
