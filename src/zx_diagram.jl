@@ -70,9 +70,9 @@ end
 Construct a ZXDiagram with all information.
 
 ```jldoctest
-julia> using Graphs, Multigraphs, ZXCalculus;
+julia> using Graphs, Multigraphs, ZXCalculus.ZX;
 
-julia> using ZXCalculus.SpiderType: In, Out, H, Z, X;
+julia> using ZXCalculus.ZX.SpiderType: In, Out, H, Z, X;
 
 julia> mg = Multigraph(5);
 
@@ -101,7 +101,7 @@ ZXDiagram(mg::Multigraph{T}, st::Vector{SpiderType.SType}, ps::Vector{P},
 
 Construct a ZXDiagram of a empty circuit with qubit number `nbit`
 
-```jldoctest; setup = :(using ZXCalculus)
+```jldoctest; setup = :(using ZXCalculus.ZX)
 julia> zxd = ZXDiagram(3)
 ZX-diagram with 6 vertices and 3 multiple edges:
 (S_1{input} <-1-> S_2{output})

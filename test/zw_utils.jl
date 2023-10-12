@@ -1,7 +1,5 @@
 using ZXCalculus.ZW:
-    ZWDiagram,
     ZWSpiderType,
-    spider_type,
     set_phase!,
     parameter,
     nin,
@@ -23,7 +21,6 @@ using ZXCalculus.ZW:
     get_output_idx,
     add_power!,
     add_global_phase!,
-    insert_spider!,
     neighbors,
     join_spider!,
     add_edge!,
@@ -31,14 +28,13 @@ using ZXCalculus.ZW:
     rem_edge!,
     rem_spider!
 
-
-using ZXCalculus: trace_vertex
-using ZXCalculus.ZXW: Parameter
+using ZXCalculus.PMG: trace_vertex
+using ZXCalculus.Utils: Parameter
 
 @testset "utils" begin
     zw = ZWDiagram(3)
 
-    @test spider_type(zw, 1) == ZW.Input(1)
+    @test ZW.spider_type(zw, 1) == ZW.Input(1)
     @test parameter(zw, 2) == 1
     @test nqubits(zw) == 3
     @test nin(zw) == 3
@@ -155,7 +151,7 @@ end
         [0],
     )
 
-    insert_spider!(zw, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    ZW.insert_spider!(zw, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
     @test zw.pmg == pmg2
 
     set_phase!(zw, 7, Parameter(Val(:PiUnit), 1))
@@ -256,7 +252,7 @@ end
     @test pmg2 == zw.pmg
 
     zw2 = ZWDiagram(3)
-    insert_spider!(zw2, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
+    ZW.insert_spider!(zw2, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
 
     add_spider!(zw2, ZW.fSWAP, [1, 7, 4])
     st2 = Dict(

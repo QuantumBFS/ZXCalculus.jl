@@ -1,4 +1,4 @@
-using ZXCalculus:
+using ZXCalculus.PMG:
     create_vertex!,
     create_edge!,
     split_vertex!,

@@ -1,4 +1,3 @@
-using ZXCalculus.ZW: ZWDiagram, Input, Output
 @testset "ZWDiagrm Creation" begin
     zx1 = ZWDiagram(1)
     pmg1 = PlanarMultigraph(
@@ -15,7 +14,7 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     )
 
 
-    @test zx1.st == Dict([1 => Input(1), 2 => Output(1)])
+    @test zx1.st == Dict([1 => ZW.Input(1), 2 => ZW.Output(1)])
     @test zx1.inputs == [1]
     @test zx1.outputs == [2]
     @test zx1.pmg == pmg1
@@ -44,7 +43,7 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
         [0],
     )
 
-    @test zx2.st == Dict([1 => Input(1), 2 => Output(1), 3 => Input(2), 4 => Output(2)])
+    @test zx2.st == Dict([1 => ZW.Input(1), 2 => ZW.Output(1), 3 => ZW.Input(2), 4 => ZW.Output(2)])
     @test zx2.inputs == [1, 3]
     @test zx2.outputs == [2, 4]
     @test zx2.pmg == pmg2
@@ -127,12 +126,12 @@ using ZXCalculus.ZW: ZWDiagram, Input, Output
     )
 
     @test zx3.st == Dict([
-        1 => Input(1),
-        2 => Output(1),
-        3 => Input(2),
-        4 => Output(2),
-        5 => Input(3),
-        6 => Output(3),
+        1 => ZW.Input(1),
+        2 => ZW.Output(1),
+        3 => ZW.Input(2),
+        4 => ZW.Output(2),
+        5 => ZW.Input(3),
+        6 => ZW.Output(3),
     ])
     @test zx3.inputs == [1, 3, 5]
     @test zx3.outputs == [2, 4, 6]

@@ -1,20 +1,5 @@
 module ZXCalculus
 
-# import Graphs: has_vertex
-
-# using Graphs:
-#     nv,
-#     ne,
-#     outneighbors,
-#     inneighbors,
-#     neighbors,
-#     rem_edge!,
-#     add_edge!,
-#     has_edge,
-#     degree,
-#     indegree,
-#     outdegree
-
 module Utils
 
 using Expronicon.ADT: @const_use, @adt
@@ -33,8 +18,8 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
+using ..Utils: Scalar, Phase, add_phase!
 
-using ZXCalculus.Utils: Scalar, Phase, add_phase!
 import ..Utils: add_power!
 
 export spiders,
@@ -63,21 +48,18 @@ include("circuit_extraction.jl")
 include("phase_teleportation.jl")
 
 include("ir.jl")
-
 end
 
-
 module ZXW
+
 using Expronicon.ADT: @const_use, @adt
 using MLStyle, Multigraphs, Graphs
 using ..Utils: Scalar, Phase, Parameter, PiUnit, Factor, add_phase!
 using ..ZX: safe_convert, AbstractRule, Rule, Match
+
 import ..Utils: add_power!
 import ..ZX:
     rewrite!, simplify!, push_gate!, pushfirst_gate!, spiders, rem_spider!, rem_spiders!
-# import Multigraphs: has_vertex
-# import ..rewrite!, ..add_power!, ..add_edge!, ..vertices, ..nv, ..round_phases!
-
 
 export ZXWDiagram, substitute_variables!
 
@@ -88,58 +70,65 @@ include("utils.jl")
 
 end # module ZXW
 
-# using .ZXW: ZXWDiagram, CalcRule
+module PMG
 
-# export ZXWDiagram, CalcRule
+using Graphs
 
+import Graphs: AbstractEdge, src, dst, nv, ne, neighbors
+import Graphs.SimpleGraphs: vertices
 
-# include("planar_multigraph.jl")
+export HalfEdge, src, dst, new_edge, PlanarMultigraph
 
-# module ZW
-# using Expronicon.ADT: @adt, @const_use
-# using MLStyle, Graphs
-# using ..ZXCalculus
-# using ..ZXCalculus.ZXW: _round_phase, Parameter
-# # these will be changed to using PlanarMultigraph: vertices after we split out package
-# using ..ZXCalculus:
-#     vertices,
-#     nv,
-#     has_vertex,
-#     ne,
-#     neighbors,
-#     rem_edge!,
-#     add_edge!,
-#     degree,
-#     next,
-#     split_vertex!,
-#     split_edge!,
-#     face,
-#     trace_face,
-#     make_hole!,
-#     add_vertex_and_facet_to_boarder!,
-#     split_facet!,
-#     twin,
-#     prev,
-#     add_multiedge!,
-#     join_facet!,
-#     trace_vertex,
-#     join_vertex!
+include("planar_multigraph.jl")
 
+end # module PlanarMultigraph
 
+module ZW
+using Expronicon.ADT: @adt, @const_use
+using MLStyle, Graphs
+using ..ZXW: _round_phase, Parameter
 
+# these will be changed to using PlanarMultigraph: vertices after we split out package
+using ..PMG:
+    vertices,
+    nv,
+    has_vertex,
+    ne,
+    neighbors,
+    rem_edge!,
+    add_edge!,
+    degree,
+    next,
+    split_vertex!,
+    split_edge!,
+    face,
+    trace_face,
+    make_hole!,
+    add_vertex_and_facet_to_boarder!,
+    split_facet!,
+    twin,
+    prev,
+    add_multiedge!,
+    join_facet!,
+    trace_vertex,
+    join_vertex!
 
-# # these remains
-# using ..ZXCalculus: add_phase!
-# import ..ZXCalculus: add_power!, add_global_phase!, scalar, spiders, rem_spider!
-# import Graphs.rem_edge!
+# these remains
+using ..Utils: add_phase!, Scalar, Phase, Parameter, PiUnit, Factor, add_power!
+using ..PMG: PlanarMultigraph, HalfEdge, new_edge, src, dst
+import ..Utils: add_power!
+import ..ZX: add_global_phase!, scalar, spiders, rem_spider!
+import Graphs.rem_edge!
 
+export ZWDiagram
 
-# include("zw_adt.jl")
-# include("zw_diagram.jl")
-# include("zw_utils.jl")
-# end # module ZW
+include("zw_adt.jl")
+include("zw_diagram.jl")
+include("zw_utils.jl")
+end # module ZW
 
 module Application
+
 using OMEinsum, MLStyle
 using ..ZXW: ZXWDiagram, Z, X, W, H, D, Input, Output
 using ..Utils: PiUnit, Factor, Parameter, unwrap_scalar

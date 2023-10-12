@@ -5,10 +5,14 @@ using ZXCalculus,
     ZXCalculus.Utils,
     ZXCalculus.ZX,
     ZXCalculus.ZXW,
-    ZXCalculus.Application #, ZXCalculus.ZW
+    ZXCalculus.PMG,
+    ZXCalculus.Application,
+    ZXCalculus.ZW
 
 import ZXCalculus.ZX as ZX
 import ZXCalculus.ZXW as ZXW
+import ZXCalculus.ZW as ZW
+
 using YaoHIR: Chain
 using Documenter
 using Test
@@ -62,19 +66,6 @@ end
     include("challenge.jl")
 end
 
-# @testset "ZW Diagram with Planar Multigraph" begin
-#     include("zw_diagram.jl")
-# end
-
-# @testset "ZW Diagram Utilities" begin
-#     include("zw_utils.jl")
-# end
-
-# @testset "planar multigraphs.jl" begin
-#     include("planar_multigraph.jl")
-# end
-
-
 @testset "zxw_diagram.jl" begin
     include("zxw_diagram.jl")
 end
@@ -86,6 +77,19 @@ end
 @testset "zxw_rules.jl" begin
     include("zxw_rules.jl")
 end
+
+@testset "planar multigraphs.jl" begin
+    include("planar_multigraph.jl")
+end
+
+@testset "ZW Diagram with Planar Multigraph" begin
+    include("zw_diagram.jl")
+end
+
+@testset "ZW Diagram Utilities" begin
+    include("zw_utils.jl")
+end
+
 
 @testset "to_eincode.jl" begin
     include("to_eincode.jl")
