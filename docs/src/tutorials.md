@@ -1,4 +1,7 @@
 # Tutorials
+```@meta
+CurrentModule= ZXCalculus.ZX
+```
 
 ZX-diagrams are the basic objects in ZX-calculus. In our implementation, each ZX-diagram consists of a multigraph and vertices information including the type of vertices and the phase of vertices. [`ZXDiagram`](@ref) is the data structure for representing
 ZX-diagrams.
@@ -11,7 +14,7 @@ In each `ZXDiagram`, there is a `layout` for storing layout information for the 
 
 As we usually focus on quantum circuits, the recommended way to construct `ZXDiagram`s is by the following function.
 ```@docs
-ZXDiagram(nbit::T) where T<:Integer
+ZXDiagram(nbits::T) where T<:Integer
 ```
 Then one can use `push_gate!` to push quantum gates at the end of a quantum circuit, or use `pushfirst_gate!` to push gates at the beginning of a quantum circuit.
 ```@docs
