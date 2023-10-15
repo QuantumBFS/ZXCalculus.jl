@@ -6,7 +6,7 @@ using Multigraphs
 
 indigo = DocThemeIndigo.install(ZXCalculus)
 makedocs(;
-    modules = Module[ZXCalculus],
+    modules = Module[ZXCalculus, ZXCalculus.ZX, ZXCalculus.ZXW, ZXCalculus.ZW, ZXCalculus.Utils, ZXCalculus.Application, ZXCalculus.PMG],
     format=Documenter.HTML(;
         # ...
         # put your indigo css in assets
