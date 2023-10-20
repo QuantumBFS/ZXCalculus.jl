@@ -1,3 +1,7 @@
+using Test, Multigraphs, ZXCalculus, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
+
+import ZXCalculus.ZX as ZX
+
 g = Multigraph(6)
 add_edge!(g, 1, 3)
 add_edge!(g, 2, 4)

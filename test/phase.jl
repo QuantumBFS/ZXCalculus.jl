@@ -1,3 +1,4 @@
+using Test
 using ZXCalculus.Utils: Phase
 
 # ir = @make_ircode begin

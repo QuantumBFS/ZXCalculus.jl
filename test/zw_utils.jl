@@ -1,3 +1,4 @@
+using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.Utils, ZXCalculus.PMG
 using ZXCalculus.ZW:
     ZWSpiderType,
     set_phase!,
@@ -62,8 +63,6 @@ using ZXCalculus.Utils: Parameter
     sc = scalar(zw)
     @test sc == Scalar{Rational}(2, 1 // 2)
 
-    # TODO
-    # set_phase!
 end
 
 @testset "Add and Rem Spiders" begin

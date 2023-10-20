@@ -1,3 +1,5 @@
+using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
+
 @testset "ZWDiagrm Creation" begin
     zx1 = ZWDiagram(1)
     pmg1 = PlanarMultigraph(

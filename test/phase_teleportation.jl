@@ -1,3 +1,4 @@
+using Test,  ZXCalculus, ZXCalculus.ZX
 
 function gen_cir()
     cir = ZXDiagram(5)

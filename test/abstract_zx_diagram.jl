@@ -1,5 +1,7 @@
-using ZXCalculus.ZX
+using Test, Graphs, ZXCalculus, ZXCalculus.ZX
 using ZXCalculus.Utils: Phase
+
+import ZXCalculus.ZX as ZX
 
 struct TestZXDiagram{T,P} <: AbstractZXDiagram{T,P} end
 

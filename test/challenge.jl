@@ -1,5 +1,8 @@
+using Test, ZXCalculus, Graphs, ZXCalculus.ZX
 using ZXCalculus.ZX: SpiderType, EdgeType
 using ZXCalculus.Utils: Phase
+
+import ZXCalculus.ZX as ZX
 
 st = Dict(
     0+1 => SpiderType.In,
@@ -192,7 +195,6 @@ es = Dict(
     (46+1, 47+1) => EdgeType.HAD,
 )
 
-using Graphs
 zxg = ZXGraph(ZXDiagram(0))
 vs = 1:52
 for v in vs

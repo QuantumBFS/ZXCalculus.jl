@@ -1,3 +1,8 @@
+using Test, ZXCalculus, ZXCalculus.ZX
+using YaoHIR: Chain
+
+import ZXCalculus.ZX as ZX
+
 chain_swap = Chain()
 
 push_gate!(chain_swap, Val(:SWAP), 1, 3)

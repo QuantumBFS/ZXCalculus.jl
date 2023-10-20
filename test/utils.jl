@@ -1,3 +1,4 @@
+using Test, ZXCalculus, ZXCalculus.ZXW, ZXCalculus.Utils, Multigraphs, Graphs
 using ZXCalculus.ZXW:
     Parameter,
     _round_phase,
@@ -9,11 +10,15 @@ using ZXCalculus.ZXW:
     expval_circ!,
     substitute_variables!,
     rem_spiders!,
-    add_inout!
-
-
+    add_inout!,
+    Z,
+    X,
+    W,
+    H
 
 using MLStyle: @match
+
+import ZXCalculus.ZXW as ZXW
 
 @testset "Phase rounding" begin
     st = Dict(

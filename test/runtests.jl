@@ -1,21 +1,4 @@
-using ZXCalculus,
-    Graphs,
-    Multigraphs,
-    SparseArrays,
-    ZXCalculus.Utils,
-    ZXCalculus.ZX,
-    ZXCalculus.ZXW,
-    ZXCalculus.PMG,
-    ZXCalculus.Application,
-    ZXCalculus.ZW
-
-import ZXCalculus.ZX as ZX
-import ZXCalculus.ZXW as ZXW
-import ZXCalculus.ZW as ZW
-
-using YaoHIR: Chain
-using Documenter
-using Test
+using ZXCalculus, Documenter, Test
 
 @testset "abstract_zx_diagram.jl" begin
     include("abstract_zx_diagram.jl")

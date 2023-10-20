@@ -1,3 +1,4 @@
+using Test, ZXCalculus, ZXCalculus.ZXW, ZXCalculus.ZX, Graphs
 using Test: match_logs
 using ZXCalculus.ZXW:
     CalcRule,

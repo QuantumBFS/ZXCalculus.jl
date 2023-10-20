@@ -1,3 +1,4 @@
+using Test
 using ZXCalculus.Utils: Scalar, add_power!, add_phase!
 
 s = Scalar()
