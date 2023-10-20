@@ -2,7 +2,7 @@ using Test, ZXCalculus, Graphs, ZXCalculus.ZX
 using ZXCalculus.ZX: SpiderType, EdgeType
 using ZXCalculus.Utils: Phase
 
-import ZXCalculus.ZX as ZX
+using ZXCalculus: ZX
 
 st = Dict(
     0+1 => SpiderType.In,

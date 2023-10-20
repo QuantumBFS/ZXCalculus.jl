@@ -1,5 +1,5 @@
 using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
-import ZXCalculus.ZX as ZX
+using ZXCalculus: ZX
 
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
 ps = [Rational(0) for i ∈ 1:3]

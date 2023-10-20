@@ -1,8 +1,7 @@
 using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZXW
 using ZXCalculus.ZXW: ZXWSpiderType, Input, Output, W, H, D, Z, X
 using ZXCalculus.Utils: Parameter, PiUnit, Factor
-
-import ZXCalculus.ZXW as ZXW
+using ZXCalculus: ZXW
 
 @testset "ZXWSpiderType" begin
 

@@ -1,7 +1,6 @@
 using Test, ZXCalculus, ZXCalculus.ZX
 using YaoHIR: Chain
-
-import ZXCalculus.ZX as ZX
+using ZXCalculus: ZX
 
 chain_swap = Chain()
 

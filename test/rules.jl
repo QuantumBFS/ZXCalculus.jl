@@ -1,6 +1,5 @@
 using Test, ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
-
-import ZXCalculus.ZX as ZX
+using ZXCalculus: ZX
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
 collect(edges(g))
