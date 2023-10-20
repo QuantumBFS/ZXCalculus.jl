@@ -1,3 +1,5 @@
+using Test, Multigraphs, ZXCalculus, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
+
 zxd = ZXDiagram(4)
 push_gate!(zxd, Val{:Z}(), 1, 3//2)
 push_gate!(zxd, Val{:H}(), 1)

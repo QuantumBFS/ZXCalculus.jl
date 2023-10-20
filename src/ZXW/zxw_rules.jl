@@ -152,7 +152,7 @@ function rewrite!(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     return zxwd
 end
 
-function rewrite!(r::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+function rewrite!(::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     zero_loc = findfirst(x -> x == zero(T), vs)
 
     add_global_phase!(zxwd, P(π / 2))
@@ -203,7 +203,7 @@ function rewrite!(r::CalcRule{:diff}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) wher
     return zxwd
 end
 
-function rewrite!(r::CalcRule{:int}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
+function rewrite!(::CalcRule{:int}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     zero_loc = findfirst(x -> x == zero(T), vs)
     return integrate!(zxwd, view(vs, 1:zero_loc-1)..., view(vs, zero_loc+1:length(vs))...)
 end

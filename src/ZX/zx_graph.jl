@@ -35,7 +35,7 @@ end
 Convert a ZX-diagram to graph-like ZX-diagram.
 
 ```jldoctest
-julia> using ZXCalculus
+julia> using ZXCalculus.ZX
 
 julia> zxd = ZXDiagram(2); push_gate!(zxd, Val{:CNOT}(), 2, 1);
 

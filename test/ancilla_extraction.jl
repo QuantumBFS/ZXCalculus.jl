@@ -1,5 +1,6 @@
-using ZXCalculus
-using ZXCalculus: ancilla_extraction
+using Test, ZXCalculus, ZXCalculus.ZX
+using ZXCalculus.ZX: ancilla_extraction
+using ZXCalculus: ZX
 
 function gen_phase_gadget()
     zxd = ZXDiagram(2)
@@ -26,4 +27,4 @@ convert_to_chain(zxd_swap)
 zxg_swap = ZXGraph(zxd_swap)
 zxd_anc = ancilla_extraction(zxg_swap)
 # plot(zxd_anc)
-@test length(ZXCalculus.convert_to_chain(zxd_anc)) == 3
+@test length(ZX.convert_to_chain(zxd_anc)) == 3
