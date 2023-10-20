@@ -1,4 +1,11 @@
 using ZXCalculus, Documenter, Test
+using Vega
+using DataFrames
+
+
+@testset "plotting" begin
+  include("plots.jl")
+end
 
 @testset "abstract_zx_diagram.jl" begin
     include("abstract_zx_diagram.jl")

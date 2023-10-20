@@ -1,7 +1,8 @@
-using Vega
-using DataFrames
+module ZXCalculusExt
 
-export plot_vega
+using Vega, DataFrames
+using ZXCalculus, ZXCalculus.ZX
+using ZXCalculus: ZX
 
 function spider_type_string(st1)
     st1 == SpiderType.X && return "X"
@@ -25,9 +26,9 @@ function generate_d_edges(zxd::ZXDiagram)
     s = Int[]
     d = Int[]
     isH = Bool[]
-    for e in ZXCalculus.edges(zxd.mg)
-        push!(s, ZXCalculus.src(e))
-        push!(d, ZXCalculus.dst(e))
+    for e in ZXCalculus.ZX.edges(zxd.mg)
+        push!(s, ZXCalculus.ZX.src(e))
+        push!(d, ZXCalculus.ZX.dst(e))
         push!(isH, false)
     end
     return DataFrame(src = s, dst = d, isHadamard = isH)
@@ -36,18 +37,19 @@ function generate_d_edges(zxd::ZXGraph)
     s = Int[]
     d = Int[]
     isH = Bool[]
-    for e in ZXCalculus.edges(zxd.mg)
-        push!(s, ZXCalculus.src(e))
-        push!(d, ZXCalculus.dst(e))
-        push!(isH, ZXCalculus.is_hadamard(zxd, ZXCalculus.src(e), ZXCalculus.dst(e)))
+    for e in ZXCalculus.ZX.edges(zxd.mg)
+        push!(s, ZXCalculus.ZX.src(e))
+        push!(d, ZXCalculus.ZX.dst(e))
+        push!(isH, ZXCalculus.ZX.is_hadamard(zxd, ZXCalculus.src(e), ZXCalculus.dst(e)))
     end
     return DataFrame(src = s, dst = d, isHadamard = isH)
 end
 
-function plot_vega(zxd::Union{ZXDiagram, ZXGraph}; scale = 2)
+function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
+    scale = 2
     lattice_unit = 50 * scale
     zxd = copy(zxd)
-    ZXCalculus.generate_layout!(zxd)
+    ZXCalculus.ZX.generate_layout!(zxd)
     vs = spiders(zxd)
     x_locs = zxd.layout.spider_col
     x_min = minimum(values(x_locs), init=0)
@@ -310,4 +312,11 @@ function plot_vega(zxd::Union{ZXDiagram, ZXGraph}; scale = 2)
         ]
     )
     return spec
+end
+
+
+
+
+
+
 end

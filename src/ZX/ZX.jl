@@ -22,6 +22,7 @@ export rewrite!, simplify!
 
 export convert_to_chain, convert_to_zxd
 export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation
+export plot
 
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")

@@ -27,21 +27,21 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
 @test ZX.qubit_loc(zxd3, 1) == ZX.qubit_loc(zxd3, 2)
 
 @testset "float to rational" begin
-    @test ZX.continued_fraction(2.41, 10) === 241 // 100
-    @test ZX.continued_fraction(1.3, 10) === 13 // 10
-    @test ZX.continued_fraction(0, 10) === 0 // 1
-    @test ZX.continued_fraction(-0.5, 10) === -1 // 2
-    zxd = ZXDiagram(4)
-    push_gate!(zxd, Val(:X), 3, 0.5)
-    @test zxd.ps[9] == 1 // 2
-    push_gate!(zxd, Val(:X), 3, -0.5)
-    @test zxd.ps[10] == 3 // 2
-    push_gate!(zxd, Val(:Z), 3, 0)
-    @test zxd.ps[11] == 0 // 1
-    @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
-    @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert = false)
-    @test ZX.safe_convert(Rational{Int64}, 1.2) == 6 // 5 &&
-          ZX.safe_convert(Rational{Int64}, 1 // 2) == 1 // 2
+  @test ZX.continued_fraction(2.41, 10) === 241 // 100
+  @test ZX.continued_fraction(1.3, 10) === 13 // 10
+  @test ZX.continued_fraction(0, 10) === 0 // 1
+  @test ZX.continued_fraction(-0.5, 10) === -1 // 2
+  zxd = ZXDiagram(4)
+  push_gate!(zxd, Val(:X), 3, 0.5)
+  @test zxd.ps[9] == 1 // 2
+  push_gate!(zxd, Val(:X), 3, -0.5)
+  @test zxd.ps[10] == 3 // 2
+  push_gate!(zxd, Val(:Z), 3, 0)
+  @test zxd.ps[11] == 0 // 1
+  @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
+  @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
+  @test ZX.safe_convert(Rational{Int64}, 1.2) == 6 // 5 &&
+        ZX.safe_convert(Rational{Int64}, 1 // 2) == 1 // 2
 end
 
 zxd4 = ZXDiagram(2)

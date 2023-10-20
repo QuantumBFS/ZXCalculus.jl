@@ -4,8 +4,6 @@ authors = ["Chen Zhao and contributors"]
 version = "0.6.0"
 
 [deps]
-CompilerPluginTools = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3638"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Expronicon = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3636"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -13,9 +11,15 @@ MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 Multigraphs = "7ebac608-6c66-46e6-9856-b5f43e107bac"
 OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
 YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
+
+[weakdeps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
+
+[extensions]
+ZXCalculusExt = ["Vega", "DataFrames"]
 
 [compat]
 Expronicon = "0.10.3"
@@ -25,11 +29,15 @@ Multigraphs = "0.3"
 OMEinsum = "0.7, 0.8"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
-julia = "1.9"
+Vega = ">= 2.6.2"
+DataFrames = ">= 1.6.1"
+julia = ">= 1.9"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
 
 [targets]
-test = ["Test", "Documenter"]
+test = ["Test", "Documenter", "Vega", "DataFrames"]

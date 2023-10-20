@@ -629,3 +629,6 @@ function safe_convert(::Type{T}, x::Real) where T<:Rational
     @warn "converting phase to rational, but with rounding error $(abs(fr-x))."
     return fr
 end
+
+plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
+     error("missing extension, please use Vega with 'using Vega' and 'using DataFrames'")

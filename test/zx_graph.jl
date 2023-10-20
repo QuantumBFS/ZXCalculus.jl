@@ -7,11 +7,11 @@ add_edge!(g, 2, 4)
 add_edge!(g, 3, 4)
 add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
-ps = [0//1 for i = 1:6]
+ps = [0 // 1 for i = 1:6]
 v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
 zxd = ZXDiagram(g, v_t, ps)
 zxg1 = ZXGraph(zxd)
-@test plot(zxg1)  !== nothing
+# @test plot(zxg1)  !== nothing
 @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
 @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
 @test add_edge!(zxg1, 1, 1)
@@ -24,17 +24,18 @@ zxg2 = ZXGraph(zxd)
 
 
 @testset "push gates into Diagram then plot ZXGraph" begin
-zxd = ZXDiagram(2)
-push_gate!(zxd, Val(:H), 1)
-push_gate!(zxd, Val(:CNOT), 2, 1)
-zxg = ZXGraph(zxd)
-@test plot(zxg) !== nothing
+  zxd = ZXDiagram(2)
+  push_gate!(zxd, Val(:H), 1)
+  push_gate!(zxd, Val(:CNOT), 2, 1)
+  zxg = ZXGraph(zxd)
+  # @test plot(zxg) !== nothing
 
-zxg3 = ZXGraph(ZXDiagram(3))
-ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1//4))
-ZX.add_power!(zxg3, 3)
-@test ZX.scalar(zxg3) == Scalar(3, 1//4)
-@test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
-@test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
-@test ZX.column_loc(zxg3, 1) == 1//1
-@test ZX.column_loc(zxg3, 2) == 3//1
+  zxg3 = ZXGraph(ZXDiagram(3))
+  ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
+  ZX.add_power!(zxg3, 3)
+  @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
+  @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
+  @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
+  @test ZX.column_loc(zxg3, 1) == 1 // 1
+  @test ZX.column_loc(zxg3, 2) == 3 // 1
+end
