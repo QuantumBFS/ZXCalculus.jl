@@ -58,6 +58,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using Liang
-            DocMeta.setdocmeta!(Liang, :DocTestSetup, :(using Liang); recursive=true)
-            doctest(Liang)'
+            using ZXCalculus
+            DocMeta.setdocmeta!(ZXCalculus, :DocTestSetup, :(using ZXCalculus); recursive=true)
+            doctest(ZXCalculus)'
