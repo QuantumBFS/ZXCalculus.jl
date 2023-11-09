@@ -14,6 +14,10 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 
+[weakdeps]
+Karnak = "cd156443-31ad-4f6f-850f-a93ee5f75905"
+CairoMakie = ""
+
 [compat]
 Expronicon = "0.10.3"
 Graphs = "1"
@@ -23,6 +27,7 @@ OMEinsum = "0.7"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
 julia = "1.9"
+Karnak = "1.0.0"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
