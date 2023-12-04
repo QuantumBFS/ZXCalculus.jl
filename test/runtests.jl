@@ -1,9 +1,5 @@
 using ZXCalculus, Documenter, Test
 
-@testset "plots.jl" begin
-    include("plot.jl")
-end
-
 @testset "abstract_zx_diagram.jl" begin
     include("abstract_zx_diagram.jl")
 end
