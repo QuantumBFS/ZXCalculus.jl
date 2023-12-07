@@ -79,7 +79,15 @@ end
 function Base.match(::Rule{:pi}, zxwd::ZXWDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxwd)
-        degree(zxwd, v1) != 2 && continue
+        non_io_spiders = 0
+        for v3 in neighbors(zxwd,v1)
+            non_io_spiders += @match spider_type(zxwd,v3) begin
+                Input(_) => 0
+                Output(_) => 0
+                _ => 1
+            end
+        end
+        non_io_spiders != 2 && continue
         for v2 in neighbors(zxwd, v1)
             res = @match (spider_type(zxwd,v1), spider_type(zxwd,v2)) begin
                 (X(p1), Z(p2)) && if p1 == one(P) end => Match{T}([v1, v2])
@@ -167,7 +175,7 @@ function rewrite!(::Rule{:b1}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) where {T,P}
     return zxwd
 end
 
-function rewrite!(r::Rule{:pi}, zxwd::ZXWDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::Rule{:pi}, zxwd::ZXWDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     add_global_phase!(zxwd, parameter(zxwd, v2))
     set_phase!(zxwd, v2, -parameter(zxwd, v2))
@@ -424,10 +432,19 @@ function check_rule(r::CalcRule{:int}, zxwd::ZXWDiagram{T,P}, vs::Vector{T}) whe
     return true
 end
 
-function check_rule(r::Rule{:pi}, zxwd::ZXWDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::Rule{:pi}, zxwd::ZXWDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxwd.mg, v1) && has_vertex(zxwd.mg, v2)) || return false
-    (degree(zxwd, v1)) == 2 || return false
+
+        non_io_spiders = 0
+        for v3 in neighbors(zxwd,v1)
+            non_io_spiders += @match spider_type(zxwd,v3) begin
+                Input(_) => 0
+                Output(_) => 0
+                _ => 1
+            end
+        end
+        non_io_spiders != 2 && return false
 
     return @match (spider_type(zxwd, v1), spider_type(zxwd, v2)) begin
         (X(p1), Z(p2)) && if p1 == one(P) end => true
