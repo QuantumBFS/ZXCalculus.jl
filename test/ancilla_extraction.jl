@@ -17,7 +17,7 @@ zxd = gen_phase_gadget()
 zxg = full_reduction(zxd)
 anc_circ = ancilla_extraction(zxg)
 
-@test plot(anc_circ) != nothing
+@test plot(anc_circ) !== nothing
 
 zxd_swap = ZXDiagram(2)
 pushfirst_gate!(zxd_swap, Val(:SWAP), [1, 2])
@@ -26,5 +26,5 @@ convert_to_chain(zxd_swap)
 
 zxg_swap = ZXGraph(zxd_swap)
 zxd_anc = ancilla_extraction(zxg_swap)
-@test plot(zxd_anc)  != nothing
+@test plot(zxd_anc)  !== nothing
 @test length(ZX.convert_to_chain(zxd_anc)) == 3

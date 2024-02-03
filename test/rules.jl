@@ -10,6 +10,7 @@ matches = match(Rule{:f}(), zxd)
 rewrite!(Rule{:f}(), zxd, matches)
 @test sort!(spiders(zxd)) == [1, 3]
 @test phase(zxd, 1) == phase(zxd, 3) == 3 // 4
+@test plot(zxd) !== nothing
 
 g = Multigraph(path_graph(5))
 add_edge!(g, 1, 2)
@@ -19,6 +20,7 @@ zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:i1}(), zxd)
 rewrite!(Rule{:i1}(), zxd, matches)
 @test nv(zxd) == 3 && ne(zxd, count_mul = true) == 3 && ne(zxd) == 2
+@test plot(zxd) !== nothing
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
 ps = [i // 4 for i = 1:3]
@@ -27,6 +29,7 @@ zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:h}(), zxd)
 rewrite!(Rule{:h}(), zxd, matches)
 @test nv(zxd) == 8 && ne(zxd) == 8
+@test plot(zxd) !== nothing
 
 matches = match(Rule{:i2}(), zxd)
 rewrite!(Rule{:i2}(), zxd, matches)
@@ -52,6 +55,8 @@ matches = match(Rule{:pi}(), zxd)
 rewrite!(Rule{:pi}(), zxd, matches)
 @test nv(zxd) == 8 && ne(zxd) == 7
 @test zxd.scalar == Scalar(0, 1 // 2)
+# FIXME generate layout does not terminat
+# @test plot(zxd) !== nothing
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
 ps = [1, 1 // 2, 0]
@@ -61,6 +66,7 @@ matches = match(Rule{:pi}(), zxd)
 rewrite!(Rule{:pi}(), zxd, matches)
 @test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul = true) == 4
 @test zxd.scalar == Scalar(0, 1 // 2)
+@test plot(zxd) !== nothing
 
 g = Multigraph(5)
 add_edge!(g, 1, 2)
@@ -74,6 +80,8 @@ matches = match(Rule{:c}(), zxd)
 rewrite!(Rule{:c}(), zxd, matches)
 @test nv(zxd) == 7 && ne(zxd) == 4
 @test zxd.scalar == Scalar(-3, 0 // 1)
+# FIXME generate layout does not terminate
+# @test plot(zxd) !== nothing
 
 g = Multigraph(6)
 add_edge!(g, 1, 3)
@@ -100,6 +108,7 @@ matches = match(Rule{:b}(), zxd)
 rewrite!(Rule{:b}(), zxd, matches)
 @test nv(zxd) == 8 && ne(zxd) == 8
 @test zxd.scalar == Scalar(1, 0 // 1)
+@test plot(zxd) !== nothing
 
 g = Multigraph(9)
 for e in [[2, 6], [3, 7], [4, 8], [5, 9]]
@@ -127,6 +136,7 @@ replace!(Rule{:lc}(), zxg)
       phase(zxg, 3) == 7 // 4 &&
       phase(zxg, 4) == 0 // 1 &&
       phase(zxg, 5) == 1 // 4
+@test plot(zxd) !== nothing
 
 g = Multigraph(14)
 for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14]]
@@ -178,6 +188,7 @@ end
 @test length(match(Rule{:p1}(), zxg)) == 1
 replace!(Rule{:pab}(), zxg)
 @test nv(zxg) == 7 && ne(zxg) == 6
+@test plot(zxg) !== nothing
 
 g = Multigraph(14)
 for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14]]
@@ -207,6 +218,7 @@ end
 match(Rule{:p2}(), zxg)
 replace!(Rule{:p2}(), zxg)
 @test zxg.phase_ids[15] == (2, -1)
+@test plot(zxg) !== nothing
 
 g = Multigraph(15)
 for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14], [2, 15]]
@@ -238,3 +250,4 @@ replace!(Rule{:p3}(), zxg)
 
 @test nv(zxg) == 16 && ne(zxg) == 28
 @test ZXCalculus.ZX.is_hadamard(zxg, 2, 15) && ZXCalculus.ZX.is_hadamard(zxg, 1, 16)
+@test plot(zxg) !== nothing

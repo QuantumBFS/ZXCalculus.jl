@@ -208,4 +208,5 @@ for i = 1:5
     push!(zxg.outputs, i+23)
 end
 
+@test plot(zxg) !== nothing
 ZX.ancilla_extraction(zxg)
