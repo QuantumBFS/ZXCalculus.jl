@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.37
 
 using Markdown
 using InteractiveUtils
@@ -7,20 +7,33 @@ using InteractiveUtils
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
 	import Pkg
+<<<<<<< HEAD
 	Pkg.add(url="https://github.com/Roger-luo/Expronicon.jl")  
 	Pkg.add(url="https://github.com/JuliaCompilerPlugins/CompilerPluginTools.jl")
+=======
+	Pkg.activate(mktempdir())
+>>>>>>> d9ea6a3 (add notebook)
 	Pkg.add(url="https://github.com/QuantumBFS/YaoHIR.jl", rev="master")
 	Pkg.add(url="https://github.com/QuantumBFS/YaoLocations.jl", rev="master")
 	Pkg.add(url="https://github.com/QuantumBFS/Multigraphs.jl")
+<<<<<<< HEAD
 	Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
+=======
+	#Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
+	Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feat/equivalence")
+	Pkg.add(url="/home/liam/src/quantum-circuits/software/QuantumCircuitEquivalence.jl", rev="feat/zx")
+	Pkg; Pkg.add("BenchmarkTools")
+	
+>>>>>>> d9ea6a3 (add notebook)
 end
 
 # ╔═╡ 512ac070-335e-45e9-a75d-e689af3ea59d
 begin
+	  using Vega
+	  using DataFrames
 	  using ZXCalculus
 	  using YaoHIR, YaoLocations
 	  using YaoHIR.IntrinsicOperation
-	  using CompilerPluginTools
 end
 
 # ╔═╡ a9bf8e31-686a-4057-acec-bd04e8b5a3dc
