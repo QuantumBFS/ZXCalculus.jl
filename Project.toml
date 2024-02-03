@@ -1,7 +1,7 @@
 name = "ZXCalculus"
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
 authors = ["Chen Zhao and contributors"]
-version = "0.5.0"
+version = "0.6.0"
 
 [deps]
 CompilerPluginTools = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3638"
@@ -22,9 +22,10 @@ Expronicon = "0.10.3"
 Graphs = "1"
 MLStyle = "0.4"
 Multigraphs = "0.3"
+OMEinsum = "0.7, 0.8"
 YaoHIR = "0.2"
 YaoLocations = "0.1"
-julia = ">= 1.6"
+julia = "1.9"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"

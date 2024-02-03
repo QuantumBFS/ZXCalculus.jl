@@ -1,7 +1,3 @@
-import Graphs: AbstractEdge, src, dst, nv, ne, neighbors
-import Graphs.SimpleGraphs: rem_edge!, rem_vertex!, add_edge!, add_vertex!, vertices
-export HalfEdge, src, dst, new_edge, PlanarMultigraph
-
 """
     HalfEdge{T<:Integer}(src ,dst)
 
@@ -119,30 +115,147 @@ Base.copy(g::PlanarMultigraph) = PlanarMultigraph(
 )
 
 function Base.:(==)(pmg1::PlanarMultigraph{T}, pmg2::PlanarMultigraph{T}) where {T<:Integer}
-    if nv(pmg1) != nv(pmg2)
-        return false
+    return pmg_equiv(pmg1, pmg2, false)
+end
+
+# """
+#     print_nonoverlaping(dict1, dict2)
+
+# Helper function to print nonoverlaping elements in two dictionaries.
+# """
+function print_nonoverlaping(dict1, dict2)
+    # Print elements in dict1 not in dict2
+    println("Elements in dict1 not in dict2:")
+    for (key, value) in dict1
+        if !haskey(dict2, key) || dict2[key] != value
+            println("Key: ", key, ", Value: ", value)
+        end
     end
-    if nhe(pmg1) != nhe(pmg2)
-        return false
+
+    println()
+
+    # Print elements in dict2 not in dict1
+    println("Elements in dict2 not in dict1:")
+    for (key, value) in dict2
+        if !haskey(dict1, key) || dict1[key] != value
+            println("Key: ", key, ", Value: ", value)
+        end
     end
-    if nf(pmg1) != nf(pmg2)
+
+end
+
+# """
+#     equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+
+# Checking if the vertex to half edge mapping is equivalent.
+# """
+function equiv_v2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+    if length(keys(pmg1.v2he)) != length(keys(pmg2.v2he))
         return false
     end
 
-    # could be relaxed, idx might be different but content needs to be the same for HalfEdges
+    for (v, _) in pmg1.v2he
+        if !haskey(pmg2.v2he, v)
+            return false
+        end
+        if pmg2.v2he[v] ∉ trace_vertex(pmg1, v)
+            return false
+        end
+    end
+    return true
+end
+
+# """
+#     equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+
+# Checking if the face to half edge mapping is equivalent.
+# """
+function equiv_f2he(pmg1::PlanarMultigraph, pmg2::PlanarMultigraph)
+    if length(keys(pmg1.f2he)) != length(keys(pmg2.f2he))
+        return false
+    end
+
+    for (f_id, _) in pmg1.f2he
+        if !haskey(pmg2.f2he, f_id)
+            return false
+        end
+        if pmg2.f2he[f_id] ∉ trace_face(pmg1, f_id)
+            return false
+        end
+    end
+    return true
+end
+
+# """
+#     pmg_equiv(
+#     pmg1::PlanarMultigraph{T},
+#     pmg2::PlanarMultigraph{T},
+#     verbose::Bool,
+# ) where {T<:Integer}
+
+# Checking if two PlanarMultigraphs are equivalent.
+
+# If verbose is true, then print out the nonoverlaping elements in the two.
+# """
+function pmg_equiv(
+    pmg1::PlanarMultigraph{T},
+    pmg2::PlanarMultigraph{T},
+    verbose::Bool,
+) where {T<:Integer}
+    if !equiv_v2he(pmg1, pmg2)
+        if verbose
+            println("v2he")
+            print_nonoverlaping(pmg1.v2he, pmg2.v2he)
+        end
+        return false
+    end
+
+    if !equiv_f2he(pmg1, pmg2)
+        if verbose
+            println("f2he")
+            print_nonoverlaping(pmg1.f2he, pmg2.f2he)
+        end
+        return false
+    end
+
+    if pmg1.half_edges != pmg2.half_edges
+        if verbose
+            println("HalfEdges")
+            print_nonoverlaping(pmg1.half_edges, pmg2.half_edges)
+        end
+        return false
+    end
+
     if pmg1.next != pmg2.next
+        if verbose
+            println("next")
+            print_nonoverlaping(pmg1.next, pmg2.next)
+        end
         return false
     end
 
     if pmg1.twin != pmg2.twin
+        if verbose
+            println("twin")
+            print_nonoverlaping(pmg1.twin, pmg2.twin)
+        end
         return false
     end
 
     if pmg1.he2f != pmg2.he2f
+        if verbose
+            println("he2f")
+            print_nonoverlaping(pmg1.he2f, pmg2.he2f)
+        end
         return false
     end
 
     if sort(pmg1.boundary) != sort(pmg2.boundary)
+        if verbose
+            println("boundary")
+            println(pmg1.boundary)
+            println(pmg2.boundary)
+        end
         return false
     end
     return true
@@ -252,11 +365,11 @@ function trace_face(g::PlanarMultigraph{T}, f::T; safe_trace = false) where {T}
     return hes_f
 end
 
-trace_vertex(g::PlanarMultigraph{T}, v::T) where {T} =
-    trace_orbit(h -> σ_inv(g, h), out_half_edge(g, v); rev = true)
+trace_vertex(pmg::PlanarMultigraph{T}, v::T) where {T} =
+    trace_orbit(h -> σ_inv(pmg, h), out_half_edge(pmg, v); rev = true)
 
-neighbors(g::PlanarMultigraph{T}, v::T) where {T} =
-    [dst(g, he) for he in trace_vertex(g, v)]
+neighbors(pmg::PlanarMultigraph{T}, v::T) where {T} =
+    [dst(pmg, he) for he in trace_vertex(pmg, v)]
 
 """
     is_boundary(g::PlanarMultigraph{T}, he_id::T) where {T}
@@ -434,14 +547,14 @@ end
 
 Join two facets incident to h and it's twin into one.
 
-The facet incident to h is removed.
+The facet incident to h's twin is removed.
 """
 function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     vs = src(pmg, h)
     vd = dst(pmg, h)
 
-    length(trace_vertex(pmg, vs)) <= 3 && error("Src vtx must have degree 3 or above")
-    length(trace_vertex(pmg, vd)) <= 3 && error("Dst vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vs)) < 3 && error("Src vtx must have degree 3 or above")
+    length(trace_vertex(pmg, vd)) < 3 && error("Dst vtx must have degree 3 or above")
 
     twin_h = twin(pmg, h)
     hp = prev(pmg, h)
@@ -452,12 +565,16 @@ function join_facet!(pmg::PlanarMultigraph{T}, h::T) where {T}
     f1_id = face(pmg, h)
     f2_id = face(pmg, twin_h)
     hes_f = trace_face(pmg, f2_id; safe_trace = false)
+    circshift!(hes_f, -findfirst(he -> he == twin_h, hes_f))
 
     set_next!(pmg, [thp, hp], [hn, thn])
 
-    set_face!(pmg, hes_f, f1_id; both = true)
+    set_face!(pmg, hes_f[1:end-1], f1_id; both = true)
 
     delete!(pmg.f2he, f2_id)
+    if f2_id in pmg.boundary
+        pmg.boundary[findfirst(x -> x == f2_id, pmg.boundary)] = f1_id
+    end
 
     destroy_edge!(pmg, h)
     return hp
@@ -479,7 +596,6 @@ After splitting, h points to the newly added vertex
 - [CGAL](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html#a2b17d7bd2045397167b00616f3b4d622)
 """
 function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
-
     # Preconditions
     dst(pmg, h) == dst(pmg, g) || error("h and g don't have the same destination")
     h == g && error("h and g can't be the same half edge")
@@ -505,9 +621,8 @@ function split_vertex!(pmg::PlanarMultigraph{T}, h::T, g::T) where {T<:Integer}
     # add new half edges from v2 to v1
     hes_id, _ = create_edge!(pmg, v2, v1)
 
-
     for he in he_vec
-        set_dst!(pmg, he, v2)
+        set_dst!(pmg, twin(pmg, he), v2)
         (he == tg) && break
     end
 
@@ -590,7 +705,8 @@ function add_vertex_and_facet_to_boarder!(
     # preconditions
     is_boundary(pmg, h) && is_boundary(pmg, g) || error("Can't add facet on top of facet")
     h != g || error("Can't add a loop as a facet!")
-    hes_f = trace_face(pmg, face(pmg, h); safe_trace = false)
+    old_f = face(pmg, h)
+    hes_f = trace_face(pmg, old_f; safe_trace = false)
     hes_f = circshift(hes_f, -findfirst(he -> he == h, hes_f))
     g ∉ hes_f && error("Can't add edge across facet")
 
@@ -617,6 +733,7 @@ function add_vertex_and_facet_to_boarder!(
         (he == g) && break
     end
     set_face!(pmg, [hes_hv2newv[2], hes_gv2newv[1]], new_f; both = true)
+    set_face!(pmg, [hes_hv2newv[1], hes_gv2newv[2]], old_f; both = false)
     return hes_gv2newv[1]
 end
 
@@ -639,9 +756,11 @@ function erase_facet!(pmg::PlanarMultigraph{T}, h::T) where {T<:Integer}
 
     is_bry = [is_boundary(pmg, he) for he in hes_ft]
 
+    f_id = face(pmg, h)
+
     # modify old graph
     set_face!(pmg, hes_f, 0; both = false)
-    delete!(pmg.f2he, face(pmg, h))
+    delete!(pmg.f2he, f_id)
     for idx = 1:length(hes_ft)
         if is_bry[idx]
             he_f_prev = prev(pmg, hes_f[idx])

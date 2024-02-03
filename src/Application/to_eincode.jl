@@ -40,7 +40,7 @@ function to_eincode(zxwd::ZXWDiagram{T,P}) where {T,P}
 
     scalar_tensor = zeros(ComplexF64, ())
 
-    scalar_tensor[] = ZXCalculus.unwrap_scalar(scalar(zxwd))
+    scalar_tensor[] = unwrap_scalar(scalar(zxwd))
     push!(ixs, Tuple{T,T,T}[])
     push!(tensors, scalar_tensor)
     return EinCode(ixs, iy), tensors

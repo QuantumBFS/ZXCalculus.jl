@@ -1,4 +1,6 @@
 using Base: CodegenParams
+using Test, ZXCalculus
+using ZXCalculus.Utils: Parameter
 
 @testset "Constructor" begin
     p1 = Parameter(Val(:PiUnit))

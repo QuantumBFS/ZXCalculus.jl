@@ -1,3 +1,8 @@
+using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZXW
+using ZXCalculus.ZXW: ZXWSpiderType, Input, Output, W, H, D, Z, X
+using ZXCalculus.Utils: Parameter, PiUnit, Factor
+using ZXCalculus: ZXW
+
 @testset "ZXWSpiderType" begin
 
     spider_vec =
@@ -33,7 +38,7 @@ end
     @test zxwd_vec.mg == zxwd_dic.mg && zxwd_vec.st == zxwd_dic.st
 
     g = Multigraph([0 1 0 0; 1 0 0 0; 0 0 0 1; 0 0 1 0])
-    v_t = [Input(1) Output(1) Input(2) Output(2)]
+    v_t = [ZXW.Input(1) ZXW.Output(1) ZXW.Input(2) ZXW.Output(2)]
 
     zxwd_empty = ZXWDiagram(2)
     @test zxwd_empty.mg.adjlist == g.adjlist && zxwd_empty.st == Dict(zip(1:4, v_t))

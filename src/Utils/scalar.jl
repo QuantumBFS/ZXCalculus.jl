@@ -1,3 +1,5 @@
+export Scalar
+
 """
     Scalar
 

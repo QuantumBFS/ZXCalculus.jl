@@ -1,5 +1,9 @@
-using ZXCalculus
-using ZXCalculus: SpiderType
+using Test, ZXCalculus, Graphs, ZXCalculus.ZX
+using ZXCalculus.ZX: SpiderType, EdgeType
+using ZXCalculus.Utils: Phase
+
+using ZXCalculus: ZX
+
 st = Dict(
     0+1 => SpiderType.In,
     1+1 => SpiderType.In,
@@ -191,11 +195,10 @@ es = Dict(
     (46+1, 47+1) => EdgeType.HAD,
 )
 
-using Graphs
 zxg = ZXGraph(ZXDiagram(0))
 vs = 1:52
 for v in vs
-    ZXCalculus.add_spider!(zxg, st[v], ZXCalculus.Phase(ps[v]))
+    ZX.add_spider!(zxg, st[v], Phase(ps[v]))
 end
 for (e, _) in es
     Graphs.add_edge!(zxg, e[1], e[2])
@@ -205,6 +208,4 @@ for i = 1:5
     push!(zxg.outputs, i+23)
 end
 
-@test plot(zxg) !== nothing
-zxg1 = ZXCalculus.ancilla_extraction(zxg)
-@test plot(zxg1) !== nothing
+ZX.ancilla_extraction(zxg)
