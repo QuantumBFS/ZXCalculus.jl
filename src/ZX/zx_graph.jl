@@ -9,11 +9,14 @@ This is the type for representing the graph-like ZX-diagrams.
 """
 struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
+
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
     et::Dict{Tuple{T, T}, EdgeType.EType}
+
     layout::ZXLayout{T}
     phase_ids::Dict{T,Tuple{T, Int}}
+
     scalar::Scalar{P}
     master::ZXDiagram{T, P}
     inputs::Vector{T}

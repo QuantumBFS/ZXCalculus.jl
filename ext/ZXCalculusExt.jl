@@ -1,5 +1,7 @@
 module ZXCalculusExt
 
+using Graphs
+import Graphs: AbstractEdge, src, dst
 using Vega, DataFrames
 using ZXCalculus, ZXCalculus.ZX
 using ZXCalculus: ZX
@@ -27,8 +29,8 @@ function generate_d_edges(zxd::ZXDiagram)
     d = Int[]
     isH = Bool[]
     for e in ZXCalculus.ZX.edges(zxd.mg)
-        push!(s, ZXCalculus.ZX.src(e))
-        push!(d, ZXCalculus.ZX.dst(e))
+        push!(s, src(e))
+        push!(d, dst(e))
         push!(isH, false)
     end
     return DataFrame(src = s, dst = d, isHadamard = isH)
@@ -38,9 +40,9 @@ function generate_d_edges(zxd::ZXGraph)
     d = Int[]
     isH = Bool[]
     for e in ZXCalculus.ZX.edges(zxd.mg)
-        push!(s, ZXCalculus.ZX.src(e))
-        push!(d, ZXCalculus.ZX.dst(e))
-        push!(isH, ZXCalculus.ZX.is_hadamard(zxd, ZXCalculus.src(e), ZXCalculus.dst(e)))
+        push!(s, src(e))
+        push!(d, dst(e))
+        push!(isH, ZXCalculus.ZX.is_hadamard(zxd, src(e), dst(e)))
     end
     return DataFrame(src = s, dst = d, isHadamard = isH)
 end

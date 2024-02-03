@@ -51,5 +51,3 @@ add_spider!(zxd::AbstractZXDiagram, args...) =
     throw(MethodError(ZX.add_spider!, (zxd, args...)))
 insert_spider!(zxd::AbstractZXDiagram, args...) =
     throw(MethodError(ZX.insert_spider!, (zxd, args...)))
-plot(zxd::Any; kwargs...) =
-     error("missing extension, please use Vega with 'using Vega' and 'using DataFrames'")
