@@ -170,7 +170,7 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
                     },
                     {
                         as = "color",
-                        expr = "datum.spider_type === 'Z' ? '#389826' : (datum.spider_type === 'X' ? '#CB3C33' : (datum.spider_type === 'H' ? 'yellow' : '#9558B2'))",
+                        expr = "datum.spider_type === 'Z' ? '#D8F8D8' : (datum.spider_type === 'X' ? '#E8A5A5' : (datum.spider_type === 'H' ? 'yellow' : '#9558B2'))",
                         type = "formula"
                     }
                 ]
