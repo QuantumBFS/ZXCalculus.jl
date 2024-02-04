@@ -1,3 +1,5 @@
+import ZXCalculus.ZXW as zxw
+
 ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
 ZXWDiagram(bir::BlockIR) = convert_to_zxwd(bir)
 Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
@@ -133,7 +135,7 @@ end
 
 
 function convert_to_zxwd(root::YaoHIR.BlockIR)
-  diagram = ZXWDiagram(root.nqubits)
+  diagram = zxw.ZXWDiagram(root.nqubits)
   circuit = canonicalize_single_location(root.circuit)
   gates_to_circ(diagram, circuit, root)
 end
