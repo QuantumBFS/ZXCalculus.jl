@@ -21,5 +21,5 @@ d2 = copy(d1)
 # Push H spider with Val spidertype
 push_gate!(d2, Val(:H), 1)
 
-# FIXME @test verify_equality(d1, d1) == true
-# @test verify_equality(d1, d2) == false
+@test verify_equality(copy(d1), copy(d1)) == true
+@test verify_equality(copy(d1), copy(d2)) == false
