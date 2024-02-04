@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.38
+# v0.19.29
 
 using Markdown
 using InteractiveUtils
@@ -99,12 +99,10 @@ md"## To make life easier"
 md"# Extract circuit"
 
 # ╔═╡ 4f07895a-58aa-4555-aa14-b0526bc1de2d
-md"""## ZXDiagrams and ZXWDiagram as a Matrix
+md"""
+## ZXWDiagram as a Matrix
+Convert a ZXWDiagram into a matrix using Einsum.jl
 """
-
-
-# ╔═╡ 9c901912-53ad-498a-a188-c7aebc0e9134
-ZXWDiagram(1)
 
 # ╔═╡ 2082486e-e9fd-11ea-1a46-6395b4b34657
 md"""
@@ -247,26 +245,19 @@ pt_zxg = ZXGraph(pt_zxd)
 # ╔═╡ c1b9828c-e99a-11ea-006a-013a2eab8cf3
 chain_simplified = circuit_extraction(pt_zxg)
 
-# ╔═╡ e8909701-bacc-43d5-a43c-b3a7cfe08403
-bir = BlockIR(IRCode(), 4, chain_simplified)
-
-# ╔═╡ 62b61858-8d06-4e09-9959-53ea584028ac
-ZXDiagram(bir)
-
-# ╔═╡ 80c79503-b85e-4938-9253-58dd45cf42b0
-ZXWDiagram(bir.nqubits)
-
-# ╔═╡ a6175cb5-136b-4adf-961e-56c6c61d4d3b
-convert_to_zxwd(bir)
-
-# ╔═╡ b6d6781c-a484-4e69-9bae-eea07a11dc42
-zxw1 = convert_to_zxwd(bir)
-
 # ╔═╡ 6ddffea2-e9a4-11ea-1c32-0975a45aba7c
 tcount(pt_zxg)
 
+# ╔═╡ 80c79503-b85e-4938-9253-58dd45cf42b0
+begin
+	zxw1 = ZXWDiagram(2) 
+	push_gate!(zxw1, Val(:Z), 1, 1//2)
+	push_gate!(zxw1, Val(:H), 2)
+	push_gate!(zxw1, Val(:CZ), 2, 1)
+end
+
 # ╔═╡ a5b21163-7e60-409f-ad59-66ca72375094
-Matrix(pt_zxg)
+Matrix(zxw1)
 
 # ╔═╡ d1789ff9-3628-4fd3-aa39-823191e78ee0
 begin
@@ -302,7 +293,7 @@ push_gate!(zxd3, c)
 ZXDiagram(4) |> typeof
 
 # ╔═╡ Cell order:
-# ╠═8ab9b70a-e98d-11ea-239c-73dc659722c2
+# ╟─8ab9b70a-e98d-11ea-239c-73dc659722c2
 # ╠═512ac070-335e-45e9-a75d-e689af3ea59d
 # ╠═fdfa8ed2-f19c-4b80-b64e-f4bb22d09327
 # ╟─227f7884-e99a-11ea-3a90-0beb697a2da6
@@ -337,14 +328,9 @@ ZXDiagram(4) |> typeof
 # ╟─c3e8b5b4-e99a-11ea-0e56-6b18757f94df
 # ╠═c1b9828c-e99a-11ea-006a-013a2eab8cf3
 # ╠═6ddffea2-e9a4-11ea-1c32-0975a45aba7c
-# ╠═4f07895a-58aa-4555-aa14-b0526bc1de2d
+# ╟─4f07895a-58aa-4555-aa14-b0526bc1de2d
 # ╠═1e11009f-7b70-49fd-a6f3-ef8b5a79636e
-# ╠═e8909701-bacc-43d5-a43c-b3a7cfe08403
-# ╠═62b61858-8d06-4e09-9959-53ea584028ac
 # ╠═80c79503-b85e-4938-9253-58dd45cf42b0
-# ╠═a6175cb5-136b-4adf-961e-56c6c61d4d3b
-# ╠═9c901912-53ad-498a-a188-c7aebc0e9134
-# ╠═b6d6781c-a484-4e69-9bae-eea07a11dc42
 # ╠═a5b21163-7e60-409f-ad59-66ca72375094
 # ╟─2082486e-e9fd-11ea-1a46-6395b4b34657
 # ╠═d1789ff9-3628-4fd3-aa39-823191e78ee0
