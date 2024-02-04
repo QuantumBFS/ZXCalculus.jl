@@ -35,9 +35,9 @@ end
     include("phase_teleportation.jl")
 end
 
-# @testset "ir.jl" begin
-#     include("ir.jl")
-# end
+@testset "ir.jl" begin
+    include("ir.jl")
+end
 
 @testset "scalar.jl" begin
     include("scalar.jl")
