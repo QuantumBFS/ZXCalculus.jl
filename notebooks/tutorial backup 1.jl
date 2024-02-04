@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.38
+# v0.19.27
 
 using Markdown
 using InteractiveUtils
@@ -7,37 +7,40 @@ using InteractiveUtils
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
 	import Pkg
+	Pkg.activate(mktempdir())
+	Pkg.add(url="https://github.com/Roger-luo/Expronicon.jl")  
+	Pkg.add(url="https://github.com/JuliaCompilerPlugins/CompilerPluginTools.jl")
 	Pkg.add(url="https://github.com/QuantumBFS/YaoHIR.jl", rev="master")
+	Pkg.add(url="/home/liam/src/quantum-circuits/software/OpenQASM.jl")
 	Pkg.add(url="https://github.com/QuantumBFS/YaoLocations.jl", rev="master")
 	Pkg.add(url="https://github.com/QuantumBFS/Multigraphs.jl")
-	#Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots"
-	Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feature/plots")
-	Pkg.add(url="/home/liam/src/quantum-circuits/software/QuantumCircuitEquivalence.jl", rev="feat/zx")
+	#Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
+	Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feat/convert_to_zxwd")
+	
 end
+
+# ╔═╡ e0f2d65f-8927-4717-96ce-2caf912daca9
+using Revise
 
 # ╔═╡ 512ac070-335e-45e9-a75d-e689af3ea59d
 begin
-	  using Vega
-	  using DataFrames
-	  using ZXCalculus, ZXCalculus.ZX
+	  using ZXCalculus
 	  using YaoHIR, YaoLocations
 	  using YaoHIR.IntrinsicOperation
-
-	  # Used for creating the IRCode for a BlockIR
-	  using Core.Compiler: IRCode
+	  using CompilerPluginTools
 end
 
 # ╔═╡ a9bf8e31-686a-4057-acec-bd04e8b5a3dc
 using Multigraphs
 
-# ╔═╡ 1e11009f-7b70-49fd-a6f3-ef8b5a79636e
-using ZXCalculus.ZXW
+# ╔═╡ 0378329e-819e-4c70-b543-33d47f6455ee
+using OpenQASM
 
-# ╔═╡ fdfa8ed2-f19c-4b80-b64e-f4bb22d09327
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
-       g = plot(zx)
-       Base.show(io, mime, g)
-end
+# ╔═╡ 4afff84d-ceb7-4427-b25b-df9dc2a08cde
+using ZXCalculus: BlockIR
+
+# ╔═╡ 1b2635ed-a985-42a3-842a-4aec30df9186
+using MLStyle
 
 # ╔═╡ 227f7884-e99a-11ea-3a90-0beb697a2da6
 md"# Construct a ZX diagram"
@@ -99,12 +102,9 @@ md"## To make life easier"
 md"# Extract circuit"
 
 # ╔═╡ 4f07895a-58aa-4555-aa14-b0526bc1de2d
-md"""## ZXDiagrams and ZXWDiagram as a Matrix
+md"""## ZXDiagrams and Graphs as Matrix
 """
 
-
-# ╔═╡ 9c901912-53ad-498a-a188-c7aebc0e9134
-ZXWDiagram(1)
 
 # ╔═╡ 2082486e-e9fd-11ea-1a46-6395b4b34657
 md"""
@@ -210,7 +210,7 @@ function load_graph()
     push_gate!(zxd, Val(:CNOT), 3, 2)
 end
 
-# ╔═╡ 64bff9ec-e9b5-11ea-3b23-c51d2149697a
+# ╔═╡ 9b69f77f-21b9-4c13-94db-a6e7c2bd21dd
 zxd = load_graph()
 
 # ╔═╡ 5dbf9f96-e9a4-11ea-19d7-e15e7f2327c9
@@ -247,26 +247,14 @@ pt_zxg = ZXGraph(pt_zxd)
 # ╔═╡ c1b9828c-e99a-11ea-006a-013a2eab8cf3
 chain_simplified = circuit_extraction(pt_zxg)
 
-# ╔═╡ e8909701-bacc-43d5-a43c-b3a7cfe08403
-bir = BlockIR(IRCode(), 4, chain_simplified)
-
-# ╔═╡ 62b61858-8d06-4e09-9959-53ea584028ac
-ZXDiagram(bir)
-
-# ╔═╡ 80c79503-b85e-4938-9253-58dd45cf42b0
-ZXWDiagram(bir.nqubits)
-
-# ╔═╡ a6175cb5-136b-4adf-961e-56c6c61d4d3b
-convert_to_zxwd(bir)
-
-# ╔═╡ b6d6781c-a484-4e69-9bae-eea07a11dc42
-zxw1 = convert_to_zxwd(bir)
-
 # ╔═╡ 6ddffea2-e9a4-11ea-1c32-0975a45aba7c
 tcount(pt_zxg)
 
 # ╔═╡ a5b21163-7e60-409f-ad59-66ca72375094
 Matrix(pt_zxg)
+
+# ╔═╡ b6d6781c-a484-4e69-9bae-eea07a11dc42
+Matrix(pt_zxd)
 
 # ╔═╡ d1789ff9-3628-4fd3-aa39-823191e78ee0
 begin
@@ -283,14 +271,10 @@ end
 
 # ╔═╡ 71fc6836-3c30-43de-aa2b-2d3d48bdb3da
 begin
-
-	  ir_t = IRCode()
-	  bir_t = BlockIR(ir_t, 4, chain_t)
-	  zxd_t = convert_to_zxd(bir_t)
+	  ir_test = @make_ircode begin end
+	  bir_test = BlockIR(ir_test, 4, chain_t)
+	  zxd_test = convert_to_zxd(bir_test)
 end
-
-# ╔═╡ 31753c83-847a-4c2a-a6b3-8be6aaa8f792
-zxg_t = ZXGraph(zxd_t)
 
 # ╔═╡ 581e847c-e9fd-11ea-3fd0-6bbc0f6efd56
 c = qft_circuit(4)
@@ -300,6 +284,185 @@ push_gate!(zxd3, c)
 
 # ╔═╡ 7b850816-ea02-11ea-183c-5db2d670be24
 ZXDiagram(4) |> typeof
+
+# ╔═╡ ee87ca39-5b1a-4b3c-96ad-ee0df2833cd5
+md"""
+## Create ZXDiagram from QASM
+"""
+
+# ╔═╡ 217d328b-58c6-4ff9-8e13-6a59b8889f2f
+
+
+# ╔═╡ 64cb0092-d364-48b7-9514-a2b5c80701be
+begin
+	qasm_o = """
+	  OPENQASM 2.0;
+	  include "qelib1.inc";
+	  qreg q0[3];
+	  creg c0[2];
+	  h q0[0];
+	  h q0[1];
+	  x q0[2];
+	  h q0[2];
+	  CX q0[0], q0[2];
+	  h q0[0];
+	  measure q0[0] -> c0[0];
+	  CX q0[1], q0[2];
+	  h q0[1];
+	  measure q0[1] -> c0[1];
+	  """
+
+	qasm_t = """
+	OPENQASM 2.0;
+ 	include "qelib1.inc";
+ 	qreg q0[3];
+  	creg mcm[1];
+ 	creg end[1];
+  	h q0[1];
+ 	x q0[2];
+ 	h q0[2];
+	CX q0[1],q0[2];
+ 	h q0[1];
+	measure q0[1] -> mcm[0];
+ 	h q0[0];
+  	CX q0[0],q0[2];
+  	h q0[0];
+ 	measure q0[0] -> end[0];
+	"""
+	
+	  ast_o = OpenQASM.parse(qasm_o)
+	  bir_o = BlockIR(ast_o)
+	  ast_t = OpenQASM.parse(qasm_t)
+	  bir_t = BlockIR(ast_t)
+	
+end
+
+# ╔═╡ a470d83b-c538-4a51-96c5-b957460d6023
+    zxd_o = ZXDiagram(bir_o)
+
+# ╔═╡ 960e80b3-efaf-4c49-b2c6-4849dd0a0ef4
+begin
+	zxd_t = ZXDiagram(bir_t)
+	#push_gate!(zxd_t, Val{:SWAP}(), [1, 2])
+	
+end
+
+# ╔═╡ 31753c83-847a-4c2a-a6b3-8be6aaa8f792
+zxg_t = ZXGraph(zxd_t)
+
+# ╔═╡ 77afd45a-47e1-4cab-a731-3298351b693d
+zxwd_o = convert_to_zxwd(bir_o)
+
+# ╔═╡ 4b54309c-c3e8-402c-a74f-acbdfc3ef046
+zxwd_t = convert_to_zxwd(bir_t)
+
+# ╔═╡ 1b373f50-92bf-4552-b829-1d9959a9885b
+m_o = Matrix(zxwd_o)
+
+# ╔═╡ 92965f5c-14b4-4e28-aff0-54aa476e948d
+m_t = Matrix(zxwd_t)
+
+# ╔═╡ 7cf94474-213d-4c8e-96f1-1781023718fb
+m_o ≈ m_t
+
+# ╔═╡ 4dcee81a-04fd-4eab-b9b6-3858c3cf3108
+md"""
+# Equivchecking
+"""
+
+# ╔═╡ aa77acb4-4688-46f0-8cca-00c53a47f0fe
+d = ZXDiagram(2)
+
+# ╔═╡ 32f1d8a4-13b8-4f7b-a37e-43f1483faf03
+begin
+	push_gate!(d, Val{:SWAP}(), [1, 2])
+end
+
+# ╔═╡ 383c4ba8-7824-4e79-a83d-a19c5b22fbac
+
+
+# ╔═╡ 81d91cc6-2d53-4e6b-ab50-364337069b85
+bare = full_reduction(d)
+
+# ╔═╡ d738ddb0-f7eb-4376-81ef-9f6ca512eccb
+
+
+# ╔═╡ 639b2f94-f957-4fbd-a571-709600da1df6
+typeof(d.st)
+
+# ╔═╡ d600840b-cc0e-42d9-946c-ce9b58678f38
+function is_in_or_out_spider(st::SpiderType.SType)
+	st == SpiderType.In || st == SpiderType.Out
+end
+
+# ╔═╡ 9ac5063f-3a42-4316-a097-f3c964e83ed4
+function contains_only_bare_wires(zxd::Union{ZXDiagram, ZXGraph, ZXDiagram})
+# check if each element is of type SpiderType.Out or SpiderType.In
+all(is_in_or_out_spider(st[2]) for st in zxd.st )
+end
+
+# ╔═╡ 5f52409c-7408-45dc-9fc1-053d820537a2
+contains_only_bare_wires(bare)
+
+# ╔═╡ 6e4587b0-35c4-4798-83be-26e94789f50e
+contains_only_bare_wires(d)
+
+# ╔═╡ aea95133-80f1-4d2b-a323-328beb5403d0
+reduced_o = full_reduction(zxd_o)
+
+# ╔═╡ 50a2bd10-7489-4ee0-b156-5982a08a5e42
+contains_only_bare_wires(reduced_o)
+
+# ╔═╡ 5c6ba99a-9c24-4677-a5ce-042288a707e4
+reduced_t = full_reduction(zxd_t)
+
+# ╔═╡ 33207623-d491-492d-9f51-a87079dc9d0d
+contains_only_bare_wires(reduced_t)
+
+# ╔═╡ 44d1b8e3-a30c-408b-b766-819a75a354bc
+[p == 0 // 2 * π for p in reduced_t.ps]
+
+# ╔═╡ ac7e74d4-bb38-4819-9b1a-e0c78be0996b
+spider_sequence(reduced_o)
+
+# ╔═╡ 08da0806-d7a4-4c45-bdca-a0180b441c42
+invert_phases!(reduced_t)
+
+# ╔═╡ 23ad454f-7570-4ff8-a999-5998b464621f
+function push_spider_to_diagram!(zxd, qubit, ps, st)
+    p = rem(ps + 1, 2)
+    @info st
+    @info p
+
+end
+
+# ╔═╡ 2143019e-18b6-4639-b903-16c00c9277a5
+push_spider_to_diagram!(zxd_t, 4, zxd_t.ps[15], zxd_t.st[15])
+
+# ╔═╡ 0cd6f92c-c0bb-454d-b316-a458b94b3f1f
+zxd_t
+
+# ╔═╡ 13fb6d28-98fb-4394-b767-30eda220f594
+# define new diagram e 
+# obtain spider sequcence for d1 and d2
+# add spider of d1 to d
+# add inverse spider of d2 to d
+# reduce
+
+# ╔═╡ f65513c0-ac67-4b00-9da7-05c5dc6a61b8
+new = ZXDiagram(4)
+
+# ╔═╡ 07fd2851-1703-4422-a495-ad3dda534c73
+zxd_1 = zxd_t
+
+# ╔═╡ 1b62520c-1bbb-4984-9108-8bb430fe2834
+qubit_loc(zxd::ZXDiagram{T, P}, v::T) where {T, P} = qubit_loc(zxd.layout, v)
+
+# ╔═╡ e7e3d602-6622-4f01-891e-19802ec008fb
+convert_to_chain(zxd_1)
+
+# ╔═╡ 90bef68b-7fe8-4a37-9592-483d22dcae8a
+append_adjoint_diagram!(zxd_t, zxd_o)
 
 # ╔═╡ Cell order:
 # ╠═8ab9b70a-e98d-11ea-239c-73dc659722c2
@@ -314,7 +477,7 @@ ZXDiagram(4) |> typeof
 # ╠═a9bf8e31-686a-4057-acec-bd04e8b5a3dc
 # ╠═b9d32b41-8bff-4faa-b198-db096582fb2e
 # ╟─90b83d5e-e99a-11ea-1fb2-95c907668262
-# ╠═64bff9ec-e9b5-11ea-3b23-c51d2149697a
+# ╠═9b69f77f-21b9-4c13-94db-a6e7c2bd21dd
 # ╠═5dbf9f96-e9a4-11ea-19d7-e15e7f2327c9
 # ╠═db9a0d4e-e99e-11ea-22ab-1fead216dd07
 # ╟─66eb6e1a-e99f-11ea-141c-a9017390524f
@@ -337,13 +500,7 @@ ZXDiagram(4) |> typeof
 # ╟─c3e8b5b4-e99a-11ea-0e56-6b18757f94df
 # ╠═c1b9828c-e99a-11ea-006a-013a2eab8cf3
 # ╠═6ddffea2-e9a4-11ea-1c32-0975a45aba7c
-# ╠═4f07895a-58aa-4555-aa14-b0526bc1de2d
-# ╠═1e11009f-7b70-49fd-a6f3-ef8b5a79636e
-# ╠═e8909701-bacc-43d5-a43c-b3a7cfe08403
-# ╠═62b61858-8d06-4e09-9959-53ea584028ac
-# ╠═80c79503-b85e-4938-9253-58dd45cf42b0
-# ╠═a6175cb5-136b-4adf-961e-56c6c61d4d3b
-# ╠═9c901912-53ad-498a-a188-c7aebc0e9134
+# ╟─4f07895a-58aa-4555-aa14-b0526bc1de2d
 # ╠═b6d6781c-a484-4e69-9bae-eea07a11dc42
 # ╠═a5b21163-7e60-409f-ad59-66ca72375094
 # ╟─2082486e-e9fd-11ea-1a46-6395b4b34657
@@ -356,3 +513,45 @@ ZXDiagram(4) |> typeof
 # ╠═581e847c-e9fd-11ea-3fd0-6bbc0f6efd56
 # ╠═2e84a5ce-e9fd-11ea-12d0-b3a3dd75a76f
 # ╠═7b850816-ea02-11ea-183c-5db2d670be24
+# ╠═ee87ca39-5b1a-4b3c-96ad-ee0df2833cd5
+# ╠═0378329e-819e-4c70-b543-33d47f6455ee
+# ╠═217d328b-58c6-4ff9-8e13-6a59b8889f2f
+# ╠═4afff84d-ceb7-4427-b25b-df9dc2a08cde
+# ╠═64cb0092-d364-48b7-9514-a2b5c80701be
+# ╠═a470d83b-c538-4a51-96c5-b957460d6023
+# ╠═960e80b3-efaf-4c49-b2c6-4849dd0a0ef4
+# ╠═77afd45a-47e1-4cab-a731-3298351b693d
+# ╠═4b54309c-c3e8-402c-a74f-acbdfc3ef046
+# ╠═1b373f50-92bf-4552-b829-1d9959a9885b
+# ╠═92965f5c-14b4-4e28-aff0-54aa476e948d
+# ╠═7cf94474-213d-4c8e-96f1-1781023718fb
+# ╠═4dcee81a-04fd-4eab-b9b6-3858c3cf3108
+# ╠═aa77acb4-4688-46f0-8cca-00c53a47f0fe
+# ╠═32f1d8a4-13b8-4f7b-a37e-43f1483faf03
+# ╠═383c4ba8-7824-4e79-a83d-a19c5b22fbac
+# ╠═81d91cc6-2d53-4e6b-ab50-364337069b85
+# ╠═1b2635ed-a985-42a3-842a-4aec30df9186
+# ╠═9ac5063f-3a42-4316-a097-f3c964e83ed4
+# ╠═d738ddb0-f7eb-4376-81ef-9f6ca512eccb
+# ╠═639b2f94-f957-4fbd-a571-709600da1df6
+# ╠═d600840b-cc0e-42d9-946c-ce9b58678f38
+# ╠═5f52409c-7408-45dc-9fc1-053d820537a2
+# ╠═6e4587b0-35c4-4798-83be-26e94789f50e
+# ╠═aea95133-80f1-4d2b-a323-328beb5403d0
+# ╠═50a2bd10-7489-4ee0-b156-5982a08a5e42
+# ╠═5c6ba99a-9c24-4677-a5ce-042288a707e4
+# ╠═33207623-d491-492d-9f51-a87079dc9d0d
+# ╠═44d1b8e3-a30c-408b-b766-819a75a354bc
+# ╠═ac7e74d4-bb38-4819-9b1a-e0c78be0996b
+# ╠═08da0806-d7a4-4c45-bdca-a0180b441c42
+# ╠═23ad454f-7570-4ff8-a999-5998b464621f
+# ╠═c486d3f1-4696-419d-8863-6f412718db2b
+# ╠═2143019e-18b6-4639-b903-16c00c9277a5
+# ╠═0cd6f92c-c0bb-454d-b316-a458b94b3f1f
+# ╠═13fb6d28-98fb-4394-b767-30eda220f594
+# ╠═f65513c0-ac67-4b00-9da7-05c5dc6a61b8
+# ╠═07fd2851-1703-4422-a495-ad3dda534c73
+# ╠═1b62520c-1bbb-4984-9108-8bb430fe2834
+# ╠═e7e3d602-6622-4f01-891e-19802ec008fb
+# ╠═e0f2d65f-8927-4717-96ce-2caf912daca9
+# ╠═90bef68b-7fe8-4a37-9592-483d22dcae8a

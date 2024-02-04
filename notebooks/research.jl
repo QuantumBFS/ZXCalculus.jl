@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
 begin
   import Pkg
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feat/equivalence")
+  Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feature/plots")
   Pkg.add("YaoLocations")
   Pkg.add("OpenQASM")
   Pkg.add("Vega")
@@ -18,11 +18,11 @@ begin
   using OpenQASM
   using DataFrames
   using YaoHIR, YaoLocations
-  using YaoHIR.IntrinsicOperation
-  using ZXCalculus
+  using YaoHIR: BlockIR
+  using ZXCalculus, ZXCalculus.ZX
 
   using QuantumCircuitEquivalence
-  using QuantumCircuitEquivalence.QuantumInformation
+
 end
 
 # ╔═╡ 506db9e1-4260-408d-ba72-51581b548e53
@@ -325,10 +325,10 @@ md"Equality"
 zx_dagger = dagger(zx)
 
 # ╔═╡ 89f14c32-895d-4101-b4a8-bc410a2adaa5
-merged_diagram = concat!(zx, zx_dagger)
+concat!(zx, zx_dagger)
 
 # ╔═╡ 0b838710-91e4-4572-9fe0-5c97e579ddd1
-m_simple = full_reduction(merged_diagram)
+m_simple = full_reduction(zx)
 
 
 # ╔═╡ fdb7ca6a-bf5c-4216-8a18-a7c3603240ea
@@ -395,13 +395,13 @@ c2_dagger = dagger(c2)
 dqc_merged = concat!(c1, c2_dagger)
 
 # ╔═╡ fbbe52e6-40d0-48ab-aa92-58a5125a33b2
-full_reduction(concat!(ZXDiagram(BlockIR(traditional)), dagger(ZXDiagram(BlockIR(unitary)))))
+reduced  = full_reduction(concat!(ZXDiagram(BlockIR(traditional)), dagger(ZXDiagram(BlockIR(unitary)))))
 
 # ╔═╡ f7982574-ddff-4e7b-a4fc-52462a59d21c
-verify_equivalence(traditional, string(dynamic), true, true)
+contains_only_bare_wires(reduced)
 
 # ╔═╡ Cell order:
-# ╟─dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
+# ╠═dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
 # ╠═506db9e1-4260-408d-ba72-51581b548e53
 # ╟─db7e9cf8-9abf-448b-be68-43231853faff
 # ╟─c06c5b9f-e5c1-4d0c-8ed5-937ad3871d3d
