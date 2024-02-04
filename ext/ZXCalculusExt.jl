@@ -143,7 +143,7 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
                         y = { field = "y" }
                     },
                     enter = {
-                        fill = { value = "lightgray" },
+                        fill = { value = "black" },
                         text = { field = "phase" }
                     }
                 },

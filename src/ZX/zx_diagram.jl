@@ -634,7 +634,7 @@ function safe_convert(::Type{T}, x::Real) where T<:Rational
 end
 
 plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
-     error("missing extension, please use Vega with 'using Vega' and 'using DataFrames'")
+     error("missing extension, please use Vega with 'using Vega, DataFrames'")
 
 
 """
