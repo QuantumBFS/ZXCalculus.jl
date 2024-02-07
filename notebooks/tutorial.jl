@@ -6,25 +6,27 @@ using InteractiveUtils
 
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
-	import Pkg
-	Pkg.add(url="https://github.com/QuantumBFS/YaoHIR.jl", rev="master")
-	Pkg.add(url="https://github.com/QuantumBFS/YaoLocations.jl", rev="master")
-	Pkg.add(url="https://github.com/QuantumBFS/Multigraphs.jl")
-	#Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots"
-	Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feature/plots")
-	Pkg.add(url="/home/liam/src/quantum-circuits/software/QuantumCircuitEquivalence.jl", rev="feat/zx")
+    import Pkg
+    Pkg.add(url = "https://github.com/QuantumBFS/YaoHIR.jl", rev = "master")
+    Pkg.add(url = "https://github.com/QuantumBFS/YaoLocations.jl", rev = "master")
+    Pkg.add(url = "https://github.com/QuantumBFS/Multigraphs.jl")
+    Pkg.add(url = "https://github.com/QuantumBFS/ZXCalculus.jl", rev = "master")
+    Pkg.add(
+        url = "https://gitlab.informatik.uni-bremen.de/qce/quantumequivalencechecker.jl",
+        rev = "feat/zx",
+    )
 end
 
 # ╔═╡ 512ac070-335e-45e9-a75d-e689af3ea59d
 begin
-	  using Vega
-	  using DataFrames
-	  using ZXCalculus, ZXCalculus.ZX
-	  using YaoHIR, YaoLocations
-	  using YaoHIR.IntrinsicOperation
+    using Vega
+    using DataFrames
+    using ZXCalculus, ZXCalculus.ZX
+    using YaoHIR, YaoLocations
+    using YaoHIR.IntrinsicOperation
 
-	  # Used for creating the IRCode for a BlockIR
-	  using Core.Compiler: IRCode
+    # Used for creating the IRCode for a BlockIR
+    using Core.Compiler: IRCode
 end
 
 # ╔═╡ a9bf8e31-686a-4057-acec-bd04e8b5a3dc
@@ -34,9 +36,9 @@ using Multigraphs
 using ZXCalculus.ZXW
 
 # ╔═╡ fdfa8ed2-f19c-4b80-b64e-f4bb22d09327
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
-       g = plot(zx)
-       Base.show(io, mime, g)
+function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
+    g = plot(zx)
+    Base.show(io, mime, g)
 end
 
 # ╔═╡ 227f7884-e99a-11ea-3a90-0beb697a2da6
@@ -53,10 +55,10 @@ md"""
 
 # ╔═╡ b9d32b41-8bff-4faa-b198-db096582fb2e
 begin
-	g = Multigraph([0 1 0; 1 0 1; 0 1 0])
-	ps = [Rational(0) for i = 1:3]
-	v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
-	zxd_m = ZXDiagram(g, v_t, ps)
+    g = Multigraph([0 1 0; 1 0 1; 0 1 0])
+    ps = [Rational(0) for i = 1:3]
+    v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
+    zxd_m = ZXDiagram(g, v_t, ps)
 end
 
 # ╔═╡ 90b83d5e-e99a-11ea-1fb2-95c907668262
@@ -125,86 +127,104 @@ md"""
 
 # ╔═╡ d341cde4-e9fd-11ea-1c3b-63f35fc648d5
 begin
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::AbstractBlock)
-	error("Block type `$c` is not supported.")
-end
-# rotation blocks
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,RotationGate{1,T,XGate}}) where {N,T}
-	push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,RotationGate{1,T,ZGate}}) where {N,T}
-	push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,ShiftGate{T}}) where {N,T}
-	push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,HGate}) where {N}
-	push_gate!(zxd, Val(:H), c.locs[1])
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ChainBlock{N}) where {N}
-	push_gate!.(Ref(zxd), subblocks(c))
-	zxd
-end
+    function ZXCalculus.push_gate!(zxd::ZXDiagram, c::AbstractBlock)
+        error("Block type `$c` is not supported.")
+    end
+    # rotation blocks
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::PutBlock{N,1,RotationGate{1,T,XGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::PutBlock{N,1,RotationGate{1,T,ZGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,ShiftGate{T}}) where {N,T}
+        push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,HGate}) where {N}
+        push_gate!(zxd, Val(:H), c.locs[1])
+    end
+    function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ChainBlock{N}) where {N}
+        push_gate!.(Ref(zxd), subblocks(c))
+        zxd
+    end
 
-# constant block
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,RotationGate{1,T,XGate}}) where {N,T}
-	push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::PutBlock{N,1,RotationGate{1,T,ZGate}}) where {N,T}
-	push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
-end
+    # constant block
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::PutBlock{N,1,RotationGate{1,T,XGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::PutBlock{N,1,RotationGate{1,T,ZGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
+    end
 
-# control blocks
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ControlBlock{N,1,RotationGate{1,T,XGate}}) where {N,T}
-	push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ControBlock{N,1,RotationGate{1,T,ZGate}}) where {N,T}
-	push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
-end
-function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ControlBlock{N,1,ShiftGate{T}}) where {N,T}
-	push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
-end
+    # control blocks
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::ControlBlock{N,1,RotationGate{1,T,XGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:X), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(
+        zxd::ZXDiagram,
+        c::ControBlock{N,1,RotationGate{1,T,ZGate}},
+    ) where {N,T}
+        push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
+    end
+    function ZXCalculus.push_gate!(zxd::ZXDiagram, c::ControlBlock{N,1,ShiftGate{T}}) where {N,T}
+        push_gate!(zxd, Val(:Z), c.locs[1], c.content.theta)
+    end
 end
 
 # ╔═╡ 51e72d20-e994-11ea-1a50-854039f728aa
-push_gate!(z1, Val(:Z), 1, 3//2)
+push_gate!(z1, Val(:Z), 1, 3 // 2)
 
 # ╔═╡ e1dbb828-e995-11ea-385d-fb20b58d1b49
 let
-	push_gate!(z1, Val(:H), 1)
-	push_gate!(z1, Val(:H), 1)
-	push_gate!(z1, Val(:Z), 1, 1//2)
-	push_gate!(z1, Val(:H), 4)
-	push_gate!(z1, Val(:CZ), 4, 1)
-	push_gate!(z1, Val(:CNOT), 1, 4)
+    push_gate!(z1, Val(:H), 1)
+    push_gate!(z1, Val(:H), 1)
+    push_gate!(z1, Val(:Z), 1, 1 // 2)
+    push_gate!(z1, Val(:H), 4)
+    push_gate!(z1, Val(:CZ), 4, 1)
+    push_gate!(z1, Val(:CNOT), 1, 4)
 end
 
 # ╔═╡ 60c59c0a-e994-11ea-02da-7360cbcf81f7
 function load_graph()
-	zxd = ZXDiagram(4)
-	push_gate!(zxd, Val(:Z), 1, 3//2)
-	push_gate!(zxd, Val(:H), 1)
-    push_gate!(zxd, Val(:Z), 1, 1//2)
+    zxd = ZXDiagram(4)
+    push_gate!(zxd, Val(:Z), 1, 3 // 2)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:Z), 1, 1 // 2)
     push_gate!(zxd, Val(:H), 4)
     push_gate!(zxd, Val(:CZ), 4, 1)
     push_gate!(zxd, Val(:CNOT), 1, 4)
     push_gate!(zxd, Val(:H), 1)
     push_gate!(zxd, Val(:H), 4)
-    push_gate!(zxd, Val(:Z), 1, 1//4)
-    push_gate!(zxd, Val(:Z), 4, 3//2)
-    push_gate!(zxd, Val(:X), 4, 1//1)
+    push_gate!(zxd, Val(:Z), 1, 1 // 4)
+    push_gate!(zxd, Val(:Z), 4, 3 // 2)
+    push_gate!(zxd, Val(:X), 4, 1 // 1)
     push_gate!(zxd, Val(:H), 1)
-    push_gate!(zxd, Val(:Z), 4, 1//2)
-    push_gate!(zxd, Val(:X), 4, 1//1)
-    push_gate!(zxd, Val(:Z), 2, 1//2)
+    push_gate!(zxd, Val(:Z), 4, 1 // 2)
+    push_gate!(zxd, Val(:X), 4, 1 // 1)
+    push_gate!(zxd, Val(:Z), 2, 1 // 2)
     push_gate!(zxd, Val(:CNOT), 3, 2)
     push_gate!(zxd, Val(:H), 2)
     push_gate!(zxd, Val(:CNOT), 3, 2)
-    push_gate!(zxd, Val(:Z), 2, 1//4)
-    push_gate!(zxd, Val(:Z), 3, 1//2)
+    push_gate!(zxd, Val(:Z), 2, 1 // 4)
+    push_gate!(zxd, Val(:Z), 3, 1 // 2)
     push_gate!(zxd, Val(:H), 2)
     push_gate!(zxd, Val(:H), 3)
-    push_gate!(zxd, Val(:Z), 3, 1//2)
+    push_gate!(zxd, Val(:Z), 3, 1 // 2)
     push_gate!(zxd, Val(:CNOT), 3, 2)
 end
 
@@ -250,10 +270,10 @@ tcount(pt_zxg)
 
 # ╔═╡ 80c79503-b85e-4938-9253-58dd45cf42b0
 begin
-	zxw1 = ZXWDiagram(2) 
-	push_gate!(zxw1, Val(:Z), 1, 1//2)
-	push_gate!(zxw1, Val(:H), 2)
-	push_gate!(zxw1, Val(:CZ), 2, 1)
+    zxw1 = ZXWDiagram(2)
+    push_gate!(zxw1, Val(:Z), 1, 1 // 2)
+    push_gate!(zxw1, Val(:H), 2)
+    push_gate!(zxw1, Val(:CZ), 2, 1)
 end
 
 # ╔═╡ a5b21163-7e60-409f-ad59-66ca72375094
@@ -261,23 +281,23 @@ Matrix(zxw1)
 
 # ╔═╡ d1789ff9-3628-4fd3-aa39-823191e78ee0
 begin
-	 chain_t = Chain()
-	  push_gate!(chain_t, Val(:H), 1)
-	  push_gate!(chain_t, Val(:H), 2)
-	  push_gate!(chain_t, Val(:X), 3)
-	  push_gate!(chain_t, Val(:H), 3)
-	  push_gate!(chain_t, Val(:CNOT), 1, 3)
-	  push_gate!(chain_t, Val(:X), 1)
-	  push_gate!(chain_t, Val(:CNOT), 2, 3)
-	  push_gate!(chain_t, Val(:H), 2)
+    chain_t = Chain()
+    push_gate!(chain_t, Val(:H), 1)
+    push_gate!(chain_t, Val(:H), 2)
+    push_gate!(chain_t, Val(:X), 3)
+    push_gate!(chain_t, Val(:H), 3)
+    push_gate!(chain_t, Val(:CNOT), 1, 3)
+    push_gate!(chain_t, Val(:X), 1)
+    push_gate!(chain_t, Val(:CNOT), 2, 3)
+    push_gate!(chain_t, Val(:H), 2)
 end
 
 # ╔═╡ 71fc6836-3c30-43de-aa2b-2d3d48bdb3da
 begin
 
-	  ir_t = IRCode()
-	  bir_t = BlockIR(ir_t, 4, chain_t)
-	  zxd_t = convert_to_zxd(bir_t)
+    ir_t = IRCode()
+    bir_t = BlockIR(ir_t, 4, chain_t)
+    zxd_t = convert_to_zxd(bir_t)
 end
 
 # ╔═╡ 31753c83-847a-4c2a-a6b3-8be6aaa8f792
