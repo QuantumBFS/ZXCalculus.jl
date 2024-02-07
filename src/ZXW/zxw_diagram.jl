@@ -81,6 +81,10 @@ function ZXWDiagram(nbits::T) where {T<:Integer}
 end
 
 
+
+ZXWDiagram(bir::BlockIR) = convert_to_zxwd(bir)
+
+
 Base.copy(zxwd::ZXWDiagram{T,P}) where {T,P} = ZXWDiagram{T,P}(
     copy(zxwd.mg),
     copy(zxwd.st),

@@ -1,5 +1,4 @@
 ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
-ZXWDiagram(bir::BlockIR) = convert_to_zxwd(bir)
 Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
 
 convert_to_gate(::Val{:X}, loc) = Gate(X, Locations(loc))
@@ -131,13 +130,6 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
     gates_to_circ(diagram, circuit, root)
 end
 
-
-function convert_to_zxwd(root::YaoHIR.BlockIR)
-    # FIXME add test
-    diagram = ZXWDiagram(root.nqubits)
-    circuit = canonicalize_single_location(root.circuit)
-    gates_to_circ(diagram, circuit, root)
-end
 
 function push_spider_to_chain!(qc, q, ps, st)
     if ps != 0
