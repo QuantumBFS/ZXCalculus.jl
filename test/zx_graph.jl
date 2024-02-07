@@ -24,18 +24,18 @@ zxg2 = ZXGraph(zxd)
 
 
 @testset "push gates into Diagram then plot ZXGraph" begin
-  zxd = ZXDiagram(2)
-  push_gate!(zxd, Val(:H), 1)
-  push_gate!(zxd, Val(:CNOT), 2, 1)
-  zxg = ZXGraph(zxd)
-  @test plot(zxg) !== nothing
+    zxd = ZXDiagram(2)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:CNOT), 2, 1)
+    zxg = ZXGraph(zxd)
+    @test plot(zxg) !== nothing
 
-  zxg3 = ZXGraph(ZXDiagram(3))
-  ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
-  ZX.add_power!(zxg3, 3)
-  @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
-  @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
-  @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
-  @test ZX.column_loc(zxg3, 1) == 1 // 1
-  @test ZX.column_loc(zxg3, 2) == 3 // 1
+    zxg3 = ZXGraph(ZXDiagram(3))
+    ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
+    ZX.add_power!(zxg3, 3)
+    @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
+    @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
+    @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
+    @test ZX.column_loc(zxg3, 1) == 1 // 1
+    @test ZX.column_loc(zxg3, 2) == 3 // 1
 end

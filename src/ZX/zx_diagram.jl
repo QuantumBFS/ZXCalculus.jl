@@ -19,11 +19,17 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
     inputs::Vector{T}
     outputs::Vector{T}
 
-    function ZXDiagram{T, P}(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
-        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}} = Dict{T, Tuple{T, Int}}(),
-        s::Scalar{P} = Scalar{P}(), 
-        inputs::Vector{T} = Vector{T}(), outputs::Vector{T} = Vector{T}(),
-        round_phases::Bool = true) where {T<:Integer, P}
+    function ZXDiagram{T,P}(
+        mg::Multigraph{T},
+        st::Dict{T,SpiderType.SType},
+        ps::Dict{T,P},
+        layout::ZXLayout{T},
+        phase_ids::Dict{T,Tuple{T,Int}} = Dict{T,Tuple{T,Int}}(),
+        s::Scalar{P} = Scalar{P}(),
+        inputs::Vector{T} = Vector{T}(),
+        outputs::Vector{T} = Vector{T}(),
+        round_phases::Bool = true,
+    ) where {T<:Integer,P}
         if nv(mg) == length(ps) && nv(mg) == length(st)
             if length(phase_ids) == 0
                 for v in vertices(mg)
@@ -54,7 +60,7 @@ struct ZXDiagram{T<:Integer, P} <: AbstractZXDiagram{T, P}
             end
             zxd = new{T, P}(mg, st, ps, layout, phase_ids, s, inputs, outputs)
             if round_phases
-              round_phases!(zxd)
+                round_phases!(zxd)
             end
             return zxd
         else
@@ -643,16 +649,16 @@ plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
 Get spider index of output qubit q.
 """
 function get_output_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
-  for v in get_outputs(zxd)
-    if spider_type(zxd, v) == SpiderType.Out && Int(qubit_loc(zxd, v)) == q
-      res = v
-    else
-      res = nothing
-    end
+    for v in get_outputs(zxd)
+        if spider_type(zxd, v) == SpiderType.Out && Int(qubit_loc(zxd, v)) == q
+            res = v
+        else
+            res = nothing
+        end
 
-    !isnothing(res) && return res
-  end
-  return -1
+        !isnothing(res) && return res
+    end
+    return -1
 end
 
 """
@@ -707,15 +713,11 @@ end
 """
 Import edges of d2 to d1, modify d1
 """
-function import_edges!(
-  d1::ZXDiagram{T,P},
-  d2::ZXDiagram{T,P},
-  v2tov1::Dict{T,T},
-) where {T,P}
-  for edge in edges(d2.mg)
-    src, dst, emul = edge.src, edge.dst, edge.mul
-    add_edge!(d1.mg, v2tov1[src], v2tov1[dst], emul)
-  end
+function import_edges!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
+    for edge in edges(d2.mg)
+        src, dst, emul = edge.src, edge.dst, edge.mul
+        add_edge!(d1.mg, v2tov1[src], v2tov1[dst], emul)
+    end
 end
 
 """
@@ -724,42 +726,46 @@ end
 Appends two diagrams, where the second diagram is inverted
 """
 function concat!(zxd_1::ZXDiagram{T,P}, zxd_2::ZXDiagram{T,P})::ZXDiagram{T,P} where {T,P}
-  nqubits(zxd_1) == nqubits(zxd_2) || throw(ArgumentError("number of qubits need to be equal, go  $(nqubits(zxd_1)) and $(nqubits(zxd_2))"))
+    nqubits(zxd_1) == nqubits(zxd_2) || throw(
+        ArgumentError(
+            "number of qubits need to be equal, go  $(nqubits(zxd_1)) and $(nqubits(zxd_2))",
+        ),
+    )
 
-  v2tov1 = Dict{T,T}()
-  import_non_in_out!(zxd_1, zxd_2, v2tov1)
+    v2tov1 = Dict{T,T}()
+    import_non_in_out!(zxd_1, zxd_2, v2tov1)
 
-  for i = 1:nout(zxd_1)
-    out_idx = get_output_idx(zxd_1, i)
-    # output spiders cannot be connected to multiple vertices or with multiedge
-    prior_vtx = neighbors(zxd_1, out_idx)[1]
-    rem_edge!(zxd_1, out_idx, prior_vtx)
-    # zxd_2 input vtx idx is mapped to the vtx prior to zxd_1 output
-    v2tov1[get_input_idx(zxd_2, i)] = prior_vtx
-  end
+    for i = 1:nout(zxd_1)
+        out_idx = get_output_idx(zxd_1, i)
+        # output spiders cannot be connected to multiple vertices or with multiedge
+        prior_vtx = neighbors(zxd_1, out_idx)[1]
+        rem_edge!(zxd_1, out_idx, prior_vtx)
+        # zxd_2 input vtx idx is mapped to the vtx prior to zxd_1 output
+        v2tov1[get_input_idx(zxd_2, i)] = prior_vtx
+    end
 
-  for i = 1:nout(zxd_2)
-    v2tov1[get_output_idx(zxd_2, i)] = get_output_idx(zxd_1, i)
-  end
+    for i = 1:nout(zxd_2)
+        v2tov1[get_output_idx(zxd_2, i)] = get_output_idx(zxd_1, i)
+    end
 
-  import_edges!(zxd_1, zxd_2, v2tov1)
-  add_global_phase!(zxd_1, zxd_2.scalar.phase)
-  add_power!(zxd_1, zxd_2.scalar.power_of_sqrt_2)
+    import_edges!(zxd_1, zxd_2, v2tov1)
+    add_global_phase!(zxd_1, zxd_2.scalar.phase)
+    add_power!(zxd_1, zxd_2.scalar.power_of_sqrt_2)
 
-  return zxd_1
+    return zxd_1
 end
 
-function stype_to_val(st)::Union{SpiderType, nothing}
-  if st == SpiderType.Z
-    Val{:Z}()
-  elseif st == SpiderType.X
-    Val{:X}()
-  elseif st == SpiderType.H
-    Val{:H}()
-  else
-    nothing
-    #throw(ArgumentError("$st has no corresponding SpiderType"))
-  end
+function stype_to_val(st)::Union{SpiderType,nothing}
+    if st == SpiderType.Z
+        Val{:Z}()
+    elseif st == SpiderType.X
+        Val{:X}()
+    elseif st == SpiderType.H
+        Val{:H}()
+    else
+        nothing
+        #throw(ArgumentError("$st has no corresponding SpiderType"))
+    end
 end
 
 
@@ -771,19 +777,25 @@ Dagger of a ZXDiagram by swapping input and outputs and negating the values of t
 """
 
 function dagger(zxd::ZXDiagram{T,P})::ZXDiagram{T,P} where {T,P}
-  ps_i = Dict([k => -v for (k, v) in zxd.ps])
-  zxd_dg = ZXDiagram{T,P}(copy(zxd.mg), copy(zxd.st),  ps_i, copy(zxd.layout),
-    deepcopy(zxd.phase_ids), copy(zxd.scalar), copy(zxd.outputs), copy(zxd.inputs), false)
-
-  for v in vertices(zxd_dg.mg)
-    value = zxd_dg.st[v]
-    if value == SpiderType.In
-      zxd_dg.st[v] = SpiderType.Out
-    elseif (value == SpiderType.Out)
-      zxd_dg.st[v] = SpiderType.In
+    ps_i = Dict([k => -v for (k, v) in zxd.ps])
+    zxd_dg = ZXDiagram{T,P}(
+        copy(zxd.mg),
+        copy(zxd.st),
+        ps_i,
+        copy(zxd.layout),
+        deepcopy(zxd.phase_ids),
+        copy(zxd.scalar),
+        copy(zxd.outputs),
+        copy(zxd.inputs),
+        false,
+    )
+    for v in vertices(zxd_dg.mg)
+        value = zxd_dg.st[v]
+        if value == SpiderType.In
+            zxd_dg.st[v] = SpiderType.Out
+        elseif (value == SpiderType.Out)
+            zxd_dg.st[v] = SpiderType.In
+        end
     end
-
-  end
-
-  return zxd_dg
+    return zxd_dg
 end

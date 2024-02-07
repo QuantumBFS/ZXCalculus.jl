@@ -38,6 +38,17 @@ push_gate!(chain, Val(:Rx), 3, Phase(1//4))
 push_gate!(chain, Val(:Rx), 2, Phase(1//4))
 push_gate!(chain, Val(:S), 3)
 
+
+@testset "ir.jl" begin
+  # Shadow operation in ir.jl testset, so that they do not overrride SpiderTypes
+  X = YaoHIR.IntrinsicOperation.X
+  Z = YaoHIR.IntrinsicOperation.Z
+  H = YaoHIR.IntrinsicOperation.H
+  T = YaoHIR.IntrinsicOperation.T
+  S = YaoHIR.IntrinsicOperation.S
+  SGate = YaoHIR.IntrinsicOperation.SGate
+
+
 ir = IRCode()
 bir = BlockIR(ir, 4, chain)
 zxd = convert_to_zxd(bir)
@@ -69,13 +80,6 @@ fl_bir = full_reduction(bir)
 
 @testset "issue#80" begin
 
-  # Shadow operation in testset, so that they do not overrride SpiderTypes
-  X = YaoHIR.IntrinsicOperation.X
-  Z = YaoHIR.IntrinsicOperation.Z
-  H = YaoHIR.IntrinsicOperation.H
-  T = YaoHIR.IntrinsicOperation.T
-  S = YaoHIR.IntrinsicOperation.S
-  SGate = YaoHIR.IntrinsicOperation.SGate
 
   ir = IRCode()
   circuit = Chain(Gate(X, Locations(1)), Gate(X, Locations(1)))
@@ -86,14 +90,6 @@ fl_bir = full_reduction(bir)
 end
 
 @testset "generate_layout!" begin
-
-  # Shadow operation in testset, so that they do not overrride SpiderTypes
-  X = YaoHIR.IntrinsicOperation.X
-  Z = YaoHIR.IntrinsicOperation.Z
-  H = YaoHIR.IntrinsicOperation.H
-  T = YaoHIR.IntrinsicOperation.T
-  S = YaoHIR.IntrinsicOperation.S
-  SGate = YaoHIR.IntrinsicOperation.SGate
 
   circ = Chain(Gate(H, Locations(2)), Gate(T, Locations(4)), Gate(H, Locations(1)), Gate(AdjointOperation{SGate}(S), Locations(2)), Gate(H, Locations(2)), Gate(X, Locations(3)), Gate(AdjointOperation{SGate}(S), Locations(1)), Gate(Z, Locations(1)), Gate(H, Locations(2)), Gate(X, Locations(1)), Gate(Z, Locations(1)), Gate(T, Locations(5)), Ctrl(Gate(X, Locations(5)), CtrlLocations(1)), Gate(H, Locations(1)), Gate(T, Locations(1)), Ctrl(Gate(X, Locations(3)), CtrlLocations(5)), Gate(H, Locations(1)), Gate(X, Locations(4)), Ctrl(Gate(X, Locations(5)), CtrlLocations(4)), Gate(S, Locations(2)), Ctrl(Gate(X, Locations(1)), CtrlLocations(3)), Gate(X, Locations(2)), Ctrl(Gate(X, Locations(3)), CtrlLocations(1)), Gate(X, Locations(2)), Gate(S, Locations(3)), Gate(Z, Locations(2)), Gate(Z, Locations(5)), Gate(X, Locations(2)), Gate(X, Locations(1)), Ctrl(Gate(X, Locations(3)), CtrlLocations(5)), Gate(S, Locations(4)), Gate(X, Locations(3)), Ctrl(Gate(X, Locations(1)), CtrlLocations(2)), Gate(AdjointOperation{SGate}(S), Locations(4)), Gate(Z, Locations(2)), Gate(AdjointOperation{SGate}(S), Locations(5)), Ctrl(Gate(X, Locations(1)), CtrlLocations(2)), Gate(Z, Locations(5)), Ctrl(Gate(X, Locations(1)), CtrlLocations(4)), Ctrl(Gate(X, Locations(3)), CtrlLocations(4)), Gate(H, Locations(4)), Gate(Z, Locations(1)), Gate(X, Locations(4)), Gate(Z, Locations(3)), Gate(H, Locations(4)), Ctrl(Gate(X, Locations(1)), CtrlLocations(4)), Ctrl(Gate(X, Locations(4)), CtrlLocations(1)), Gate(X, Locations(4)), Gate(S, Locations(3)), Gate(AdjointOperation{SGate}(S), Locations(2)), Gate(Z, Locations(3)), Gate(S, Locations(5)), Ctrl(Gate(X, Locations(3)), CtrlLocations(5)), Gate(H, Locations(2)), Gate(Z, Locations(4)), Gate(H, Locations(1)), Gate(X, Locations(1)), Gate(X, Locations(2)), Ctrl(Gate(X, Locations(5)), CtrlLocations(3)), Ctrl(Gate(X, Locations(1)), CtrlLocations(3)), Gate(Z, Locations(4)), Gate(S, Locations(5)), Gate(S, Locations(5)), Ctrl(Gate(X, Locations(5)), CtrlLocations(1)), Gate(T, Locations(4)), Gate(Z, Locations(2)), Gate(X, Locations(4)), Gate(H, Locations(2)), Gate(AdjointOperation{SGate}(S), Locations(3)), Gate(H, Locations(5)), Gate(T, Locations(2)), Gate(AdjointOperation{SGate}(S), Locations(5)), Gate(AdjointOperation{SGate}(S), Locations(4)), Gate(H, Locations(2)), Gate(S, Locations(2)), Gate(AdjointOperation{SGate}(S), Locations(3)), Ctrl(Gate(X, Locations(5)), CtrlLocations(1)), Gate(H, Locations(5)), Ctrl(Gate(X, Locations(4)), CtrlLocations(3)), Gate(H, Locations(4)), Gate(Z, Locations(2)), Gate(H, Locations(2)), Gate(S, Locations(2)), Gate(H, Locations(4)), Ctrl(Gate(X, Locations(1)), CtrlLocations(2)), Gate(X, Locations(4)), Gate(H, Locations(1)), Gate(AdjointOperation{SGate}(S), Locations(5)), Gate(X, Locations(1)), Gate(X, Locations(3)), Gate(Z, Locations(1)), Ctrl(Gate(X, Locations(1)), CtrlLocations(2)), Gate(T, Locations(3)), Gate(X, Locations(4)), Gate(X, Locations(3)), Gate(AdjointOperation{SGate}(S), Locations(1)), Gate(AdjointOperation{SGate}(S), Locations(3)), Gate(H, Locations(5)), Gate(S, Locations(4)), Gate(Z, Locations(4)))
   ir = IRCode()
@@ -163,4 +159,5 @@ end
   zxg = ZXGraph(zxd)
   @test plot(zxg) !== nothing
   @test plot(zxg |> clifford_simplification |> full_reduction) !==nothing
+end
 end

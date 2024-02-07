@@ -10,10 +10,10 @@ function verify_equality(zxd_1::ZXDiagram, zxd_2::ZXDiagram)
   contains_only_bare_wires(m_simple)
 end
 
-function contains_only_bare_wires(zxd::Union{ZXDiagram, ZXGraph}) 
-    all(is_in_or_out_spider(st[2]) for st in zxd.st )
+function contains_only_bare_wires(zxd::Union{ZXDiagram,ZXGraph})
+  all(is_in_or_out_spider(st[2]) for st in zxd.st)
 end
 
-function is_in_or_out_spider(st::SpiderType.SType) 
-    st == SpiderType.In || st == SpiderType.Out
+function is_in_or_out_spider(st::SpiderType.SType)
+  st == SpiderType.In || st == SpiderType.Out
 end

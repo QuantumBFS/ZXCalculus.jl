@@ -273,22 +273,30 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function Base.match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
+function Base.match(::Rule{:id}, zxg::ZXGraph{T,P}) where {T,P}
     matches = Match{T}[]
     for v2 in spiders(zxg)
         nb2 = neighbors(zxg, v2)
-        if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2 
+        if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             v1, v3 = nb2
             if phase(zxg, v2) == 0
                 if spider_type(zxg, v1) == SpiderType.Z && spider_type(zxg, v3) == SpiderType.Z
                     push!(matches, Match{T}([v1, v2, v3]))
                 end
 
-                if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out) && 
-                    (spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
+                if (
+                    (
+                        spider_type(zxg, v1) == SpiderType.In ||
+                        spider_type(zxg, v1) == SpiderType.Out
+                    ) && (
+                        spider_type(zxg, v3) == SpiderType.In ||
+                        spider_type(zxg, v3) == SpiderType.Out
+                    )
+                )
                     push!(matches, Match{T}([v1, v2, v3]))
                 end
-            else phase(zxg, v2) == 1
+            else
+                phase(zxg, v2) == 1
                 if spider_type(zxg, v1) == SpiderType.Z && spider_type(zxg, v3) == SpiderType.Z
                     if degree(zxg, v1) == 1
                         push!(matches, Match{T}([v1, v2, v3]))

@@ -20,7 +20,7 @@ function generate_d_spiders(vs, st, ps, x_locs_normal, y_locs_normal)
         x = [get(x_locs_normal, v, nothing) for v in vs],
         y = [get(y_locs_normal, v, nothing) for v in vs],
         spider_type = [spider_type_string(st[v]) for v in vs],
-        phase = [iszero(ps[v]) ? "" : "$(ps[v])" for v in vs]
+        phase = [iszero(ps[v]) ? "" : "$(ps[v])" for v in vs],
     )
 end
 
@@ -47,19 +47,19 @@ function generate_d_edges(zxd::ZXGraph)
     return DataFrame(src = s, dst = d, isHadamard = isH)
 end
 
-function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
+function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram,ZXGraph}; kwargs...)
     scale = 2
     lattice_unit = 50 * scale
     zxd = copy(zxd)
     ZXCalculus.ZX.generate_layout!(zxd)
     vs = spiders(zxd)
     x_locs = zxd.layout.spider_col
-    x_min = minimum(values(x_locs), init=0)
-    x_max = maximum(values(x_locs), init=1)
+    x_min = minimum(values(x_locs), init = 0)
+    x_max = maximum(values(x_locs), init = 1)
     x_range = (x_max - x_min) * lattice_unit
     y_locs = zxd.layout.spider_q
-    y_min = minimum(values(y_locs), init=0)
-    y_max = maximum(values(y_locs), init=1)
+    y_min = minimum(values(y_locs), init = 0)
+    y_max = maximum(values(y_locs), init = 1)
     y_range = (y_max - y_min) * lattice_unit
     x_locs_normal = copy(x_locs)
     for (k, v) in x_locs_normal
@@ -69,7 +69,7 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
     for (k, v) in y_locs_normal
         y_locs_normal[k] = v * lattice_unit
     end
-    
+
     st = zxd.st
     ps = zxd.ps
 
@@ -84,96 +84,80 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
         marks = [
             {
                 encode = {
-                    update = {
-                        strokeWidth = { signal = "edgeWidth" },
-                        path = { field = "path" }
-                    },
-                    enter = {
-                        stroke = { field = "color" }
-                    }
+                    update = {strokeWidth = {signal = "edgeWidth"}, path = {field = "path"}},
+                    enter = {stroke = {field = "color"}},
                 },
-                from = { data = "edges" },
-                type = "path"
+                from = {data = "edges"},
+                type = "path",
             },
             {
                 encode = {
                     update = {
-                        stroke = { value = "black" },
-                        x = { field = "x" },
-                        strokeWidth = { signal = "strokeWidth" },
-                        size = { signal = "spiderSize" },
-                        y = { field = "y" }
+                        stroke = {value = "black"},
+                        x = {field = "x"},
+                        strokeWidth = {signal = "strokeWidth"},
+                        size = {signal = "spiderSize"},
+                        y = {field = "y"},
                     },
-                    enter = {
-                        shape = { field = "shape" },
-                        fill = { field = "color" }
-                    }
+                    enter = {shape = {field = "shape"}, fill = {field = "color"}},
                 },
-                from = { data = "spiders" },
-                type = "symbol"
+                from = {data = "spiders"},
+                type = "symbol",
             },
             {
                 encode = {
                     update = {
-                        align = { value = "center" },
-                        x = { field = "x" },
-                        ne = { value = "top" },
-                        opacity = { signal = "showIds" },
-                        y = { field = "y" },
-                        fontSize = { value = 6*lattice_unit/50 },
-                        dy = { value = 18*lattice_unit/50 }
+                        align = {value = "center"},
+                        x = {field = "x"},
+                        ne = {value = "top"},
+                        opacity = {signal = "showIds"},
+                        y = {field = "y"},
+                        fontSize = {value = 6 * lattice_unit / 50},
+                        dy = {value = 18 * lattice_unit / 50},
                     },
-                    enter = {
-                        fill = { value = "lightgray" },
-                        text = { field = "id" }
-                    }
+                    enter = {fill = {value = "lightgray"}, text = {field = "id"}},
                 },
-                from = { data = "spiders" },
-                type = "text"
+                from = {data = "spiders"},
+                type = "text",
             },
             {
                 encode = {
                     update = {
-                        align = { value = "center" },
-                        x = { field = "x" },
-                        dy = { value = lattice_unit/50 },
-                        baseline = { value = "middle" },
-                        opacity = { signal = "showPhases" },
-                        fontSize = { value = 6*lattice_unit/50 },
-                        y = { field = "y" }
+                        align = {value = "center"},
+                        x = {field = "x"},
+                        dy = {value = lattice_unit / 50},
+                        baseline = {value = "middle"},
+                        opacity = {signal = "showPhases"},
+                        fontSize = {value = 6 * lattice_unit / 50},
+                        y = {field = "y"},
                     },
-                    enter = {
-                        fill = { value = "black" },
-                        text = { field = "phase" }
-                    }
+                    enter = {fill = {value = "black"}, text = {field = "phase"}},
                 },
-                from = { data = "spiders" },
-                type = "text"
-            }
+                from = {data = "spiders"},
+                type = "text",
+            },
         ],
         data = [
             {
                 name = "spiders",
                 values = d_spiders,
-                on = [
-                    {
-                        modify = "whichSymbol",
-                        values = "newLoc && {x: newLoc.x, y: newLoc.y}",
-                        trigger = "newLoc"
-                    }
-                ],
+                on = [{
+                    modify = "whichSymbol",
+                    values = "newLoc && {x: newLoc.x, y: newLoc.y}",
+                    trigger = "newLoc",
+                }],
                 transform = [
                     {
                         as = "shape",
                         expr = "datum.spider_type === 'Z' ? 'circle' : (datum.spider_type === 'X' ? 'circle' : (datum.spider_type === 'H' ? 'square' : 'circle'))",
-                        type = "formula"
+                        type = "formula",
                     },
                     {
                         as = "color",
                         expr = "datum.spider_type === 'Z' ? '#D8F8D8' : (datum.spider_type === 'X' ? '#E8A5A5' : (datum.spider_type === 'H' ? 'yellow' : '#9558B2'))",
-                        type = "formula"
-                    }
-                ]
+                        type = "formula",
+                    },
+                ],
             },
             {
                 name = "edges",
@@ -181,136 +165,94 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
                 transform = [
                     {
                         key = "id",
-                        fields = [
-                            "src",
-                            "dst"
-                        ],
-                        as = [
-                            "source",
-                            "target"
-                        ],
+                        fields = ["src", "dst"],
+                        as = ["source", "target"],
                         from = "spiders",
-                        type = "lookup"
+                        type = "lookup",
                     },
                     {
                         targetX = "target.x",
-                        shape = {
-                            signal = "shape"
-                        },
+                        shape = {signal = "shape"},
                         sourceX = "source.x",
                         targetY = "target.y",
                         type = "linkpath",
                         sourceY = "source.y",
-                        orient = {
-                            signal = "orient"
-                        }
+                        orient = {signal = "orient"},
                     },
                     {
                         as = "color",
                         expr = "datum.isHadamard ? '#4063D8' : 'black'",
-                        type = "formula"
-                    }
-                ]
-            }
+                        type = "formula",
+                    },
+                ],
+            },
         ],
         signals = [
-            {
-                name = "showIds",
-                bind = { input = "checkbox" },
-                value = true
-            },
-            {
-                name = "showPhases",
-                bind = { input = "checkbox" },
-                value = true
-            },
+            {name = "showIds", bind = {input = "checkbox"}, value = true},
+            {name = "showPhases", bind = {input = "checkbox"}, value = true},
             {
                 name = "spiderSize",
                 bind = {
-                    step = lattice_unit/5,
-                    max = 40*lattice_unit,
-                    min = 2*lattice_unit,
-                    input = "range"
+                    step = lattice_unit / 5,
+                    max = 40 * lattice_unit,
+                    min = 2 * lattice_unit,
+                    input = "range",
                 },
-                value = 20*lattice_unit
+                value = 20 * lattice_unit,
             },
             {
                 name = "strokeWidth",
                 bind = {
-                    step = 0.001*lattice_unit,
-                    max = 3*lattice_unit/50,
+                    step = 0.001 * lattice_unit,
+                    max = 3 * lattice_unit / 50,
                     min = 0,
-                    input = "range"
+                    input = "range",
                 },
-                value = 1.5*lattice_unit/50
+                value = 1.5 * lattice_unit / 50,
             },
             {
                 name = "edgeWidth",
                 bind = {
-                    step = 0.001*lattice_unit,
-                    max = 3*lattice_unit/50,
-                    min = 0.002*lattice_unit,
-                    input = "range"
+                    step = 0.001 * lattice_unit,
+                    max = 3 * lattice_unit / 50,
+                    min = 0.002 * lattice_unit,
+                    input = "range",
                 },
-                value = 1.5*lattice_unit/50
+                value = 1.5 * lattice_unit / 50,
             },
             {
                 name = "orient",
-                bind = {
-                    options = [
-                        "horizontal",
-                        "vertical"
-                    ],
-                    input = "select"
-                },
-                value = "horizontal"
+                bind = {options = ["horizontal", "vertical"], input = "select"},
+                value = "horizontal",
             },
             {
                 name = "shape",
                 bind = {
-                    options = [
-                        "line",
-                        "arc",
-                        "curve",
-                        "diagonal",
-                        "orthogonal"
-                    ],
-                    input = "select"
+                    options = ["line", "arc", "curve", "diagonal", "orthogonal"],
+                    input = "select",
                 },
-                value = "diagonal"
+                value = "diagonal",
             },
             {
                 name = "whichSymbol",
                 on = [
-                    {
-                        events = "symbol:mousedown",
-                        update = "datum"
-                    },
-                    {
-                        events = "*:mouseup",
-                        update = "{}"
-                    }
+                    {events = "symbol:mousedown", update = "datum"},
+                    {events = "*:mouseup", update = "{}"},
                 ],
-                value = {}
+                value = {},
             },
             {
                 name = "newLoc",
                 on = [
-                    {
-                        events = "symbol:mouseout[!event.buttons], window:mouseup",
-                        update = "false"
-                    },
-                    {
-                        events = "symbol:mouseover",
-                        update = "{x: x(), y: y()}"
-                    },
+                    {events = "symbol:mouseout[!event.buttons], window:mouseup", update = "false"},
+                    {events = "symbol:mouseover", update = "{x: x(), y: y()}"},
                     {
                         events = "[symbol:mousedown, window:mouseup] > window:mousemove!",
-                        update = "{x: x(), y: y()}"
-                    }
+                        update = "{x: x(), y: y()}",
+                    },
                 ],
-                value = false
-            }
+                value = false,
+            },
         ]
     )
     return spec
