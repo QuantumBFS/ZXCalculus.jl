@@ -6,33 +6,28 @@ using InteractiveUtils
 
 # ╔═╡ aa11ea12-6a9c-11ee-11b6-77a1fbfdf4b5
 begin
-  import Pkg
-
-  Pkg.activate(mktempdir())  
-  #Pkg.add(path="/home/liam/src/quantum-circuits/impl/QuantumCircuitEquivalence", rev="feat/zx")
-  Pkg.add(url="https://github.com/Roger-luo/Expronicon.jl")  
-  Pkg.add(url="https://github.com/JuliaCompilerPlugins/CompilerPluginTools.jl")  
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/QuantumCircuitEquivalence.jl", rev="feat/zx")  
-
-  Pkg.add(url="https://github.com/contra-bit/YaoHIR.jl")  
-  Pkg.add(url="https://github.com/contra-bit/OpenQASM.jl.git", rev="feature/czgate")  
-  Pkg.add(url="https://github.com/QuantumBFS/YaoLocations.jl", rev="master")  
-  Pkg.add(url="https://github.com/QuantumBFS/Multigraphs.jl")  
-  #Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feat/convert_to_zxwd
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feat/equivalence")  
-  
-	
-  # AST Circuit Transformtation
-  using QuantumCircuitEquivalence
-  using OpenQASM
+    import Pkg
+    Pkg.add(
+        url = "https://gitlab.informatik.uni-bremen.de/qce/quantumequivalencechecker.jl",
+        rev = "feat/zx",
+    )
+    Pkg.add(url = "https://github.com/contra-bit/YaoHIR.jl")
+    Pkg.add(url = "https://github.com/contra-bit/OpenQASM.jl.git", rev = "feature/czgate")
+    Pkg.add(url = "https://github.com/QuantumBFS/YaoLocations.jl", rev = "master")
+    Pkg.add(url = "https://github.com/QuantumBFS/ZXCalculus.jl")
 
 
-  # ZX Calculus Tools
-  using ZXCalculus
-  using YaoHIR: BlockIR
+    # AST Circuit Transformtation
+    using QuantumCircuitEquivalence
+    using OpenQASM
 
 
-  using PlutoUI
+    # ZX Calculus Tools
+    using ZXCalculus
+    using YaoHIR: BlockIR
+
+
+    using PlutoUI
 
 end
 
@@ -41,108 +36,108 @@ using MLStyle
 
 # ╔═╡ 6ebebc14-6b0f-48b7-a8e4-fb6f7f9f7f0e
 begin
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
-  g = ZXCalculus.plot(zx)
-  Base.show(io, mime, g)
-end
+    function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
+        g = ZXCalculus.plot(zx)
+        Base.show(io, mime, g)
+    end
 end
 
 
 # ╔═╡ 639aaf18-e63b-4b07-8557-8e21a874d91a
 begin
-	b1 = BlockIR("""
-// Benchmark was created by MQT Bench on 2023-06-29
-// For more information about MQT Bench, please visit https://www.cda.cit.tum.de/mqtbench/
-// MQT Bench version: v1.0.0
-// TKET version: 1.16.0
+    b1 = BlockIR("""
+   // Benchmark was created by MQT Bench on 2023-06-29
+   // For more information about MQT Bench, please visit https://www.cda.cit.tum.de/mqtbench/
+   // MQT Bench version: v1.0.0
+   // TKET version: 1.16.0
 
-OPENQASM 2.0;
-include "qelib1.inc";
+   OPENQASM 2.0;
+   include "qelib1.inc";
 
-qreg q[107];
-creg c[106];
-h q[0];
-h q[1];
-h q[2];
-h q[3];
-h q[4];
-h q[5];
-h q[6];
-h q[7];
-h q[8];
-h q[9];
-h q[10];
-h q[11];
-h q[12];
-h q[13];
-h q[14];
-h q[15];
-h q[16];
-h q[17];
-h q[18];
-h q[19];
-h q[20];
-h q[21];
-h q[22];
-h q[23];
-h q[24];
-h q[25];
-h q[26];
-h q[27];
-h q[28];
-h q[29];
-h q[30];
-h q[31];
-h q[32];
-h q[33];
-h q[34];
-h q[35];
-h q[36];
-h q[37];
-h q[38];
-h q[39];
-h q[40];
-h q[41];
-h q[42];
-h q[43];
-h q[44];
-h q[45];
-h q[46];
-h q[47];
-h q[48];
-h q[49];
-h q[50];
-h q[51];
-h q[52];
-h q[53];
-h q[54];
-h q[55];
-h q[56];
-h q[57];
-h q[58];
-h q[59];
-h q[60];
-h q[61];
-h q[62];
-h q[63];
-h q[64];
-h q[65];
-h q[66];
-h q[67];
-h q[68];
-h q[69];
-h q[70];
-h q[71];
-h q[72];
-h q[73];
-h q[74];
-h q[75];
-h q[76];
+   qreg q[107];
+   creg c[106];
+   h q[0];
+   h q[1];
+   h q[2];
+   h q[3];
+   h q[4];
+   h q[5];
+   h q[6];
+   h q[7];
+   h q[8];
+   h q[9];
+   h q[10];
+   h q[11];
+   h q[12];
+   h q[13];
+   h q[14];
+   h q[15];
+   h q[16];
+   h q[17];
+   h q[18];
+   h q[19];
+   h q[20];
+   h q[21];
+   h q[22];
+   h q[23];
+   h q[24];
+   h q[25];
+   h q[26];
+   h q[27];
+   h q[28];
+   h q[29];
+   h q[30];
+   h q[31];
+   h q[32];
+   h q[33];
+   h q[34];
+   h q[35];
+   h q[36];
+   h q[37];
+   h q[38];
+   h q[39];
+   h q[40];
+   h q[41];
+   h q[42];
+   h q[43];
+   h q[44];
+   h q[45];
+   h q[46];
+   h q[47];
+   h q[48];
+   h q[49];
+   h q[50];
+   h q[51];
+   h q[52];
+   h q[53];
+   h q[54];
+   h q[55];
+   h q[56];
+   h q[57];
+   h q[58];
+   h q[59];
+   h q[60];
+   h q[61];
+   h q[62];
+   h q[63];
+   h q[64];
+   h q[65];
+   h q[66];
+   h q[67];
+   h q[68];
+   h q[69];
+   h q[70];
+   h q[71];
+   h q[72];
+   h q[73];
+   h q[74];
+   h q[75];
+   h q[76];
 
-h q[105];
-	""")
-	c1 = ZXDiagram(b1)
-	
+   h q[105];
+   	""")
+    c1 = ZXDiagram(b1)
+
 end
 
 # ╔═╡ 69587b8e-26cf-4862-abe6-f81cc6967db3
@@ -152,7 +147,7 @@ b1
 g1_reduced = full_reduction(c1)
 
 # ╔═╡ 15e4062a-37b3-40dc-add3-9d8ad7520b4d
-	c2 = ZXDiagram(BlockIR("""
+c2 = ZXDiagram(BlockIR("""
 // Benchmark was created by MQT Bench on 2023-06-29
 // For more information about MQT Bench, please visit https://www.cda.cit.tum.de/mqtbench/
 // MQT Bench version: v1.0.0
@@ -659,7 +654,7 @@ dj_m = concat!(copy(dj3), dagger(dj3))
 dj3_reduced = full_reduction(dj_m)
 
 # ╔═╡ dd5c40da-0530-4975-8245-78538ad6d244
-  replace!(Rule{:id}(), dj3_reduced)
+replace!(Rule{:id}(), dj3_reduced)
 
 
 # ╔═╡ a48d68b5-559a-4937-a2b7-c13e5f5181b0
