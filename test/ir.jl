@@ -56,12 +56,12 @@ push_gate!(chain, Val(:S), 3)
     zxd = ZXDiagram(bir)
     zxwd = ZXWDiagram(bir)
 
-
-    @testset "Chain of ZXDiagram" begin
-        # @test chain == Chain(ZXDiagram(bir))
-        # FIXME add better equal for Chain
-        @test Chain(zxd) !== nothing
-    end
+ 
+    @testset "convert SpiderType to Val" begin
+      @test ZX.stype_to_val(SpiderType.Z) == Val{:Z}()
+      @test ZX.stype_to_val(SpiderType.X) == Val{:X}()
+      @test ZX.stype_to_val(SpiderType.H) == Val{:H}()
+      @test_throws ArgumentError ZX.stype_to_val("anything else")    end
 
     @testset "convert BlockIR into ZXWDiagram" begin
         @test zxwd !== nothing
@@ -229,6 +229,18 @@ push_gate!(chain, Val(:S), 3)
         @test ZX.generate_layout!(zxg) !== nothing
     end
 
+
+    @testset "generate_layout with chain" begin
+        bir = BlockIR(ir, 5, chain)
+        zxd = ZXDiagram(bir)
+        zxg = ZXGraph(zxd)
+        full_reduction(zxg)
+        ZX.generate_layout!(zxg)
+        @test plot(zxg) !== nothing
+        @test ZX.generate_layout!(zxg) !== nothing
+
+    end
+
     function random_circuit(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
         ir = IRCode()
         CLIFF = 1 - T - CZ - CNOT
@@ -288,4 +300,26 @@ push_gate!(chain, Val(:S), 3)
         @test plot(zxg) !== nothing
         @test plot(zxg |> clifford_simplification |> full_reduction) !== nothing
     end
+
+   @testset "gates_to_circ with addition Ry" begin
+      n_qubits = 4
+      # TODO add tests for Ry gate
+      chain_a = Chain()
+      push_gate!(chain_a, Val(:Ry), n_qubits, Phase(1 // 1))
+      push_gate!(chain_a, Val(:Rz), 4, Phase(1 // 1))
+      bir = BlockIR(ir, n_qubits, chain_a)
+
+      diagram = ZXDiagram(n_qubits)
+      ZX.gates_to_circ(diagram, chain_a, bir)
+    end
+
+    # TODO add test that checks if error is thrown for unkown gate
+
+    @testset "Chain of ZXDiagram" begin
+        # FIXME add better equal for Chain
+        # @test chain.args == Chain(ZXDiagram(bir)).args
+        # @test chain.args == Chain(ZXDiagram(bir)).args
+        @test Chain(zxd) !== nothing
+    end
+
 end

@@ -26,6 +26,9 @@ zxd3 = ZXDiagram(3)
 ZX.insert_spider!(zxd3, 1, 2, SpiderType.H)
 pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
 push_gate!(zxd3, Val{:SWAP}(), [2, 3])
+
+@test ZX.nout(zxd3) == 3
+@test ZX.nout(zxd3) == 3
 @test ZX.qubit_loc(zxd3, 1) == ZX.qubit_loc(zxd3, 2)
 @test plot(zxd3) !== nothing
 
