@@ -11,8 +11,8 @@ begin
     Pkg.add("OpenQASM")
     Pkg.add("Vega")
     Pkg.add("DataFrames")
-    Pkg.add("YaoHIR.jl")
-    Pkg.add("ZXCalculus.jl")
+    Pkg.add("YaoHIR")
+    Pkg.add("ZXCalculus")
     Pkg.add(
         url = "https://gitlab.informatik.uni-bremen.de/qce/quantumequivalencechecker.jl",
         rev = "feat/zx",
