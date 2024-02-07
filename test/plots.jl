@@ -10,4 +10,4 @@ ZX.insert_spider!(zxd, 1, 2, SpiderType.Z)
 zxg = ZXGraph(zxd)
 
 @test plot(zxd) !== nothing
-# FIXME @test plot(zxg) !== nothing
+@test plot(zxg) !== nothing
