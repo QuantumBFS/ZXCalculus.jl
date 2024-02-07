@@ -25,6 +25,14 @@ function convert_to_gate(::Val{:Rx}, loc, theta)
     end
     return Gate(Rx(theta), Locations(loc))
 end
+
+function convert_to_gate(::Val{:Ry}, loc, theta)
+    if theta isa Phase
+        theta = theta * π
+        theta = theta.ex
+    end
+    return Gate(Ry(theta), Locations(loc))
+end
 function convert_to_gate(::Val{:shift}, loc, theta)
     if theta isa Phase
         theta = theta * π

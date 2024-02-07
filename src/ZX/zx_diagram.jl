@@ -639,6 +639,14 @@ function safe_convert(::Type{T}, x::Real) where T<:Rational
     return fr
 end
 
+"""
+    plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P}
+
+Plots a ZXDiagram using Vega. 
+
+If called from the REPL it will open in the Browser.
+Please remeber to run "using Vega, DataFrames" before, as this uses an extension
+"""
 plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
      error("missing extension, please use Vega with 'using Vega, DataFrames'")
 
@@ -646,7 +654,7 @@ plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
 """
     get_output_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
 
-Get spider index of output qubit q.
+Get spider index of output qubit q. Returns -1 is non-existant
 """
 function get_output_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
     for v in get_outputs(zxd)
@@ -662,6 +670,8 @@ function get_output_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
 end
 
 """
+    import_non_in_out!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
+
 Add non input and output spiders of d2 to d1, modify d1. Record the mapping of vertex indices.
 """
 function import_non_in_out!(
@@ -694,7 +704,7 @@ nin(zxd::ZXDiagram) = length(zxd.inputs)
 """
     get_input_idx(zwd::ZXDiagram{T,P}, q::T) where {T,P}
 
-Get spider index of input qubit q.
+Get spider index of input qubit q. Returns -1 if non-existant
 """
 function get_input_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
   for v in get_inputs(zxd)
@@ -711,6 +721,8 @@ end
 
 
 """
+    import_edges!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
+
 Import edges of d2 to d1, modify d1
 """
 function import_edges!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
@@ -755,7 +767,12 @@ function concat!(zxd_1::ZXDiagram{T,P}, zxd_2::ZXDiagram{T,P})::ZXDiagram{T,P} w
     return zxd_1
 end
 
-function stype_to_val(st)::Union{SpiderType,nothing}
+"""
+    stype_to_val(st)::Union{SpiderType,nothing}
+
+Converts SpiderType into Val
+"""
+function stype_to_val(st)::Val
     if st == SpiderType.Z
         Val{:Z}()
     elseif st == SpiderType.X
@@ -763,8 +780,7 @@ function stype_to_val(st)::Union{SpiderType,nothing}
     elseif st == SpiderType.H
         Val{:H}()
     else
-        nothing
-        #throw(ArgumentError("$st has no corresponding SpiderType"))
+        throw(ArgumentError("$st has no corresponding SpiderType"))
     end
 end
 
