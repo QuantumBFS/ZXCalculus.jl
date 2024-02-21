@@ -6,9 +6,9 @@ using ZXCalculus: ZXW
 @testset "ZXWSpiderType" begin
 
     spider_vec =
-        [Z(Parameter(Val(:PiUnit), 3)) Z(Parameter(Val(:Factor), exp(im * 1.5 * π))) X(
+        [Z(Parameter(Val(:PiUnit), 3)) Z(Parameter(Val(:Factor), exp(im * 1.5 * π))) ZXW.X(
             Parameter(Val(:PiUnit), 3),
-        ) X(Parameter(Val(:Factor), exp(im * 0.5 * π))) W H D Input(10) Output(2)]
+        ) ZXW.X(Parameter(Val(:Factor), exp(im * 0.5 * π))) W ZXW.H D Input(10) Output(2)]
 
     @test spider_vec[1].p == Parameter(Val(:PiUnit), 3)
     @test spider_vec[2].p == Parameter(Val(:Factor), exp(im * 1.5 * π))

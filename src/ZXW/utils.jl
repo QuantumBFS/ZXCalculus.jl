@@ -667,3 +667,14 @@ function substitute_variables!(
     end
     return zxwd
 end
+
+
+function convert_to_zxwd(root::YaoHIR.BlockIR)
+    # FIXME add test
+    diagram = ZXWDiagram(root.nqubits)
+    circuit = canonicalize_single_location(root.circuit)
+    gates_to_circ(diagram, circuit, root)
+end
+
+
+

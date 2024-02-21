@@ -1,25 +1,19 @@
 using Test
 using ZXCalculus.Utils: Phase
 
-# ir = @make_ircode begin
-#     Expr(:call, :+, 1, 1)::Int
-#     Expr(:call, :+, 3, 3)::Int
-# end
+chain = Chain()
+push_gate!(chain, Val(:shift), 1, Phase(1 // 1))
+push_gate!(chain, Val(:Rz), 1, Phase(2 // 1))
 
-# circ = Chain(
-#     Gate(shift(1.0), Locations(1)),
-#     Gate(Rz(Core.SSAValue(2)), Locations(1)),
-# )
+bir = BlockIR(IRCode(), 4, chain)
 
-# bir = BlockIR(ir, 4, circ)
+zxd = convert_to_zxd(bir)
+c = clifford_simplification(zxd)
+ZX.generate_layout!(zxd)
+qc_tl = convert_to_chain(phase_teleportation(zxd))
+@test length(qc_tl) == 1
 
-# zxd = convert_to_zxd(bir)
-# c = clifford_simplification(zxd)
-# ZXCalculus.generate_layout!(zxd)
-# qc_tl = convert_to_chain(phase_teleportation(zxd))
-# @test length(qc_tl) == 1
-
-p = Phase(1//1)
+p = Phase(1 // 1)
 
 @test p + 1 == 1 + p == p + p
 @test p - 1 == 1 - p == p - p

@@ -6,7 +6,7 @@ convert_to_gate(::Val{:Z}, loc) = Gate(Z, Locations(loc))
 convert_to_gate(::Val{:H}, loc) = Gate(H, Locations(loc))
 convert_to_gate(::Val{:S}, loc) = Gate(S, Locations(loc))
 convert_to_gate(::Val{:Sdag}, loc) = Gate(AdjointOperation(S), Locations(loc))
-convert_to_gate(::Val{:T}, loc) =  Gate(T, Locations(loc))
+convert_to_gate(::Val{:T}, loc) = Gate(T, Locations(loc))
 convert_to_gate(::Val{:Tdag}, loc) = Gate(AdjointOperation(S), Locations(loc))
 convert_to_gate(::Val{:SWAP}, loc1, loc2) = Gate(SWAP, Locations((loc1, loc2)))
 convert_to_gate(::Val{:CNOT}, loc, ctrl) = Ctrl(Gate(X, Locations(loc)), CtrlLocations(ctrl))
@@ -25,6 +25,14 @@ function convert_to_gate(::Val{:Rx}, loc, theta)
     end
     return Gate(Rx(theta), Locations(loc))
 end
+
+function convert_to_gate(::Val{:Ry}, loc, theta)
+    if theta isa Phase
+        theta = theta * π
+        theta = theta.ex
+    end
+    return Gate(Ry(theta), Locations(loc))
+end
 function convert_to_gate(::Val{:shift}, loc, theta)
     if theta isa Phase
         theta = theta * π
@@ -33,11 +41,11 @@ function convert_to_gate(::Val{:shift}, loc, theta)
     return Gate(shift(theta), Locations(loc))
 end
 
-function push_gate!(circ::Chain, gargs...) 
+function push_gate!(circ::Chain, gargs...)
     push!(circ.args, convert_to_gate(gargs...))
     return circ
 end
-function pushfirst_gate!(circ::Chain, gargs...) 
+function pushfirst_gate!(circ::Chain, gargs...)
     pushfirst!(circ.args, convert_to_gate(gargs...))
     return circ
 end
@@ -74,10 +82,7 @@ function canonicalize_single_location(node::YaoHIR.Gate)
     return YaoHIR.Gate(node.operation, node.locations[1])
 end
 
-function convert_to_zxd(root::YaoHIR.BlockIR)
-    circ = ZXDiagram(root.nqubits)
-
-    circuit = canonicalize_single_location(root.circuit)
+function gates_to_circ(circ, circuit, root)
     for gate in YaoHIR.leaves(circuit)
         @switch gate begin
             @case Gate(&Z, loc::Locations{Int})
@@ -92,18 +97,18 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
                 push_gate!(circ, Val(:Z), plain(loc), 1//4)
             @case Gate(shift(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
             @case Gate(Rx(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:X), plain(loc), (1/π) * theta)
             @case Gate(Ry(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc),  1//2)
-                push_gate!(circ, Val(:Z), plain(loc),  (1/π) * theta)
+                push_gate!(circ, Val(:X), plain(loc), 1//2)
+                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
                 push_gate!(circ, Val(:X), plain(loc), -1//2)
             @case Gate(Rz(theta), loc::Locations{Int})
                 theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π)*theta)
+                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
             @case Gate(AdjointOperation(&S), loc::Locations{Int})
                 push_gate!(circ, Val(:Z), plain(loc), 3//2)
             @case Gate(AdjointOperation(&T), loc::Locations{Int})
@@ -127,7 +132,51 @@ function convert_to_zxd(root::YaoHIR.BlockIR)
     return circ
 end
 
-function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
+function convert_to_zxd(root::YaoHIR.BlockIR)
+    diagram = ZXDiagram(root.nqubits)
+    circuit = canonicalize_single_location(root.circuit)
+    gates_to_circ(diagram, circuit, root)
+end
+
+
+function push_spider_to_chain!(qc, q, ps, st)
+    if ps != 0
+        if st == SpiderType.Z
+            if ps == 1
+                push!(qc, Gate(Z, Locations(q)))
+            elseif ps == 1 // 2
+                push!(qc, Gate(S, Locations(q)))
+            elseif ps == 3 // 2
+                push!(qc, Gate(AdjointOperation(S), Locations(q)))
+            elseif ps == 1 // 4
+                push!(qc, Gate(T, Locations(q)))
+            elseif ps == 7 // 4
+                push!(qc, Gate(AdjointOperation(T), Locations(q)))
+            elseif ps != 0
+                θ = ps * π
+                if θ isa Phase
+                    θ = θ.ex
+                end
+                push!(qc, Gate(shift(θ), Locations(q)))
+            end
+        elseif st == SpiderType.X
+            if ps == 1
+                push!(qc, Gate(X, Locations(q)))
+            else
+                ps != 0
+                θ = ps * π
+                if θ isa Phase
+                    θ = θ.ex
+                end
+                push!(qc, Gate(Rx(θ), Locations(q)))
+            end
+        elseif st == SpiderType.H
+            push!(qc, Gate(H, Locations(q)))
+        end
+    end
+end
+
+function convert_to_chain(circ::ZXDiagram{TT,P}) where {TT,P}
     spider_seq = spider_sequence(circ)
     qc = []
     for vs in spider_seq
@@ -167,38 +216,3 @@ function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
     return Chain(qc...)
 end
 
-function push_spider_to_chain!(qc, q, ps, st)
-    if ps != 0
-        if st == SpiderType.Z
-            if ps == 1
-                push!(qc, Gate(Z, Locations(q)))
-            elseif ps == 1//2
-                push!(qc, Gate(S, Locations(q)))
-            elseif ps == 3//2
-                push!(qc, Gate(AdjointOperation(S), Locations(q)))
-            elseif ps == 1//4
-                push!(qc, Gate(T, Locations(q)))
-            elseif ps == 7//4
-                push!(qc, Gate(AdjointOperation(T), Locations(q)))
-            elseif ps != 0
-                θ = ps * π
-                if θ isa Phase
-                    θ = θ.ex
-                end
-                push!(qc, Gate(shift(θ), Locations(q)))
-            end
-        elseif st == SpiderType.X
-            if ps == 1
-                push!(qc, Gate(X, Locations(q)))
-            else ps != 0
-                θ = ps * π
-                if θ isa Phase
-                    θ = θ.ex
-                end
-                push!(qc, Gate(Rx(θ), Locations(q)))
-            end
-        elseif st == SpiderType.H
-            push!(qc, Gate(H, Locations(q)))
-        end
-    end
-end
