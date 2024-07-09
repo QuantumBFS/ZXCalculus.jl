@@ -931,8 +931,8 @@ function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         set_phase!(zxg, v1, -phase(zxg, v1))
         zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
       end
-      if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out) && 
-          (spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
+      if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out || 
+           spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
           rem_spider!(zxg, v2)
           add_edge!(zxg, v1, v3, EdgeType.SIM)
 
