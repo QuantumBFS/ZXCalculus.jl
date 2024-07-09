@@ -6,14 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
 begin
-  import Pkg
-  Pkg.add("YaoLocations")
-  Pkg.add("OpenQASM")
-  Pkg.add("Vega")
-  Pkg.add("DataFrames")
-  Pkg.add("YaoHIR.jl")
-  Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/DynamicQuantumCircuits.jl", rev="feat/zx")
+  using DynamicQuantumCircuits
   using Vega
   using OpenQASM
   using DataFrames

@@ -7,16 +7,16 @@ using InteractiveUtils
 # ╔═╡ aa11ea12-6a9c-11ee-11b6-77a1fbfdf4b5
 begin
 	# Extensions
-    using OpenQASM
+  using OpenQASM
 	using Vega
 	using DataFrames
 
-    # ZX Calculus Tools
-    using ZXCalculus, ZXCalculus.ZX
-    using YaoHIR: BlockIR
-
-
-    using PlutoUI
+  # ZX Calculus Tools
+  using ZXCalculus, ZXCalculus.ZX
+  using YaoHIR: BlockIR
+  
+  
+  using PlutoUI
 
 end
 

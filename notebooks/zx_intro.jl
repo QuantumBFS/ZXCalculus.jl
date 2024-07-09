@@ -6,8 +6,6 @@ using InteractiveUtils
 
 # ╔═╡ dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
 begin
-    import Pkg
-    Pkg.add(url = "/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev = "feature/plots")
     using OpenQASM
     using Vega
     using DataFrames
