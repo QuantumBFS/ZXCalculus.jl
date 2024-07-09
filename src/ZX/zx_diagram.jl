@@ -558,7 +558,7 @@ function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T,
             for v1 in nb
                 if !(v1 in vs_generated)
                     q1 = findfirst(isequal(v1), vs_frontier)
-                    if q1 !== nothing
+                    if !isnothing(q1)
                         col = maximum(frontier_col[min(q, q1):max(q, q1)])
                         set_loc!(layout, v, q, col)
                         set_loc!(layout, v1, q1, col)
@@ -580,7 +580,7 @@ function generate_layout!(zxd::ZXDiagram{T, P}, seq::Vector{Any} = []) where {T,
                         nb_v1 = neighbors(zxd, v1)
                         v2 = nb_v1[findfirst(!isequal(v), nb_v1)]
                         q2 = findfirst(isequal(v2), vs_frontier)
-                        if q2 !== nothing
+                        if !isnothing(q2)
                             col = maximum(frontier_col[min(q, q2):max(q, q2)])
                             set_loc!(layout, v, q, col)
                             set_loc!(layout, v2, q2, col)

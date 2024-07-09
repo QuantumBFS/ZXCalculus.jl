@@ -40,7 +40,7 @@ zxg3 = full_reduction(zxd)
 cir = circuit_extraction(zxg3)
 
 # Plotting
-@test plot(zxd) !== nothing
-@test plot(zxg) !== nothing
-@test plot(zxg2) !== nothing
-@test plot(zxg3) !== nothing
+@test !isnothing(plot(zxd))
+@test !isnothing(plot(zxg))
+@test !isnothing(plot(zxg2))
+@test !isnothing(plot(zxg3))

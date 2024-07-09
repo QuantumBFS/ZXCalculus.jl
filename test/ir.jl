@@ -64,23 +64,23 @@ push_gate!(chain, Val(:S), 3)
       @test_throws ArgumentError ZX.stype_to_val("anything else")    end
 
     @testset "convert BlockIR into ZXWDiagram" begin
-        @test zxwd !== nothing
+      @test !isnothing(zxwd) 
     end
 
 
     @testset "create Matrix from ZXDiagram" begin
         matrix_from_zxd =
             Matrix(ZXWDiagram(BlockIR(IRCode(), 4, circuit_extraction(full_reduction(zxd)))))
-        @test matrix_from_zxd !== nothing
+            @test !isnothing(matrix_from_zxd)
     end
 
 
 
     @testset "BlockIR to Matrix" begin
-        @test Matrix(zxwd) !== nothing
+      @test !isnothing(Matrix(zxwd))
     end
 
-    @test plot(zxd) !== nothing
+    @test !isnothing(plot(zxd))
     convert_to_chain(zxd)
     pt_zxd = phase_teleportation(zxd)
     @test tcount(pt_zxd) <= tcount(zxd)
@@ -88,11 +88,11 @@ push_gate!(chain, Val(:S), 3)
     @test length(pt_chain) <= length(chain)
 
     zxg = clifford_simplification(zxd)
-    @test plot(zxg) !== nothing
+    @test !isnothing(plot(zxg))
     cl_chain = circuit_extraction(zxg)
 
     zxg = full_reduction(zxd)
-    @test plot(zxg) !== nothing
+    @test !isnothing(plot(zxg))
     fl_chain = circuit_extraction(zxg)
     ZX.generate_layout!(zxg)
     @test ZX.qubit_loc(zxg, 40) == 0 // 1
@@ -225,8 +225,8 @@ push_gate!(chain, Val(:S), 3)
         zxg = ZXGraph(zxd)
         full_reduction(zxg)
         ZX.generate_layout!(zxg)
-        @test plot(zxg) !== nothing
-        @test ZX.generate_layout!(zxg) !== nothing
+        @test !isnothing(plot(zxg))
+        @test !isnothing(ZX.generate_layout!(zxg))
     end
 
 
@@ -236,8 +236,8 @@ push_gate!(chain, Val(:S), 3)
         zxg = ZXGraph(zxd)
         full_reduction(zxg)
         ZX.generate_layout!(zxg)
-        @test plot(zxg) !== nothing
-        @test ZX.generate_layout!(zxg) !== nothing
+        @test !isnothing(plot(zxg))
+        @test !isnothing(ZX.generate_layout!(zxg))
 
     end
 
@@ -295,10 +295,10 @@ push_gate!(chain, Val(:S), 3)
     @testset "plot random_identity" begin
         circ = random_identity(5, 50)
         zxd = convert_to_zxd(circ)
-        @test plot(zxd) !== nothing
+        @test !isnothing(plot(zxd))
         zxg = ZXGraph(zxd)
-        @test plot(zxg) !== nothing
-        @test plot(zxg |> clifford_simplification |> full_reduction) !== nothing
+        @test !isnothing(plot(zxg))
+        @test !isnothing(plot(zxg |> clifford_simplification |> full_reduction))
     end
 
    @testset "gates_to_circ with addition Ry" begin
@@ -319,7 +319,7 @@ push_gate!(chain, Val(:S), 3)
         # FIXME add better equal for Chain
         # @test chain.args == Chain(ZXDiagram(bir)).args
         # @test chain.args == Chain(ZXDiagram(bir)).args
-        @test Chain(zxd) !== nothing
+        @test !isnothing(Chain(zxd))
     end
 
 end

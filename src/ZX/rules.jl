@@ -1012,3 +1012,4 @@ function rewrite!(::Rule{:scalar}, zxg::Union{ZXGraph{T, P}, ZXDiagram{T, P}}, v
     rem_spider!(zxg, v)
     return zxg
 end
+

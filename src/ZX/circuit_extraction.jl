@@ -285,7 +285,7 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         v = frontier[i]
         nb_v = neighbors(zxg, v)
         u = findfirst([u in gads for u in nb_v])
-        if u !== nothing
+          if !isnothing(u)
             u = nb_v[u]
             gad_u = zero(T)
             for w in neighbors(zxg, u)
@@ -474,7 +474,7 @@ function normalize_perm(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}()) 
             tar_c = findfirst(isone, M[cur_r, :])
             M[cur_r, cur_c] = 1
             M[tar_r, cur_c] = 0
-            if tar_c !== nothing
+            if !isnothing(tar_c)
                 M[tar_r, tar_c] = 1
                 M[cur_r, tar_c] = 0
             end

@@ -163,7 +163,7 @@ nqubits(zxg::ZXGraph) = zxg.layout.nbits
 qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(zxg.layout, v)
 function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
     c_loc = column_loc(zxg.layout, v)
-    if c_loc !== nothing
+    if !isnothing(c_loc)
         if spider_type(zxg, v) == SpiderType.Out
             nb = neighbors(zxg, v)
             if length(nb) == 1
@@ -180,7 +180,7 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
             c_loc = ceil(column_loc(zxg, nb) - 2)
         end
     end
-    c_loc !== nothing && return c_loc
+    !isnothing(c_loc)  && return c_loc
     return 0
 end
 
@@ -302,7 +302,7 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
             spider_seq[q] = Vector{T}()
         end
         for v in vs
-            if qubit_loc(zxg, v) !== nothing
+          if !isnothing(qubit_loc(zxg, v))
                 q_loc = Int(qubit_loc(zxg, v))
                 q_loc > 0 && push!(spider_seq[q_loc], v)
             end
