@@ -7,8 +7,8 @@ using InteractiveUtils
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
   import Pkg
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/ZXCalculus.jl", rev="feature/plots")
-  Pkg.add(url="/home/liam/src/quantum-circuits/software/QuantumCircuitEquivalence.jl", rev="feat/zx")
+  Pkg.add(url="https://github.com/contra-bit/ZXCalculus.jl", rev="feature/plots")
+  Pkg.add(url="/home/liam/src/quantum-circuits/software/DynamicQuantumCircuits.jl")
   using OpenQASM
   using Vega
   using DataFrames
