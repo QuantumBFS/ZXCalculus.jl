@@ -1,16 +1,14 @@
 ### A Pluto.jl notebook ###
-# v0.19.38
+# v0.19.43
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
-  import Pkg
   using OpenQASM
   using Vega
   using DataFrames
-  using OpenQASM
   using YaoHIR: BlockIR
   using ZXCalculus, ZXCalculus.ZX
   using YaoHIR, YaoLocations
@@ -18,7 +16,6 @@ begin
 
   # Used for creating the IRCode for a BlockIR
   using Core.Compiler: IRCode
-	using PlutoUI
   using PlutoUI
 
 end
