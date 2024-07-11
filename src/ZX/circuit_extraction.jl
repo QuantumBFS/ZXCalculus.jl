@@ -488,7 +488,7 @@ end
 
 # """
 #     reverse_gaussian_elimination(M, steps)
-
+#
 # Apply back the operations in `steps` to `M`.
 # """
 # function reverse_gaussian_elimination(M, steps)

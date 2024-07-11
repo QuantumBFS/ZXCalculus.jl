@@ -382,4 +382,4 @@ end
 
 
 plot(zxd::ZXGraph{T, P}; kwargs...) where {T, P} =
-     error("missing extension, please use Vega with 'using Vega, DataFrames'")
+    error("missing extension, please use Vega with 'using Vega, DataFrames'")

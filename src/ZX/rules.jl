@@ -930,26 +930,26 @@ function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         set_phase!(zxg, v2, zero(P))
         set_phase!(zxg, v1, -phase(zxg, v1))
         zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
-      end
-      if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out || 
-           spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
-          rem_spider!(zxg, v2)
-          add_edge!(zxg, v1, v3, EdgeType.SIM)
+    end
+    if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out || 
+         spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
+        rem_spider!(zxg, v2)
+        add_edge!(zxg, v1, v3, EdgeType.SIM)
 
-      else
+    else
         set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
         id1, mul1 = zxg.phase_ids[v1]
         id3, mul3 = zxg.phase_ids[v3]
         set_phase!(zxg.master, id3, (mul3 * phase(zxg.master, id3) + mul1 * phase(zxg.master, id1)) * mul3)
         set_phase!(zxg.master, id1, zero(P))
         for v in neighbors(zxg, v1)
-          v == v2 && continue
-          add_edge!(zxg, v, v3, is_hadamard(zxg, v, v1) ? EdgeType.HAD : EdgeType.SIM)
+            v == v2 && continue
+            add_edge!(zxg, v, v3, is_hadamard(zxg, v, v1) ? EdgeType.HAD : EdgeType.SIM)
         end
         rem_spiders!(zxg, [v1, v2])
-      end
-      return zxg
     end
+    return zxg
+end
 
 function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds if all(has_vertex(zxg.mg, v) for v in vs)

@@ -4,11 +4,11 @@ using DataFrames
 
 
 @testset "plots.jl" begin
-  include("plots.jl")
+    include("plots.jl")
 end
 
 @testset "equality.jl" begin
-  include("equality.jl")
+    include("equality.jl")
 end
 
 @testset "abstract_zx_diagram.jl" begin

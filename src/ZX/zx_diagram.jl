@@ -648,7 +648,7 @@ If called from the REPL it will open in the Browser.
 Please remeber to run "using Vega, DataFrames" before, as this uses an extension
 """
 plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P} =
-     error("missing extension, please use Vega with 'using Vega, DataFrames'")
+    error("missing extension, please use Vega with 'using Vega, DataFrames'")
 
 
 """
@@ -679,23 +679,23 @@ function import_non_in_out!(
   d2::ZXDiagram{T,P},
   v2tov1::Dict{T,T},
 ) where {T,P}
-  for v2 in vertices(d2.mg)
-    st = spider_type(d2, v2)
-    if st == SpiderType.In || st == SpiderType.Out
-      new_v = nothing
-      # FIXME why is Out = H ?
-    elseif st == SpiderType.Z || st == SpiderType.X || st == SpiderType.H
-      new_v = add_vertex!(d1.mg)[1]
-    else
-      throw(ArgumentError("Unknown spider type $(d2.st[v2])"))
+    for v2 in vertices(d2.mg)
+        st = spider_type(d2, v2)
+        if st == SpiderType.In || st == SpiderType.Out
+            new_v = nothing
+            # FIXME why is Out = H ?
+        elseif st == SpiderType.Z || st == SpiderType.X || st == SpiderType.H
+            new_v = add_vertex!(d1.mg)[1]
+        else
+            throw(ArgumentError("Unknown spider type $(d2.st[v2])"))
+        end
+        if !isnothing(new_v)
+            v2tov1[v2] = new_v
+            d1.st[new_v] = spider_type(d2, v2)
+            d1.ps[new_v] = d2.ps[v2]
+            d1.phase_ids[new_v] = (v2, 1)
+        end
     end
-    if !isnothing(new_v)
-      v2tov1[v2] = new_v
-      d1.st[new_v] = spider_type(d2, v2)
-      d1.ps[new_v] = d2.ps[v2]
-      d1.phase_ids[new_v] = (v2, 1)
-    end
-  end
 end
 
 nout(zxd::ZXDiagram) = length(zxd.outputs)
@@ -707,16 +707,16 @@ nin(zxd::ZXDiagram) = length(zxd.inputs)
 Get spider index of input qubit q. Returns -1 if non-existant
 """
 function get_input_idx(zxd::ZXDiagram{T,P}, q::T) where {T,P}
-  for v in get_inputs(zxd)
-    if spider_type(zxd, v) == SpiderType.In && Int(qubit_loc(zxd, v)) == q
-      res = v
-    else
-      res = nothing
-    end
+    for v in get_inputs(zxd)
+        if spider_type(zxd, v) == SpiderType.In && Int(qubit_loc(zxd, v)) == q
+            res = v
+        else
+            res = nothing
+        end
 
-    !isnothing(res) && return res
-  end
-  return -1
+        !isnothing(res) && return res
+    end
+    return -1
 end
 
 
