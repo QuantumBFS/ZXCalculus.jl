@@ -1,4 +1,15 @@
 using ZXCalculus, Documenter, Test
+using Vega
+using DataFrames
+
+
+@testset "plots.jl" begin
+    include("plots.jl")
+end
+
+@testset "equality.jl" begin
+    include("equality.jl")
+end
 
 @testset "abstract_zx_diagram.jl" begin
     include("abstract_zx_diagram.jl")
@@ -24,9 +35,9 @@ end
     include("phase_teleportation.jl")
 end
 
-# @testset "ir.jl" begin
-#     include("ir.jl")
-# end
+@testset "ir.jl" begin
+    include("ir.jl")
+end
 
 @testset "scalar.jl" begin
     include("scalar.jl")

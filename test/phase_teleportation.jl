@@ -75,6 +75,8 @@ function gen_cir()
 end
 
 cir = gen_cir()
+@test !isnothing(cir)
 @test tcount(cir) == 28
 cir2 = phase_teleportation(cir)
+@test !isnothing(plot(cir2))
 @test tcount(cir2) == 8

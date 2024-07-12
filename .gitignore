@@ -8,3 +8,4 @@
 /docs/src/assets/indigo.css
 /docs/Manifest.toml
 .vscode
+.JuliaFormatter.toml
