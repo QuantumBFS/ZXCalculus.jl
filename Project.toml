@@ -22,6 +22,7 @@ Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
 ZXCalculusExt = ["Vega", "DataFrames"]
 
 [compat]
+DataFrames = "1"
 Expronicon = "0.10.3"
 Graphs = "1"
 MLStyle = "0.4"
