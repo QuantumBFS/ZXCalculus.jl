@@ -14,6 +14,13 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 YaoHIR = "6769671a-fce8-4286-b3f7-6099e1b1298a"
 YaoLocations = "66df03fb-d475-48f7-b449-3d9064bf085b"
 
+[weakdeps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
+
+[extensions]
+ZXCalculusExt = ["Vega", "DataFrames"]
+
 [compat]
 DataFrames = "1"
 Expronicon = "0.10.3"
