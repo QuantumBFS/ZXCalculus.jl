@@ -13,6 +13,8 @@ import ..ZX:
 
 export ZXWDiagram, substitute_variables!
 
+export plot
+
 include("adts.jl")
 include("zxw_diagram.jl")
 include("zxw_rules.jl")

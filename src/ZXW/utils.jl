@@ -676,5 +676,14 @@ function convert_to_zxwd(root::YaoHIR.BlockIR)
     gates_to_circ(diagram, circuit, root)
 end
 
+"""
+    plot(zxwd::ZXWDiagram{T, P}; kwargs...) where {T, P}
 
+Plots a ZXWDiagram using GraphMakie and WGLMakie. 
+
+If called from the REPL it will open in the Browser.
+Please remeber to run "using WGLMakie, GraphMakie" before, as this uses an extension
+"""
+plot(zxwd::ZXWDiagram{T,P}; kwargs...) where {T,P} =
+    error("missing extension, please use GraphMakie with 'using WGLMakie, GraphMakie'")
 

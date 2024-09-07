@@ -1,4 +1,5 @@
 [deps]
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
+WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 ZXCalculus = "3525faa3-032d-4235-a8d4-8c2939a218dd"
