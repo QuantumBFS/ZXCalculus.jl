@@ -1,0 +1,4 @@
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Vega = "239c3e63-733f-47ad-beb7-a12fde22c578"
+ZXCalculus = "3525faa3-032d-4235-a8d4-8c2939a218dd"
