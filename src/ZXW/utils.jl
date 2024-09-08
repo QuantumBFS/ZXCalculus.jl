@@ -498,6 +498,7 @@ function concat!(d1::ZXWDiagram{T,P}, d2::ZXWDiagram{T,P}) where {T,P}
     for i = 1:nout(d1)
         out_idx = get_output_idx(d1, i)
         # output spiders cannot be connected to multiple vertices or with multiedge
+        @show out_idx
         prior_vtx = neighbors(d1, out_idx)[1]
         rem_edge!(d1, out_idx, prior_vtx)
         # d2 input vtx idx is mapped to the vtx prior to d1 output
