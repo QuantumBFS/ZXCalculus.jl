@@ -57,7 +57,6 @@ zstab_meas_zxwd = make_meas_zxwd(Parameter, meas_mg, :Z)
 ZXCalculus.ZXW.plot(xstab_meas_zxwd)
 ZXCalculus.ZXW.plot(zstab_meas_zxwd)
 
-
 concat_zxwd = ZXW.concat!(copy(xstab_meas_zxwd), copy(zstab_meas_zxwd))
 res_zxwd = ZXW.concat!(copy(concat_zxwd), copy(concat_zxwd))
 res_zxwd = ZXW.concat!(res_zxwd, copy(concat_zxwd))
@@ -98,3 +97,6 @@ function extract_k_qubit_circuit(zxwd::ZXWDiagram{T,P}) where {T,P}
     # Isn't this just extracting circuit from ZX-Diagram? It is proven to be #P-Complete. Need to search
 
 end
+
+# if need to visualize, use javascript and visualize the modified ZX-diagram
+# need to save etc.

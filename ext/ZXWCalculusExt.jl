@@ -23,16 +23,22 @@ function ZXCalculus.ZXW.plot(zxwd::ZXWDiagram{T,P}; kwargs...) where {T,P}
                 Input(q) => colorant"orange"
                 Output(q) => colorant"magenta"
                 _ => colorant"black"
-            end for i in 1:nv(g)],kwargs...)
+            end for i in 1:nv(g)], kwargs...)
 
     hidedecorations!(ax)
     hidespines!(ax)
     deregister_interaction!(ax, :rectanglezoom)
 
+    tb = Textbox(f[2, 1], placeholder="Enter the color: ", width=500)
+
+    wanted_color = Observable(parse(Colorant, "black")) 
+
+    on(tb.stored_string) do s
+        wanted_color[] = parse(Colorant,tb.stored_string[])
+    end
+
     function edge_click_action(idx, args...)
-        print("Enter the color: ")
-        which_color = readline()
-        p.edge_color[][idx] = parse(Colorant, which_color) 
+        p.edge_color[][idx] = wanted_color[] 
         p.edge_color[] = p.edge_color[]
     end
 
