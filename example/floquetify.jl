@@ -77,16 +77,29 @@ four_layer_after_rewrite_zxwd = ZXW.concat!(copy(two_layer_after_rewrite_zxwd), 
 
 ZXCalculus.ZXW.plot(four_layer_after_rewrite_zxwd)
 
+for sp in ZXW.spiders(four_layer_after_rewrite_zxwd)
+    @show ZXW.degree(four_layer_after_rewrite_zxwd, sp)
+end
+
+
+
 # Convert requirement checking into linear programming
 
 function has_only_dg1_3_spiders(zxwd::ZXWDiagram{T,P}) where {T,P}
     # Req3: in the finished zx-diagram, a spider will have either degree 1 or 3 
-
-
+    for sp in ZXW.spiders(zxwd)
+        @match ZXW.spider_type(zxwd,sp) begin
+            ZXW.Input(_) || ZXW.Output(_) => continue
+            ZXW.Z(_) || ZXW.X(_) => ZXW.degree(zxwd, sp) == 1 || ZXW.degree(zxwd, sp) == 3 || return false
+        end
+    end
+    return true
 end
 
 function has_even_dg1_zx_spiders(zxwd::ZXWDiagram{T,P}) where {T,P}
     # Req1: even number of green/red spiders with degree 1 respectively
+    num_dg1_z_spiders = 0
+    num_dg1_x_spiders = 0    
 
 end
 
@@ -100,3 +113,5 @@ end
 
 # if need to visualize, use javascript and visualize the modified ZX-diagram
 # need to save etc.
+
+# edge-colored graph
