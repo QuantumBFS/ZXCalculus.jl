@@ -101,6 +101,23 @@ function has_even_dg1_zx_spiders(zxwd::ZXWDiagram{T,P}) where {T,P}
     num_dg1_z_spiders = 0
     num_dg1_x_spiders = 0    
 
+    for sp in ZXW.spiders(zxwd)
+        @match ZXW.spider_type(zxwd,sp) begin
+            ZXW.Input(_) || ZXW.Output(_) => continue
+            ZXW.Z(_) => if ZXW.degree(zxwd, sp) == 1 
+                           num_dg1_z_spiders += 1
+                        end
+            ZXW.X(_) => if ZXW.degree(zxwd, sp) == 1 
+                            num_dg1_x_spiders += 1
+                        end
+        end
+    end
+
+    if iseven(num_dg1_z_spiders) && iseven(num_dg1_x_spiders)
+        return true
+    else
+        return false
+    end
 end
 
 
