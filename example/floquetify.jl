@@ -5,6 +5,8 @@ using ZXCalculus.ZX.Multigraphs, ZXCalculus.ZX.Graphs
 using ZXCalculus.Utils: Parameter
 using WGLMakie, GraphMakie
 using ZXCalculus.ZX.MLStyle
+using JuMP
+using SCIP
 
 function make_meas_mg(weight::T) where {T<:Integer}
     spiders_mg = Multigraph(weight * 3 + 1)
@@ -77,11 +79,6 @@ four_layer_after_rewrite_zxwd = ZXW.concat!(copy(two_layer_after_rewrite_zxwd), 
 
 ZXCalculus.ZXW.plot(four_layer_after_rewrite_zxwd)
 
-for sp in ZXW.spiders(four_layer_after_rewrite_zxwd)
-    @show ZXW.degree(four_layer_after_rewrite_zxwd, sp)
-end
-
-
 
 # Convert requirement checking into linear programming
 
@@ -122,6 +119,12 @@ end
 
 
 function extract_k_qubit_circuit(zxwd::ZXWDiagram{T,P}) where {T,P}
+
+    has_even_dg1_zx_spiders(zxwd) || error("We don't have even number of degree 1 spiders") 
+    has_only_dg1_3_spiders(zxwd) || error("We don't have only degree 1 or 3 spiders")
+
+    models = Model(SCIp.Optimizer) 
+
     # Req2: Causallity must not be violated in the colored version, assign variables to the vertices
     # Req4: topology of the finished diagram will be nice, i.e planar
     # Isn't this just extracting circuit from ZX-Diagram? It is proven to be #P-Complete. Need to search
