@@ -118,17 +118,90 @@ function has_even_dg1_zx_spiders(zxwd::ZXWDiagram{T,P}) where {T,P}
 end
 
 
-function extract_k_qubit_circuit(zxwd::ZXWDiagram{T,P}) where {T,P}
+function dg1_zx_spiders_can_be_start(zxwd::ZXWDiagram{T,P}, model, k_colors::Int) where {T,P}
+    @variable(model, is_start[1:ZXW.nv(zxwd)], Bin)
+    # if the spider is a green/red spider with degree more than 1, then it can't be a start
+    for sp in ZXW.spiders(zxwd)
+        @match ZXW.spider_type(zxwd,sp) begin
+            ZXW.Input(_) || ZXW.Output(_) => continue
+            ZXW.Z(_) || ZXW.X(_) => if !isone(ZXW.degree(zxwd, sp))
+                @constraint(model, is_start[sp] == 0)
+            end
+        end
+    end
+
+    # must have k_colors number of  worldlines
+    @constraint(model, sum(is_start) == k_colors)
+    return is_start
+end
+
+function edge_direction_assignment(zxwd::ZXWDiagram{T,P}, model) where {T,P}
+    @variable(model, small_idx2large_idx[1:ZXW.ne(zxwd)], Bin)
+
+    @variable(model, large_idx2small_idx[1:ZXW.ne(zxwd)], Bin)
+
+    edg2idx = Dict{MultipleEdge{Int,Int},Int}()    
+    for edg in ZXW.edges(zxwd)
+        @constraint(model, small_idx2large_idx[edg] + large_idx2small_idx[edg] <= 1)
+    end
+
+    return small_idx2large_idx, large_idx2small_idx
+end
+
+function time_step_assignment(zxwd::ZXWDiagram{T,P}, model, t_steps::Int) where {T,P}
+    @variable(model, 0 <= time_steps[1:ZXW.nv(zxwd)] <= t_steps, Int)
+    # no input / output spiders could be assigned a time step
+    for sp in ZXW.spiders(zxwd)
+        @match ZXW.spider_type(zxwd,sp) begin
+            ZXW.Input(_) || ZXW.Output(_) => @constraint(model, time_steps[sp] == 0)
+            ZXW.Z(_) || ZXW.X(_) => @constraint(model, time_steps[sp] >= 1) 
+        end
+    end
+    return time_steps
+end
+
+function extract_k_qubit_circuit(zxwd::ZXWDiagram{T,P}, k_colors::Int, t_steps::Int) where {T,P}
 
     has_even_dg1_zx_spiders(zxwd) || error("We don't have even number of degree 1 spiders") 
     has_only_dg1_3_spiders(zxwd) || error("We don't have only degree 1 or 3 spiders")
 
-    models = Model(SCIp.Optimizer) 
+    model = Model(SCIP.Optimizer) 
 
+    is_start = dg1_zx_spiders_can_be_start(zxwd, model, k_colors)
+
+    small_idx2large_idx, large_idx2small_idx = edge_direction_assignment(zxwd, model)
+
+    time_steps = time_step_assignment(zxwd, model, t_steps)
+
+
+
+
+    # @variable(model, 0 <= time_steps[1:ZXW.nv(zxwd)] <= t_steps, Int)
+
+    # # let 0 denote black color
+    # # let i denote the ith color which denotes the timeline
+    # @variable(model, 0 <= edge_color[1:ZXW.ne(zxwd)] <= k_colors, Int) 
+
+    # @variable(model, edge_direction[1:ZXW.ne(zxwd)], Bin)
+
+    # @constraint(model,const_name[i in 1:ZXW.ne(zxwd)], edge_color[i] == 0)
+
+    @objective(model,Min,1)
+    optimize!(model)
+    @assert is_solved_and_feasible(model)
+    return value.(is_start), value.(small_idx2large_idx), value.(large_idx2small_idx), value.(time_steps)
+    # return value.(time_steps), value.(edge_color), value.(edge_direction)
     # Req2: Causallity must not be violated in the colored version, assign variables to the vertices
     # Req4: topology of the finished diagram will be nice, i.e planar
     # Isn't this just extracting circuit from ZX-Diagram? It is proven to be #P-Complete. Need to search
+end
 
+extract_k_qubit_circuit(four_layer_after_rewrite_zxwd, 2, 2)
+
+
+for edg in ZXW.edges(four_layer_after_rewrite_zxwd)
+    @show typeof(edg)
+    @show edg.src, edg.dst
 end
 
 # if need to visualize, use javascript and visualize the modified ZX-diagram

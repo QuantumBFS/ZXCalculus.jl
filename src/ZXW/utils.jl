@@ -132,6 +132,7 @@ function Base.show(io::IO, zxwd::ZXWDiagram{T,P}) where {T<:Integer,P}
     end
 end
 
+Graphs.edges(zxwd::ZXWDiagram) = edges(zxwd.mg)
 
 """
     nv(zxwd)
