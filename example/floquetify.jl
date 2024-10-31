@@ -7,6 +7,8 @@ using WGLMakie, GraphMakie
 using ZXCalculus.ZX.MLStyle
 using JuMP
 using SCIP
+using ZXCalculus.ZX: Rule
+
 
 function make_meas_mg(weight::T) where {T<:Integer}
     spiders_mg = Multigraph(weight * 3 + 1)
@@ -55,6 +57,8 @@ meas_mg = make_meas_mg(weight)
 
 xstab_meas_zxwd = make_meas_zxwd(Parameter, meas_mg, :X)
 zstab_meas_zxwd = make_meas_zxwd(Parameter, meas_mg, :Z)
+
+vss = match(Rule(:s1), xstab_meas_zxwd)
 
 ZXCalculus.ZXW.plot(xstab_meas_zxwd)
 ZXCalculus.ZXW.plot(zstab_meas_zxwd)
@@ -163,7 +167,7 @@ end
 function extract_k_qubit_circuit(zxwd::ZXWDiagram{T,P}, k_colors::Int, t_steps::Int) where {T,P}
 
     has_even_dg1_zx_spiders(zxwd) || error("We don't have even number of degree 1 spiders") 
-    has_only_dg1_3_spiders(zxwd) || error("We don't have only degree 1 or 3 spiders")
+    has_only_dg1_3_spiders(zxwd) || error("We don't have only degree 1 or 3 spiders") 
 
     model = Model(SCIP.Optimizer) 
 
@@ -207,4 +211,4 @@ end
 # if need to visualize, use javascript and visualize the modified ZX-diagram
 # need to save etc.
 
-# edge-colored graph
+# edge-coloredTuple graph
