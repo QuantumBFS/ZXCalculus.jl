@@ -463,8 +463,8 @@ end
 function add_ancilla!(zxd::ZXDiagram, in_stype::SpiderType.SType, out_stype::SpiderType.SType)
     v_in = add_spider!(zxd, in_stype)
     v_out = add_spider!(zxd, out_stype)
-    push!(zxd.inputs, v_in)
-    push!(zxd.outputs, v_out)
+    in_stype === SpiderType.In && push!(zxd.inputs, v_in)
+    out_stype === SpiderType.Out && push!(zxd.outputs, v_out)
     add_edge!(zxd, v_in, v_out)
     return zxd
 end
