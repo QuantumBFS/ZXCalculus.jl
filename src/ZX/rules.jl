@@ -320,7 +320,9 @@ function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
         v1, v2, gad_v = gads[i]
         for j in (i+1):length(gads)
             u1, u2, gad_u = gads[j]
-            if gad_u == gad_v && phase(zxg, v2) in (zero(P), one(P)) && phase(zxg, u2) in (zero(P), one(P))
+            if gad_u == gad_v && 
+                    (spider_type(zxg, v2) == SpiderType.Z && phase(zxg, v2) in (zero(P), one(P))) && 
+                    (spider_type(zxg, u2) == SpiderType.Z && phase(zxg, u2) in (zero(P), one(P)))
                 push!(matches, Match{T}([v1, v2, u1, u2]))
             end
         end
