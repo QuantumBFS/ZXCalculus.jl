@@ -165,7 +165,7 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
     else
         w = nbs[1]
         push!(frontiers, w)
-        add_ancilla!(circ, SpiderType.Z, SpiderType.Z; force_add_to_inputs=true, force_add_to_outputs=true)
+        add_ancilla!(circ, SpiderType.Z, SpiderType.Z; register_as_input=true, register_as_output=true)
         qubit_map[w] = length(frontiers)
         return frontiers
     end
