@@ -460,11 +460,12 @@ function pushfirst_gate!(zxd::ZXDiagram{T, P}, ::Val{:CZ}, loc::T, ctrl::T) wher
     return zxd
 end
 
-function add_ancilla!(zxd::ZXDiagram, in_stype::SpiderType.SType, out_stype::SpiderType.SType)
+function add_ancilla!(zxd::ZXDiagram, in_stype::SpiderType.SType, out_stype::SpiderType.SType; 
+        force_add_to_inputs::Bool=false, force_add_to_outputs::Bool=false)
     v_in = add_spider!(zxd, in_stype)
     v_out = add_spider!(zxd, out_stype)
-    in_stype === SpiderType.In && push!(zxd.inputs, v_in)
-    out_stype === SpiderType.Out && push!(zxd.outputs, v_out)
+    (force_add_to_inputs || in_stype === SpiderType.In) && push!(zxd.inputs, v_in)
+    (force_add_to_outputs || out_stype === SpiderType.Out) && push!(zxd.outputs, v_out)
     add_edge!(zxd, v_in, v_out)
     return zxd
 end
