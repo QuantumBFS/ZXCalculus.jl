@@ -72,7 +72,7 @@ end
 end
 
 @testset "planar multigraphs.jl" begin
-    include("planar_multigraph.jl")
+    include("PMG/planar_multigraph.jl")
 end
 
 @testset "ZW Diagram with Planar Multigraph" begin
