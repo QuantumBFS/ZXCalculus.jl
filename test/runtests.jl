@@ -60,15 +60,15 @@ end
 end
 
 @testset "zxw_diagram.jl" begin
-    include("zxw_diagram.jl")
+    include("ZXW/zxw_diagram.jl")
 end
 
 @testset "utils.jl" begin
-    include("utils.jl")
+    include("ZXW/utils.jl")
 end
 
 @testset "zxw_rules.jl" begin
-    include("zxw_rules.jl")
+    include("ZXW/zxw_rules.jl")
 end
 
 @testset "planar multigraphs.jl" begin
