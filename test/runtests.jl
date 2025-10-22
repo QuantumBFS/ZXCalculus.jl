@@ -76,11 +76,11 @@ end
 end
 
 @testset "ZW Diagram with Planar Multigraph" begin
-    include("zw_diagram.jl")
+    include("ZW/zw_diagram.jl")
 end
 
 @testset "ZW Diagram Utilities" begin
-    include("zw_utils.jl")
+    include("ZW/zw_utils.jl")
 end
 
 @testset "to_eincode.jl" begin
