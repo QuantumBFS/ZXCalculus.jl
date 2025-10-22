@@ -39,7 +39,6 @@ push_gate!(chain, Val(:Rx), 3, Phase(1 // 4))
 push_gate!(chain, Val(:Rx), 2, Phase(1 // 4))
 push_gate!(chain, Val(:S), 3)
 
-
 @testset "ir.jl" begin
     # Shadow operation in ir.jl testset, so that they do not overrride SpiderTypes
     X = YaoHIR.IntrinsicOperation.X
@@ -49,35 +48,29 @@ push_gate!(chain, Val(:S), 3)
     S = YaoHIR.IntrinsicOperation.S
     SGate = YaoHIR.IntrinsicOperation.SGate
 
-
-
     ir = IRCode()
     bir = BlockIR(ir, 4, chain)
     zxd = ZXDiagram(bir)
     zxwd = ZXWDiagram(bir)
 
- 
     @testset "convert SpiderType to Val" begin
-      @test ZX.stype_to_val(SpiderType.Z) == Val{:Z}()
-      @test ZX.stype_to_val(SpiderType.X) == Val{:X}()
-      @test ZX.stype_to_val(SpiderType.H) == Val{:H}()
-      @test_throws ArgumentError ZX.stype_to_val("anything else")    end
+        @test ZX.stype_to_val(SpiderType.Z) == Val{:Z}()
+        @test ZX.stype_to_val(SpiderType.X) == Val{:X}()
+        @test ZX.stype_to_val(SpiderType.H) == Val{:H}()
+        @test_throws ArgumentError ZX.stype_to_val("anything else")
+    end
 
     @testset "convert BlockIR into ZXWDiagram" begin
-      @test !isnothing(zxwd) 
+        @test !isnothing(zxwd)
     end
-
 
     @testset "create Matrix from ZXDiagram" begin
-        matrix_from_zxd =
-            Matrix(ZXWDiagram(BlockIR(IRCode(), 4, circuit_extraction(full_reduction(zxd)))))
-            @test !isnothing(matrix_from_zxd)
+        matrix_from_zxd = Matrix(ZXWDiagram(BlockIR(IRCode(), 4, circuit_extraction(full_reduction(zxd)))))
+        @test !isnothing(matrix_from_zxd)
     end
 
-
-
     @testset "BlockIR to Matrix" begin
-      @test !isnothing(Matrix(zxwd))
+        @test !isnothing(Matrix(zxwd))
     end
 
     @test !isnothing(plot(zxd))
@@ -116,7 +109,6 @@ push_gate!(chain, Val(:S), 3)
     end
 
     @testset "generate_layout!" begin
-
         circ = Chain(
             Gate(H, Locations(2)),
             Gate(T, Locations(4)),
@@ -217,7 +209,7 @@ push_gate!(chain, Val(:S), 3)
             Gate(AdjointOperation{SGate}(S), Locations(3)),
             Gate(H, Locations(5)),
             Gate(S, Locations(4)),
-            Gate(Z, Locations(4)),
+            Gate(Z, Locations(4))
         )
         ir = IRCode()
         bir = BlockIR(ir, 5, circ)
@@ -229,7 +221,6 @@ push_gate!(chain, Val(:S), 3)
         @test !isnothing(ZX.generate_layout!(zxg))
     end
 
-
     @testset "generate_layout with chain" begin
         bir = BlockIR(ir, 5, chain)
         zxd = ZXDiagram(bir)
@@ -238,14 +229,13 @@ push_gate!(chain, Val(:S), 3)
         ZX.generate_layout!(zxg)
         @test !isnothing(plot(zxg))
         @test !isnothing(ZX.generate_layout!(zxg))
-
     end
 
-    function random_circuit(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
+    function random_circuit(nbits, ngates; T=0.1, CZ=0.0, CNOT=0.1)
         ir = IRCode()
         CLIFF = 1 - T - CZ - CNOT
         circ = Chain()
-        for _ = 1:ngates
+        for _ in 1:ngates
             x = rand()
             nbits == 1 && (x = x * (CLIFF + T))
             if x <= CLIFF
@@ -273,10 +263,10 @@ push_gate!(chain, Val(:S), 3)
         return BlockIR(ir, nbits, circ)
     end
 
-    function random_identity(nbits, ngates; T = 0.1, CZ = 0.0, CNOT = 0.1)
-        bir = random_circuit(nbits, ngates; T = T, CZ = CZ, CNOT = CNOT)
+    function random_identity(nbits, ngates; T=0.1, CZ=0.0, CNOT=0.1)
+        bir = random_circuit(nbits, ngates; T=T, CZ=CZ, CNOT=CNOT)
         c = bir.circuit.args
-        for i = length(c):-1:1
+        for i in length(c):-1:1
             if c[i] isa Gate
                 g = c[i].operation
                 if (g in (YaoHIR.IntrinsicOperation.S, YaoHIR.IntrinsicOperation.T)) ||
@@ -301,16 +291,16 @@ push_gate!(chain, Val(:S), 3)
         @test !isnothing(plot(zxg |> clifford_simplification |> full_reduction))
     end
 
-   @testset "gates_to_circ with addition Ry" begin
-      n_qubits = 4
-      # TODO add tests for Ry gate
-      chain_a = Chain()
-      push_gate!(chain_a, Val(:Ry), n_qubits, Phase(1 // 1))
-      push_gate!(chain_a, Val(:Rz), 4, Phase(1 // 1))
-      bir = BlockIR(ir, n_qubits, chain_a)
+    @testset "gates_to_circ with addition Ry" begin
+        n_qubits = 4
+        # TODO add tests for Ry gate
+        chain_a = Chain()
+        push_gate!(chain_a, Val(:Ry), n_qubits, Phase(1 // 1))
+        push_gate!(chain_a, Val(:Rz), 4, Phase(1 // 1))
+        bir = BlockIR(ir, n_qubits, chain_a)
 
-      diagram = ZXDiagram(n_qubits)
-      ZX.gates_to_circ(diagram, chain_a, bir)
+        diagram = ZXDiagram(n_qubits)
+        ZX.gates_to_circ(diagram, chain_a, bir)
     end
 
     # TODO add test that checks if error is thrown for unkown gate
@@ -321,5 +311,4 @@ push_gate!(chain, Val(:S), 3)
         # @test chain.args == Chain(ZXDiagram(bir)).args
         @test !isnothing(Chain(zxd))
     end
-
 end

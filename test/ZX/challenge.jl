@@ -56,7 +56,7 @@ st = Dict(
     48+1 => SpiderType.Z,
     49+1 => SpiderType.Z,
     50+1 => SpiderType.Z,
-    51+1 => SpiderType.Z,
+    51+1 => SpiderType.Z
 )
 
 ps = Dict(
@@ -192,7 +192,7 @@ es = Dict(
     (40+1, 41+1) => EdgeType.HAD,
     (42+1, 43+1) => EdgeType.HAD,
     (44+1, 45+1) => EdgeType.HAD,
-    (46+1, 47+1) => EdgeType.HAD,
+    (46+1, 47+1) => EdgeType.HAD
 )
 
 zxg = ZXGraph(ZXDiagram(0))
@@ -203,7 +203,7 @@ end
 for (e, _) in es
     Graphs.add_edge!(zxg, e[1], e[2])
 end
-for i = 1:5
+for i in 1:5
     push!(zxg.inputs, i)
     push!(zxg.outputs, i+23)
 end

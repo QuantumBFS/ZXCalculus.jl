@@ -12,9 +12,8 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
         2,
         2,
         0,
-        [0],
+        [0]
     )
-
 
     @test zx1.st == Dict([1 => ZW.Input(1), 2 => ZW.Output(1)])
     @test zx1.inputs == [1]
@@ -33,7 +32,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
             5 => HalfEdge(3, 1),
             6 => HalfEdge(1, 3),
             7 => HalfEdge(4, 2),
-            8 => HalfEdge(2, 4),
+            8 => HalfEdge(2, 4)
         ]),
         Dict([0 => 2, 1 => 1]),
         Dict([1 => 1, 8 => 1, 4 => 1, 5 => 1, 2 => 0, 3 => 0, 6 => 0, 7 => 0]),
@@ -42,7 +41,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
         4,
         8,
         1,
-        [0],
+        [0]
     )
 
     @test zx2.st == Dict([1 => ZW.Input(1), 2 => ZW.Output(1), 3 => ZW.Input(2), 4 => ZW.Output(2)])
@@ -70,7 +69,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
             11 => HalfEdge(4, 2),
             12 => HalfEdge(2, 4),
             13 => HalfEdge(6, 4),
-            14 => HalfEdge(4, 6),
+            14 => HalfEdge(4, 6)
         ]),
         Dict([0 => 2, 1 => 1, 2 => 3]),
         Dict([
@@ -87,7 +86,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
             8 => 0,
             11 => 0,
             10 => 0,
-            13 => 0,
+            13 => 0
         ]),
         Dict([
             1 => 12,
@@ -103,7 +102,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
             10 => 5,
             5 => 13,
             13 => 11,
-            11 => 2,
+            11 => 2
         ]),
         Dict([
             1 => 2,
@@ -119,12 +118,12 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
             11 => 12,
             12 => 11,
             13 => 14,
-            14 => 13,
+            14 => 13
         ]),
         6,
         14,
         2,
-        [0],
+        [0]
     )
 
     @test zx3.st == Dict([
@@ -133,7 +132,7 @@ using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.PMG, ZXCalculus.Utils
         3 => ZW.Input(2),
         4 => ZW.Output(2),
         5 => ZW.Input(3),
-        6 => ZW.Output(3),
+        6 => ZW.Output(3)
     ])
     @test zx3.inputs == [1, 3, 5]
     @test zx3.outputs == [2, 4, 6]

@@ -1,41 +1,39 @@
 using Test, ZXCalculus, ZXCalculus.ZXW, ZXCalculus.Utils, Multigraphs, Graphs
 using ZXCalculus: ZXW
 using ZXCalculus.ZXW:
-    Parameter,
-    _round_phase,
-    round_phases!,
-    print_spider,
-    push_gate!,
-    pushfirst_gate!,
-    insert_wtrig!,
-    expval_circ!,
-    substitute_variables!,
-    rem_spiders!,
-    add_inout!,
-    Z,
-    X,
-    W,
-    H
+                      Parameter,
+                      _round_phase,
+                      round_phases!,
+                      print_spider,
+                      push_gate!,
+                      pushfirst_gate!,
+                      insert_wtrig!,
+                      expval_circ!,
+                      substitute_variables!,
+                      rem_spiders!,
+                      add_inout!,
+                      Z,
+                      X,
+                      W,
+                      H
 
 using MLStyle: @match
-
 
 @testset "Phase rounding" begin
     st = Dict(
         1 => Z(Parameter(Val(:PiUnit), -1)),
         2 => Z(Parameter(Val(:PiUnit), -100 // 3)),
         3 => X(Parameter(Val(:PiUnit), 1.5)),
-        4 => X(Parameter(Val(:PiUnit), 2 // 3)),
+        4 => X(Parameter(Val(:PiUnit), 2 // 3))
     )
 
     zxwd = ZXWDiagram(Multigraph(zeros(Int, 4, 4)), st)
-
 
     st_rounded = Dict(
         1 => Z(Parameter(Val(:PiUnit), 1)),
         2 => Z(Parameter(Val(:PiUnit), 2 // 3)),
         3 => X(Parameter(Val(:PiUnit), 1.5)),
-        4 => X(Parameter(Val(:PiUnit), 2 // 3)),
+        4 => X(Parameter(Val(:PiUnit), 2 // 3))
     )
 
     round_phases!(zxwd)
@@ -51,7 +49,6 @@ using MLStyle: @match
 end
 
 @testset "ZXWDiagram Utilities" begin
-
     zxwd = ZXWDiagram(3)
 
     @test @match ZXW.spider_type(zxwd, 1) begin
@@ -73,19 +70,16 @@ end
     @test rem_edge!(zxwd, 5, 6)
     @test outneighbors(zxwd, 5) == inneighbors(zxwd, 5)
 
-
     @test add_edge!(zxwd, 5, 6)
     @test neighbors(zxwd, 5) == [6]
-
 
     @test_throws ErrorException("The vertex to connect does not exist.") ZXW.add_spider!(
         zxwd,
         W,
-        [10, 15],
+        [10, 15]
     )
 
     new_v = ZXW.add_spider!(zxwd, W, [2, 3])
-
 
     @test @match zxwd.st[new_v] begin
         W => true
@@ -128,15 +122,11 @@ end
     @test ZXW.nin(zxwd) == nqubits_prior + 3
     @test ZXW.nout(zxwd) == nqubits_prior + 3
     nspiders = nv(zxwd)
-    @test sort!([ZXW.get_inputs(zxwd)[end-2:end]; ZXW.get_outputs(zxwd)[end-2:end]]) ==
-          collect(nspiders-5:nspiders)
-
-
-
+    @test sort!([ZXW.get_inputs(zxwd)[(end - 2):end]; ZXW.get_outputs(zxwd)[(end - 2):end]]) ==
+          collect((nspiders - 5):nspiders)
 end
 
 @testset "gate insertion" begin
-
     zxwd = ZXWDiagram(2)
 
     pushfirst_gate!(zxwd, Val(:X), 1)
@@ -157,15 +147,14 @@ end
     @test insert_wtrig!(zxwd, [1, 2, 3, 4]) == 25
 end
 
-
 @testset "Example 28" begin
     zxwd = ZXWDiagram(2)
     push_gate!(zxwd, Val(:H), 1)
     push_gate!(zxwd, Val(:H), 2)
 
     push_gate!(zxwd, Val(:CZ), 1, 2)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
 
     exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
 
@@ -175,5 +164,4 @@ end
     exp_yao = 0.7694208842938131
 
     @test exp_val ≈ exp_yao
-
 end

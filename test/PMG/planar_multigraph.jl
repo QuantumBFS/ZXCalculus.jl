@@ -1,20 +1,19 @@
 using Test, ZXCalculus, ZXCalculus.PMG
 using ZXCalculus.PMG:
-    create_vertex!,
-    create_edge!,
-    split_vertex!,
-    split_facet!,
-    join_facet!,
-    join_vertex!,
-    split_edge!,
-    make_hole!,
-    add_facet_to_boarder!,
-    add_vertex_and_facet_to_boarder!,
-    erase_facet!,
-    add_multiedge!
+                      create_vertex!,
+                      create_edge!,
+                      split_vertex!,
+                      split_facet!,
+                      join_facet!,
+                      join_vertex!,
+                      split_edge!,
+                      make_hole!,
+                      add_facet_to_boarder!,
+                      add_vertex_and_facet_to_boarder!,
+                      erase_facet!,
+                      add_multiedge!
 
 @testset "Half edge constructor" begin
-
     he1 = HalfEdge(1, 2)
     ophe1 = HalfEdge(2, 1)
 
@@ -34,7 +33,7 @@ end
         2,
         2,
         0,
-        [0],
+        [0]
     )
     pmg2 = copy(pmg1)
 
@@ -60,7 +59,7 @@ end
             9 => HalfEdge(5, 6),
             10 => HalfEdge(6, 5),
             11 => HalfEdge(6, 1),
-            12 => HalfEdge(1, 6),
+            12 => HalfEdge(1, 6)
         ),
         # f2he
         Dict(1 => 1, 0 => 2),
@@ -77,7 +76,7 @@ end
             9 => 1,
             10 => 0,
             11 => 1,
-            12 => 0,
+            12 => 0
         ),
         # next
         Dict(
@@ -92,7 +91,7 @@ end
             6 => 8,
             8 => 10,
             10 => 12,
-            12 => 2,
+            12 => 2
         ),
         # twin
         Dict(
@@ -107,12 +106,12 @@ end
             9 => 10,
             10 => 9,
             11 => 12,
-            12 => 11,
+            12 => 11
         ),
         6, # v_max
         12, # he_max
         1, # f_max
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -133,7 +132,7 @@ end
             11 => HalfEdge(6, 1),
             12 => HalfEdge(1, 6),
             13 => HalfEdge(1, 4),
-            14 => HalfEdge(4, 1),
+            14 => HalfEdge(4, 1)
         ),
         # f2he
         Dict(2 => 14, 1 => 13, 0 => 2),
@@ -152,7 +151,7 @@ end
             11 => 1,
             12 => 0,
             13 => 1,
-            14 => 2,
+            14 => 2
         ),
         #next
         Dict(
@@ -169,7 +168,7 @@ end
             6 => 8,
             8 => 10,
             10 => 12,
-            12 => 2,
+            12 => 2
         ),
         # twin
         Dict(
@@ -186,12 +185,12 @@ end
             11 => 12,
             12 => 11,
             13 => 14,
-            14 => 13,
+            14 => 13
         ),
         6, # v_max
         14, # he_max
         2, # f_max
-        [0],
+        [0]
     )
     pmg3 = copy(pmg1)
     @test split_facet!(pmg3, 11, 5) == 13
@@ -201,7 +200,6 @@ end
     @test pmg4 == pmg1
 end
 
-
 @testset "Split Vertex fail" begin
     pmg1 = PlanarMultigraph(
         Dict(1 => 1, 2 => 2),
@@ -209,7 +207,7 @@ end
             1 => HalfEdge(1, 2),
             2 => HalfEdge(2, 1),
             3 => HalfEdge(1, 2),
-            4 => HalfEdge(2, 1),
+            4 => HalfEdge(2, 1)
         ),
         Dict(1 => 1, 0 => 2),
         Dict(1 => 1, 4 => 1, 3 => 0, 2 => 0),
@@ -218,12 +216,12 @@ end
         2,
         4,
         1,
-        [0],
+        [0]
     )
     @test_throws "Should use #TODO to add multiedge and split facet!" split_facet!(
         pmg1,
         1,
-        4,
+        4
     )
 end
 
@@ -238,7 +236,7 @@ end
             5 => HalfEdge(2, 4),
             6 => HalfEdge(4, 2),
             7 => HalfEdge(2, 5),
-            8 => HalfEdge(5, 2),
+            8 => HalfEdge(5, 2)
         ),
         Dict(0 => 1),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0),
@@ -247,7 +245,7 @@ end
         5,
         8,
         0,
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -262,7 +260,7 @@ end
             7 => HalfEdge(6, 5),
             8 => HalfEdge(5, 6),
             9 => HalfEdge(6, 2),
-            10 => HalfEdge(2, 6),
+            10 => HalfEdge(2, 6)
         ),
         Dict(0 => 1),
         Dict(
@@ -275,7 +273,7 @@ end
             7 => 0,
             8 => 0,
             9 => 0,
-            10 => 0,
+            10 => 0
         ),
         Dict(
             1 => 9,
@@ -287,7 +285,7 @@ end
             10 => 7,
             7 => 8,
             8 => 2,
-            2 => 1,
+            2 => 1
         ),
         Dict(
             1 => 2,
@@ -299,12 +297,12 @@ end
             7 => 8,
             8 => 7,
             9 => 10,
-            10 => 9,
+            10 => 9
         ),
         6,
         10,
         0,
-        [0],
+        [0]
     )
     pmg3 = copy(pmg1)
     pmg4 = copy(pmg2)
@@ -321,7 +319,7 @@ end
             1 => HalfEdge(1, 2),
             2 => HalfEdge(2, 1),
             3 => HalfEdge(2, 3),
-            4 => HalfEdge(3, 2),
+            4 => HalfEdge(3, 2)
         ),
         Dict(0 => 1),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0),
@@ -330,7 +328,7 @@ end
         3,
         4,
         0,
-        [0],
+        [0]
     )
     pmg2 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 4, 4 => 5),
@@ -340,7 +338,7 @@ end
             3 => HalfEdge(2, 3),
             4 => HalfEdge(3, 2),
             5 => HalfEdge(4, 2),
-            6 => HalfEdge(2, 4),
+            6 => HalfEdge(2, 4)
         ),
         Dict(0 => 1),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
@@ -349,7 +347,7 @@ end
         4,
         6,
         0,
-        [0],
+        [0]
     )
 
     @test split_edge!(pmg1, 3) == 6
@@ -368,7 +366,7 @@ end
             5 => HalfEdge(4, 3),
             6 => HalfEdge(3, 4),
             7 => HalfEdge(1, 3),
-            8 => HalfEdge(3, 1),
+            8 => HalfEdge(3, 1)
         ),
         Dict(0 => 1, 1 => 2),
         Dict(1 => 0, 2 => 1, 3 => 0, 4 => 1, 5 => 0, 6 => 1, 7 => 1, 8 => 0),
@@ -377,7 +375,7 @@ end
         4,
         8,
         1,
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -392,7 +390,7 @@ end
             7 => HalfEdge(1, 3),
             8 => HalfEdge(3, 1),
             9 => HalfEdge(5, 2),
-            10 => HalfEdge(2, 5),
+            10 => HalfEdge(2, 5)
         ),
         Dict(0 => 1, 1 => 2),
         Dict(
@@ -405,7 +403,7 @@ end
             7 => 1,
             8 => 0,
             9 => 0,
-            10 => 1,
+            10 => 1
         ),
         Dict(
             1 => 9,
@@ -417,7 +415,7 @@ end
             7 => 6,
             6 => 4,
             4 => 10,
-            10 => 2,
+            10 => 2
         ),
         Dict(
             1 => 2,
@@ -429,12 +427,12 @@ end
             7 => 8,
             8 => 7,
             9 => 10,
-            10 => 9,
+            10 => 9
         ),
         5,
         10,
         1,
-        [0],
+        [0]
     )
     pmg2f1 = copy(pmg1)
     @test split_vertex!(pmg2f1, 4, 1) == 9
@@ -450,7 +448,7 @@ end
             3 => HalfEdge(2, 3),
             4 => HalfEdge(3, 2),
             5 => HalfEdge(3, 1),
-            6 => HalfEdge(1, 3),
+            6 => HalfEdge(1, 3)
         ),
         Dict(0 => 2, 1 => 1),
         Dict(1 => 1, 2 => 0, 3 => 1, 4 => 0, 5 => 1, 6 => 0),
@@ -459,9 +457,8 @@ end
         3,
         6,
         1,
-        [0],
+        [0]
     )
-
 
     pmg2 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 5),
@@ -471,7 +468,7 @@ end
             3 => HalfEdge(2, 3),
             4 => HalfEdge(3, 2),
             5 => HalfEdge(3, 1),
-            6 => HalfEdge(1, 3),
+            6 => HalfEdge(1, 3)
         ),
         Dict(0 => 2, 1 => 1),
         Dict(1 => 1, 2 => 0, 3 => 1, 4 => 0, 5 => 1, 6 => 0),
@@ -480,7 +477,7 @@ end
         3,
         6,
         1,
-        [0, 1],
+        [0, 1]
     )
     @test_throws "Can't make hole for boundary halfedge" make_hole!(pmg1, 2)
     @test make_hole!(pmg1, 1) == 1
@@ -496,7 +493,7 @@ end
             3 => HalfEdge(2, 3),
             4 => HalfEdge(3, 2),
             5 => HalfEdge(3, 4),
-            6 => HalfEdge(4, 3),
+            6 => HalfEdge(4, 3)
         ),
         Dict(0 => 1),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
@@ -505,7 +502,7 @@ end
         4,
         6,
         0,
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -518,7 +515,7 @@ end
             5 => HalfEdge(3, 4),
             6 => HalfEdge(4, 3),
             7 => HalfEdge(2, 4),
-            8 => HalfEdge(4, 2),
+            8 => HalfEdge(4, 2)
         ),
         Dict(0 => 1, 1 => 8),
         Dict(1 => 0, 2 => 0, 3 => 1, 4 => 0, 5 => 1, 6 => 0, 7 => 0, 8 => 1),
@@ -527,7 +524,7 @@ end
         4,
         8,
         1,
-        [0],
+        [0]
     )
 
     @test add_facet_to_boarder!(pmg1, 1, 5) == 8
@@ -543,7 +540,7 @@ end
             3 => HalfEdge(2, 3),
             4 => HalfEdge(3, 2),
             5 => HalfEdge(3, 4),
-            6 => HalfEdge(4, 3),
+            6 => HalfEdge(4, 3)
         ),
         Dict(0 => 1),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0),
@@ -552,9 +549,8 @@ end
         4,
         6,
         0,
-        [0],
+        [0]
     )
-
 
     pmg2 = PlanarMultigraph(
         Dict(1 => 1, 2 => 3, 3 => 5, 4 => 6, 5 => 10),
@@ -568,7 +564,7 @@ end
             7 => HalfEdge(2, 5),
             8 => HalfEdge(5, 2),
             9 => HalfEdge(3, 5),
-            10 => HalfEdge(5, 3),
+            10 => HalfEdge(5, 3)
         ),
         Dict(0 => 1, 1 => 3),
         Dict(
@@ -581,7 +577,7 @@ end
             7 => 0,
             8 => 1,
             9 => 1,
-            10 => 0,
+            10 => 0
         ),
         Dict(
             1 => 7,
@@ -593,7 +589,7 @@ end
             2 => 1,
             8 => 3,
             3 => 9,
-            9 => 8,
+            9 => 8
         ),
         Dict(
             1 => 2,
@@ -605,12 +601,12 @@ end
             7 => 8,
             8 => 7,
             9 => 10,
-            10 => 9,
+            10 => 9
         ),
         5,
         10,
         1,
-        [0],
+        [0]
     )
     @test add_vertex_and_facet_to_boarder!(pmg1, 1, 3) == 9
     @test pmg1 == pmg2
@@ -631,7 +627,7 @@ end
             9 => HalfEdge(5, 1),
             10 => HalfEdge(1, 5),
             11 => HalfEdge(4, 2),
-            12 => HalfEdge(2, 4),
+            12 => HalfEdge(2, 4)
         ),
         Dict(0 => 1, 1 => 2, 2 => 6),
         Dict(
@@ -646,7 +642,7 @@ end
             9 => 0,
             10 => 1,
             11 => 1,
-            12 => 2,
+            12 => 2
         ),
         Dict(
             1 => 3,
@@ -660,7 +656,7 @@ end
             11 => 2,
             4 => 12,
             12 => 6,
-            6 => 4,
+            6 => 4
         ),
         Dict(
             1 => 2,
@@ -674,12 +670,12 @@ end
             9 => 10,
             10 => 9,
             11 => 12,
-            12 => 11,
+            12 => 11
         ),
         5,
         12,
         2,
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -692,7 +688,7 @@ end
             9 => HalfEdge(5, 1),
             10 => HalfEdge(1, 5),
             11 => HalfEdge(4, 2),
-            12 => HalfEdge(2, 4),
+            12 => HalfEdge(2, 4)
         ),
         Dict(0 => 1, 1 => 2),
         Dict(1 => 0, 2 => 1, 7 => 0, 8 => 1, 9 => 0, 10 => 1, 11 => 1, 12 => 0),
@@ -701,7 +697,7 @@ end
         5,
         12,
         2,
-        [0],
+        [0]
     )
 
     @test erase_facet!(pmg1, 6) == 6
@@ -718,7 +714,7 @@ end
             5 => HalfEdge(3, 4),
             6 => HalfEdge(4, 3),
             7 => HalfEdge(4, 2),
-            8 => HalfEdge(2, 4),
+            8 => HalfEdge(2, 4)
         ),
         Dict(0 => 1, 1 => 4),
         Dict(1 => 0, 2 => 0, 3 => 0, 4 => 1, 5 => 1, 6 => 0, 7 => 1, 8 => 0),
@@ -727,7 +723,7 @@ end
         4,
         8,
         1,
-        [0],
+        [0]
     )
 
     pmg4 = PlanarMultigraph(
@@ -740,7 +736,7 @@ end
         2,
         2,
         0,
-        [0],
+        [0]
     )
     @test erase_facet!(pmg3, 7) == 7
     @test pmg3 == pmg4
@@ -757,7 +753,7 @@ end
         2,
         2,
         0,
-        [0],
+        [0]
     )
 
     pmg2 = PlanarMultigraph(
@@ -768,7 +764,7 @@ end
             3 => HalfEdge(2, 1),
             4 => HalfEdge(1, 2),
             5 => HalfEdge(2, 1),
-            6 => HalfEdge(1, 2),
+            6 => HalfEdge(1, 2)
         ),
         Dict(0 => 1, 1 => 2, 2 => 3),
         Dict(1 => 0, 2 => 1, 4 => 1, 3 => 2, 6 => 2, 5 => 0),
@@ -777,7 +773,7 @@ end
         2,
         2,
         0,
-        [0],
+        [0]
     )
 
     @test add_multiedge!(pmg1, 2, 2) == 2

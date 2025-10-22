@@ -3,7 +3,7 @@ using ZXCalculus: ZX
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
 collect(edges(g))
-ps = [i // 4 for i = 1:3]
+ps = [i // 4 for i in 1:3]
 v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:f}(), zxd)
@@ -19,11 +19,11 @@ v_t = [SpiderType.X, SpiderType.X, SpiderType.Z, SpiderType.Z, SpiderType.Z]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:i1}(), zxd)
 rewrite!(Rule{:i1}(), zxd, matches)
-@test nv(zxd) == 3 && ne(zxd, count_mul = true) == 3 && ne(zxd) == 2
+@test nv(zxd) == 3 && ne(zxd, count_mul=true) == 3 && ne(zxd) == 2
 @test !isnothing(zxd)
 
 g = Multigraph([0 2 0; 2 0 1; 0 1 0])
-ps = [i // 4 for i = 1:3]
+ps = [i // 4 for i in 1:3]
 v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:h}(), zxd)
@@ -33,7 +33,7 @@ rewrite!(Rule{:h}(), zxd, matches)
 
 matches = match(Rule{:i2}(), zxd)
 rewrite!(Rule{:i2}(), zxd, matches)
-@test nv(zxd) == 4 && ne(zxd, count_mul = true) == 4 && ne(zxd) == 3
+@test nv(zxd) == 4 && ne(zxd, count_mul=true) == 4 && ne(zxd) == 3
 
 g = Multigraph(6)
 add_edge!(g, 1, 2)
@@ -48,7 +48,7 @@ v_t = [
     SpiderType.Z,
     SpiderType.Out,
     SpiderType.Out,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:pi}(), zxd)
@@ -64,7 +64,7 @@ v_t = [SpiderType.X, SpiderType.Z, SpiderType.In]
 zxd = ZXDiagram(g, v_t, ps)
 matches = match(Rule{:pi}(), zxd)
 rewrite!(Rule{:pi}(), zxd, matches)
-@test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul = true) == 4
+@test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul=true) == 4
 @test zxd.scalar == Scalar(0, 1 // 2)
 @test !isnothing(zxd)
 
@@ -89,19 +89,19 @@ add_edge!(g, 2, 4)
 add_edge!(g, 3, 4)
 add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
-ps = [0 // 1 for i = 1:6]
+ps = [0 // 1 for i in 1:6]
 v_t = [
     SpiderType.In,
     SpiderType.In,
     SpiderType.X,
     SpiderType.Z,
     SpiderType.Out,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 layout = ZXCalculus.ZX.ZXLayout(
     2,
     Dict(zip(1:6, [1 // 1, 2, 1, 2, 1, 2])),
-    Dict(zip(1:6, [1 // 1, 1, 2, 2, 3, 3])),
+    Dict(zip(1:6, [1 // 1, 1, 2, 2, 3, 3]))
 )
 zxd = ZXDiagram(g, v_t, ps, layout)
 matches = match(Rule{:b}(), zxd)
@@ -124,7 +124,7 @@ st = [
     SpiderType.In,
     SpiderType.In,
     SpiderType.Out,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1, 2], [1, 3], [1, 4], [1, 5], [2, 3]]
@@ -157,7 +157,7 @@ st = [
     SpiderType.In,
     SpiderType.Out,
     SpiderType.In,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
@@ -209,7 +209,7 @@ st = [
     SpiderType.In,
     SpiderType.Out,
     SpiderType.In,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
@@ -240,7 +240,7 @@ st = [
     SpiderType.Out,
     SpiderType.In,
     SpiderType.Out,
-    SpiderType.Out,
+    SpiderType.Out
 ]
 zxg = ZXGraph(ZXDiagram(g, st, ps))
 for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]

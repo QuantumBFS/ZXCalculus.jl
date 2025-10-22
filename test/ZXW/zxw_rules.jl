@@ -1,17 +1,16 @@
 using Test, ZXCalculus, ZXCalculus.ZXW, ZXCalculus.ZX, Graphs
 using Test: match_logs
 using ZXCalculus.ZXW:
-    CalcRule,
-    rewrite!,
-    symbol_vertices,
-    dagger,
-    concat!,
-    expval_circ!,
-    push_gate!,
-    stack_zxwd!,
-    substitute_variables!,
-    insert_spider!
-
+                      CalcRule,
+                      rewrite!,
+                      symbol_vertices,
+                      dagger,
+                      concat!,
+                      expval_circ!,
+                      push_gate!,
+                      stack_zxwd!,
+                      substitute_variables!,
+                      insert_spider!
 
 @testset "Calculus Rule" begin
     deri_rule = CalcRule(:diff, :p)
@@ -40,27 +39,23 @@ end
     @test !has_vertex(zxwd.mg, 10)
     rewrite!(Rule(:s2), zxwd, vs2)
     @test !has_vertex(zxwd.mg, 11)
-
 end
 
 @testset "Parameter Shift" begin
-
     zxwd = ZXWDiagram(2)
 
     a = 0.3
     b = 0.5
 
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
     exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
 
     exp_pluspihf = substitute_variables!(copy(exp_zxwd), Dict(:a => a, :b => b + 1 / 2))
     exp_mnuspihf = substitute_variables!(copy(exp_zxwd), Dict(:a => a, :b => b - 1 / 2))
 
     # should be around -1.8465
-    gradient_parameter_shift =
-        real(π / 2 * (Matrix(exp_pluspihf)[1, 1] - Matrix(exp_mnuspihf)[1, 1]))
-
+    gradient_parameter_shift = real(π / 2 * (Matrix(exp_pluspihf)[1, 1] - Matrix(exp_mnuspihf)[1, 1]))
 
     matches = match(CalcRule(:diff, :b), exp_zxwd)
     diff_zxwd = rewrite!(CalcRule(:diff, :b), exp_zxwd, matches)
@@ -85,7 +80,7 @@ end
     # where k goes from 0 to 2, hence the factor 2 in test
 
     zxwd = ZXWDiagram(1)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
     exp_zxwd = expval_circ!(copy(zxwd), "Z")
 
     matches = match(CalcRule(:int, :a), exp_zxwd)
@@ -93,12 +88,11 @@ end
 
     int_val = real(Matrix(int_zxwd)[1, 1])
 
-    @test isapprox(2 * int_val, 0.0; atol = 1e-10)
-
+    @test isapprox(2 * int_val, 0.0; atol=1e-10)
 
     zxwd = ZXWDiagram(2)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
     exp_zxwd = expval_circ!(copy(zxwd), "IZ")
 
     matches = match(CalcRule(:int, :a), exp_zxwd)
@@ -106,14 +100,13 @@ end
     int_zxwd = substitute_variables!(int_zxwd, Dict(:a => 0.3, :b => 0.0))
     int_val = real(Matrix(int_zxwd)[1, 1])
     # constant, should be 2.0
-    @test isapprox(2 * int_val, 2.0; atol = 1e-10)
+    @test isapprox(2 * int_val, 2.0; atol=1e-10)
 end
 
 @testset "Theorem 23" begin
-
     zxwd = ZXWDiagram(2)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :a; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :a; autoconvert=false)
     exp_zxwd = expval_circ!(copy(zxwd), "ZZ")
 
     matches = match(CalcRule(:int, :a), exp_zxwd)
@@ -123,7 +116,7 @@ end
     # By thm 23, and change of dummy variable, k * pi = alpha
     # we get 1/2 \int_{-1}^{1} ... dk = ZXWDiagram
     # hence the factor of two here
-    @test isapprox(2 * int_val, 1.0; atol = 1e-10)
+    @test isapprox(2 * int_val, 1.0; atol=1e-10)
 end
 
 @testset "Lemma 30 - a" begin
@@ -136,8 +129,8 @@ end
     push_gate!(zxwd, Val(:H), 1)
     push_gate!(zxwd, Val(:H), 2)
     push_gate!(zxwd, Val(:CZ), 1, 2)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
 
     exp_zxwd = expval_circ!(zxwd, "ZZ")
     # essential to take diff here first, not stack then diff
@@ -155,7 +148,7 @@ end
     A = real(
         Matrix(substitute_variables!(copy(dbdiff_zxwd), Dict(:a => a, :b => 0.0)))[1, 1],
     )
-    @test isapprox(int_valb, A / 2; atol = 1e-10)
+    @test isapprox(int_valb, A / 2; atol=1e-10)
 end
 
 @testset "Lemma 30 - b" begin
@@ -164,8 +157,8 @@ end
     push_gate!(zxwd, Val(:H), 1)
     push_gate!(zxwd, Val(:H), 2)
     push_gate!(zxwd, Val(:CZ), 1, 2)
-    push_gate!(zxwd, Val(:X), 1, :a; autoconvert = false)
-    push_gate!(zxwd, Val(:X), 2, :b; autoconvert = false)
+    push_gate!(zxwd, Val(:X), 1, :a; autoconvert=false)
+    push_gate!(zxwd, Val(:X), 2, :b; autoconvert=false)
 
     exp_zxwd = expval_circ!(zxwd, "ZZ")
     matches = match(CalcRule(:diff, :b), exp_zxwd)
@@ -181,5 +174,5 @@ end
     int_vala = real(Matrix(int_dadiff)[1, 1])
 
     A = real(Matrix(substitute_variables!(copy(int_dbdiff), Dict(:a => 0.0)))[1, 1])
-    @test isapprox(int_vala, A / 2; atol = 1e-10)
+    @test isapprox(int_vala, A / 2; atol=1e-10)
 end
