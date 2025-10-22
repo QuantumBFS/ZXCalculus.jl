@@ -39,15 +39,15 @@ end
 end
 
 @testset "scalar.jl" begin
-    include("scalar.jl")
+    include("Utils/scalar.jl")
 end
 
 @testset "phase.jl" begin
-    include("phase.jl")
+    include("Utils/phase.jl")
 end
 
 @testset "parameter.jl" begin
-    include("parameter.jl")
+    include("Utils/parameter.jl")
 end
 
 @testset "simplify.jl" begin
