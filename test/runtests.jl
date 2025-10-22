@@ -2,41 +2,40 @@ using ZXCalculus, Documenter, Test
 using Vega
 using DataFrames
 
-
 @testset "plots.jl" begin
-    include("plots.jl")
+    include("ZX/plots.jl")
 end
 
 @testset "equality.jl" begin
-    include("equality.jl")
+    include("ZX/equality.jl")
 end
 
 @testset "abstract_zx_diagram.jl" begin
-    include("abstract_zx_diagram.jl")
+    include("ZX/abstract_zx_diagram.jl")
 end
 
 @testset "zx_diagram.jl" begin
-    include("zx_diagram.jl")
+    include("ZX/zx_diagram.jl")
 end
 
 @testset "rules.jl" begin
-    include("rules.jl")
+    include("ZX/rules.jl")
 end
 
 @testset "zx_graph.jl" begin
-    include("zx_graph.jl")
+    include("ZX/zx_graph.jl")
 end
 
 @testset "circuit_extraction.jl" begin
-    include("circuit_extraction.jl")
+    include("ZX/circuit_extraction.jl")
 end
 
 @testset "phase_teleportation.jl" begin
-    include("phase_teleportation.jl")
+    include("ZX/phase_teleportation.jl")
 end
 
 @testset "ir.jl" begin
-    include("ir.jl")
+    include("ZX/ir.jl")
 end
 
 @testset "scalar.jl" begin
@@ -52,12 +51,12 @@ end
 end
 
 @testset "simplify.jl" begin
-    include("simplify.jl")
+    include("ZX/simplify.jl")
 end
 
 @testset "ancilla_extraction.jl" begin
-    include("ancilla_extraction.jl")
-    include("challenge.jl")
+    include("ZX/ancilla_extraction.jl")
+    include("ZX/challenge.jl")
 end
 
 @testset "zxw_diagram.jl" begin
@@ -83,7 +82,6 @@ end
 @testset "ZW Diagram Utilities" begin
     include("zw_utils.jl")
 end
-
 
 @testset "to_eincode.jl" begin
     include("to_eincode.jl")
