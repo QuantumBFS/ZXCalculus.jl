@@ -2,7 +2,7 @@ using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
 using ZXCalculus: ZX
 
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
-ps = [Rational(0) for i ∈ 1:3]
+ps = [Rational(0) for i in 1:3]
 v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 zxd2 = ZXDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
@@ -45,7 +45,7 @@ push_gate!(zxd3, Val{:SWAP}(), [2, 3])
     push_gate!(zxd, Val(:Z), 3, 0)
     @test zxd.ps[11] == 0 // 1
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
-    @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert = false)
+    @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
     @test ZX.safe_convert(Rational{Int64}, 1.2) == 6 // 5 &&
           ZX.safe_convert(Rational{Int64}, 1 // 2) == 1 // 2
     @test !isnothing(zxd)

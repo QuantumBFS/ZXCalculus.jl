@@ -52,7 +52,6 @@ using ZXCalculus.Utils: Parameter
 end
 
 @testset "io" begin
-
     io = IOBuffer()
     p1 = Parameter(Val(:PiUnit), 1.0)
     show(io, p1)
@@ -76,7 +75,6 @@ end
     f1 = Parameter(Val(:Factor), π)
     f2 = Parameter(Val(:Factor), 1)
 
-
     @test p1 == p2
     @test p3 == p3
     @test p3 != p4
@@ -96,9 +94,6 @@ end
     @test contains(p3, :a)
     @test !contains(p3, :b)
 end
-
-
-
 
 @testset "addition" begin
     p1 = Parameter(Val(:PiUnit), 1.0)
@@ -121,7 +116,6 @@ end
 
     @test p2 + f1 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
     @test f1 + p2 == Parameter(Val(:Factor), exp(im * 2 * π) * 1)
-
 end
 
 @testset "subtraction" begin
@@ -131,7 +125,6 @@ end
     p4 = Parameter(Val(:PiUnit), :b)
     f1 = Parameter(Val(:Factor), 1)
     f2 = Parameter(Val(:Factor), 2.5)
-
 
     @test p1 - p2 == Parameter(Val(:PiUnit), -1.0)
     @test p1 - 2 == Parameter(Val(:PiUnit), -1.0)
@@ -156,5 +149,4 @@ end
 
     f1 = Parameter(Val(:Factor), 13)
     @test Base.rem(f1, 12) == Parameter(Val(:Factor), 1)
-
 end

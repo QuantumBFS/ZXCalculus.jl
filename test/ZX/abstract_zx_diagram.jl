@@ -2,10 +2,9 @@ using Test, Graphs, ZXCalculus, ZXCalculus.ZX
 using ZXCalculus.Utils: Phase
 using ZXCalculus: ZX
 
+struct TestZXDiagram{T, P} <: AbstractZXDiagram{T, P} end
 
-struct TestZXDiagram{T,P} <: AbstractZXDiagram{T,P} end
-
-test_zxd = TestZXDiagram{Int,Phase}();
+test_zxd = TestZXDiagram{Int, Phase}();
 
 @test_throws MethodError Graphs.nv(test_zxd)
 @test_throws MethodError Graphs.ne(test_zxd)

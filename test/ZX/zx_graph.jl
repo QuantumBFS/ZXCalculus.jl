@@ -7,7 +7,7 @@ add_edge!(g, 2, 4)
 add_edge!(g, 3, 4)
 add_edge!(g, 3, 5)
 add_edge!(g, 4, 6)
-ps = [0 // 1 for i = 1:6]
+ps = [0 // 1 for i in 1:6]
 v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
 zxd = ZXDiagram(g, v_t, ps)
 zxg1 = ZXGraph(zxd)
@@ -21,7 +21,6 @@ zxg1 = ZXGraph(zxd)
 replace!(Rule{:b}(), zxd)
 zxg2 = ZXGraph(zxd)
 @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
-
 
 @testset "push gates into Diagram then plot ZXGraph" begin
     zxd = ZXDiagram(2)
