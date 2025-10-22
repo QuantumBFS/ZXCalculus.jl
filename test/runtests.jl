@@ -84,7 +84,7 @@ end
 end
 
 @testset "to_eincode.jl" begin
-    include("to_eincode.jl")
+    include("Application/to_eincode.jl")
 end
 
 doctest(ZXCalculus)
