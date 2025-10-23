@@ -1,6 +1,7 @@
 using Test
 using ZXCalculus.Utils: AbstractPhase, Phase,
-                        is_zero_phase, is_pauli_phase, is_clifford_phase, round_phase
+                        is_zero_phase, is_one_phase, is_pauli_phase,
+                        is_half_integer_phase, is_clifford_phase, round_phase
 
 @testset "AbstractPhase" begin
     struct MyPhase <: AbstractPhase end
@@ -10,7 +11,9 @@ using ZXCalculus.Utils: AbstractPhase, Phase,
     @test_throws MethodError Base.one(p)
     @test_throws MethodError Base.one(MyPhase)
     @test_throws MethodError is_zero_phase(p)
+    @test_throws MethodError is_one_phase(p)
     @test_throws MethodError is_pauli_phase(p)
+    @test_throws MethodError is_half_integer_phase(p)
     @test_throws MethodError is_clifford_phase(p)
     @test_throws MethodError round_phase(p)
 end
