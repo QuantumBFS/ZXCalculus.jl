@@ -1,5 +1,5 @@
 module EdgeType
-    @enum EType SIM HAD
+@enum EType SIM HAD
 end
 
 """
@@ -7,7 +7,7 @@ end
 
 This is the type for representing the graph-like ZX-diagrams.
 """
-struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
+struct ZXGraph{T <: Integer, P} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
     ps::Dict{T, P}
@@ -15,19 +15,23 @@ struct ZXGraph{T<:Integer, P} <: AbstractZXDiagram{T, P}
     et::Dict{Tuple{T, T}, EdgeType.EType}
 
     layout::ZXLayout{T}
-    phase_ids::Dict{T,Tuple{T, Int}}
+
+    # TODO: phase ids for phase teleportation only
+    # maps a vertex id to its master id and scalar multiplier
+    phase_ids::Dict{T, Tuple{T, Int}}
 
     scalar::Scalar{P}
     master::ZXDiagram{T, P}
+    # TODO: decouple input/output
     inputs::Vector{T}
     outputs::Vector{T}
 end
 
 function Base.copy(zxg::ZXGraph{T, P}) where {T, P}
-    ZXGraph{T, P}(
+    return ZXGraph{T, P}(
         copy(zxg.mg), copy(zxg.ps),
         copy(zxg.st), copy(zxg.et), copy(zxg.layout),
-        deepcopy(zxg.phase_ids), copy(zxg.scalar), 
+        deepcopy(zxg.phase_ids), copy(zxg.scalar),
         copy(zxg.master), copy(zxg.inputs), copy(zxg.outputs)
     )
 end
@@ -40,7 +44,8 @@ Convert a ZX-diagram to graph-like ZX-diagram.
 ```jldoctest
 julia> using ZXCalculus.ZX
 
-julia> zxd = ZXDiagram(2); push_gate!(zxd, Val{:CNOT}(), 2, 1);
+julia> zxd = ZXDiagram(2);
+       push_gate!(zxd, Val{:CNOT}(), 2, 1);
 
 julia> zxg = ZXGraph(zxd)
 ZX-graph with 6 vertices and 5 edges:
@@ -49,7 +54,6 @@ ZX-graph with 6 vertices and 5 edges:
 (S_3{input} <-> S_6{phase = 0//1⋅π})
 (S_4{output} <-> S_6{phase = 0//1⋅π})
 (S_5{phase = 0//1⋅π} <-> S_6{phase = 0//1⋅π})
-
 ```
 """
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
@@ -86,14 +90,15 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
             push!(vB, v)
         end
     end
-    eH = [(neighbors(nzxd, v, count_mul = true)[1], neighbors(nzxd, v, count_mul = true)[2]) for v in vH]
+    eH = [(neighbors(nzxd, v, count_mul=true)[1], neighbors(nzxd, v, count_mul=true)[2]) for v in vH]
 
     rem_spiders!(nzxd, vH)
     et = Dict{Tuple{T, T}, EdgeType.EType}()
     for e in edges(nzxd.mg)
         et[(src(e), dst(e))] = EdgeType.SIM
     end
-    zxg = ZXGraph{T, P}(nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
+    zxg = ZXGraph{T, P}(
+        nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
 
     for e in eH
         v1, v2 = e
@@ -120,7 +125,7 @@ function Graphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     return false
 end
 
-function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType = EdgeType.HAD)
+function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType=EdgeType.HAD)
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
             if edge_type == EdgeType.HAD
@@ -180,7 +185,7 @@ function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
             c_loc = ceil(column_loc(zxg, nb) - 2)
         end
     end
-    !isnothing(c_loc)  && return c_loc
+    !isnothing(c_loc) && return c_loc
     return 0
 end
 
@@ -208,7 +213,8 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
-function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P), connect::Vector{T}=T[]) where {T<:Integer, P}
+function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P), connect::Vector{T}=T[]) where {
+        T <: Integer, P}
     v = add_vertex!(zxg.mg)[1]
     set_phase!(zxg, v, phase)
     zxg.st[v] = st
@@ -222,7 +228,7 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P = zero(P
     end
     return v
 end
-function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P = zero(P)) where {T<:Integer, P}
+function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P=zero(P)) where {T <: Integer, P}
     v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
     return v
@@ -230,10 +236,10 @@ end
 
 tcount(cir::ZXGraph) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
 
-function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
+function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T <: Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color = :green)
+        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
     elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
     elseif st_v == SpiderType.Out
@@ -241,16 +247,16 @@ function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T<:Integer}
     end
 end
 
-function Base.show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
+function Base.show(io::IO, zxg::ZXGraph{T}) where {T <: Integer}
     println(io, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges:")
     vs = sort!(spiders(zxg))
-    for i = 1:length(vs)
-        for j = i+1:length(vs)
+    for i in 1:length(vs)
+        for j in (i + 1):length(vs)
             if has_edge(zxg, vs[i], vs[j])
                 print(io, "(")
                 print_spider(io, zxg, vs[i])
                 if is_hadamard(zxg, vs[i], vs[j])
-                    printstyled(io, " <-> "; color = :blue)
+                    printstyled(io, " <-> "; color=:blue)
                 else
                     print(io, " <-> ")
                 end
@@ -261,7 +267,7 @@ function Base.show(io::IO, zxg::ZXGraph{T}) where {T<:Integer}
     end
 end
 
-function round_phases!(zxg::ZXGraph{T, P}) where {T<:Integer, P}
+function round_phases!(zxg::ZXGraph{T, P}) where {T <: Integer, P}
     ps = zxg.ps
     for v in keys(ps)
         while ps[v] < 0
@@ -298,17 +304,17 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
     if nbits > 0
         vs = spiders(zxg)
         spider_seq = Vector{Vector{T}}(undef, nbits)
-        for q = 1:nbits
+        for q in 1:nbits
             spider_seq[q] = Vector{T}()
         end
         for v in vs
-          if !isnothing(qubit_loc(zxg, v))
+            if !isnothing(qubit_loc(zxg, v))
                 q_loc = Int(qubit_loc(zxg, v))
                 q_loc > 0 && push!(spider_seq[q_loc], v)
             end
         end
-        for q = 1:nbits
-            sort!(spider_seq[q], by = (v -> column_loc(zxg, v)))
+        for q in 1:nbits
+            sort!(spider_seq[q], by=(v -> column_loc(zxg, v)))
         end
         return spider_seq
     end
@@ -319,11 +325,11 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
     nbits = length(zxg.inputs)
     vs_frontier = copy(zxg.inputs)
     vs_generated = Set(vs_frontier)
-    for i = 1:nbits
+    for i in 1:nbits
         set_qubit!(layout, vs_frontier[i], i)
         set_column!(layout, vs_frontier[i], 1//1)
     end
-    
+
     curr_col = 1//1
 
     while !(isempty(vs_frontier))
@@ -336,7 +342,7 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
                 end
             end
         end
-        for i = 1:length(vs_frontier)
+        for i in 1:length(vs_frontier)
             v = vs_frontier[i]
             set_loc!(layout, v, i, curr_col)
             push!(vs_generated, v)
@@ -358,11 +364,11 @@ function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
             push!(vs_generated, v)
         end
     end
-    for q = 1:length(zxg.outputs)
+    for q in 1:length(zxg.outputs)
         set_loc!(layout, zxg.outputs[q], q, curr_col + 1)
         set_loc!(layout, neighbors(zxg, zxg.outputs[q])[1], q, curr_col)
     end
-    for q = 1:length(zxg.inputs)
+    for q in 1:length(zxg.inputs)
         set_qubit!(layout, neighbors(zxg, zxg.inputs[q])[1], q)
     end
     return layout
@@ -380,6 +386,6 @@ function add_power!(zxg::ZXGraph, n)
     return zxg
 end
 
-
-plot(zxd::ZXGraph{T, P}; kwargs...) where {T, P} =
-    error("missing extension, please use Vega with 'using Vega, DataFrames'")
+function plot(zxd::ZXGraph{T, P}; kwargs...) where {T, P}
+    return error("missing extension, please use Vega with 'using Vega, DataFrames'")
+end
