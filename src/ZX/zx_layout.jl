@@ -3,14 +3,16 @@
 
 A struct for the layout information of `ZXDiagram` and `ZXGraph`.
 """
-struct ZXLayout{T<:Integer}
+struct ZXLayout{T <: Integer}
     nbits::Int
     spider_q::Dict{T, Rational{Int}}
     spider_col::Dict{T, Rational{Int}}
 end
 
-ZXLayout(nbits::Integer, spider_q::Dict{T, Rational{Int}}, spider_col::Dict{T, Rational{Int}}) where {T} = ZXLayout{T}(Int(nbits), spider_q, spider_col)
-ZXLayout{T}() where {T} = ZXLayout(0, Dict{T, Rational{Int}}(), Dict{T, Rational{Int}}())
+function ZXLayout(nbits::Integer, spider_q::Dict{T, Rational{Int}}, spider_col::Dict{T, Rational{Int}}) where {T}
+    return ZXLayout{T}(Int(nbits), spider_q, spider_col)
+end
+ZXLayout{T}(nbits::Integer=0) where {T} = ZXLayout(nbits, Dict{T, Rational{Int}}(), Dict{T, Rational{Int}}())
 
 Base.copy(layout::ZXLayout) = ZXLayout(layout.nbits, copy(layout.spider_q), copy(layout.spider_col))
 function Graphs.rem_vertex!(layout::ZXLayout{T}, v::T) where {T}

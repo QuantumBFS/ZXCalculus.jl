@@ -294,8 +294,8 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     return false
 end
 
-get_outputs(zxg::ZXGraph) = zxg.outputs
-get_inputs(zxg::ZXGraph) = zxg.inputs
+get_inputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In]
+get_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
 
 # TODO: remove it?
 function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
@@ -320,7 +320,11 @@ function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
 end
 
 function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
-    circ = ZXCircuit{T, P}(zxg, copy(zxg.inputs), copy(zxg.outputs), copy(zxg.layout))
+    inputs = get_inputs(zxg)
+    outputs = get_outputs(zxg)
+    nbits = max(length(inputs), length(outputs))
+    layout = ZXLayout{T}(nbits)
+    circ = ZXCircuit{T, P}(zxg, inputs, outputs, layout)
     return generate_layout!(circ)
 end
 
