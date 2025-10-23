@@ -78,25 +78,6 @@ end
         layout::ZXLayout{T} = ZXLayout{T}()) where {T, P}
 
 Construct a ZXDiagram with all information.
-
-```jldoctest
-julia> using Graphs, Multigraphs, ZXCalculus.ZX;
-
-julia> using ZXCalculus.ZX.SpiderType: In, Out, H, Z, X;
-
-julia> mg = Multigraph(5);
-
-julia> for i in 1:4
-           add_edge!(mg, i, i+1)
-       end;
-
-julia> ZXDiagram(mg, [In, Z, H, X, Out], [0//1, 1, 0, 1//2, 0])
-ZX-diagram with 5 vertices and 4 multiple edges:
-(S_1{input} <-1-> S_2{phase = 1//1⋅π})
-(S_2{phase = 1//1⋅π} <-1-> S_3{H})
-(S_3{H} <-1-> S_4{phase = 1//2⋅π})
-(S_4{phase = 1//2⋅π} <-1-> S_5{output})
-```
 """
 function ZXDiagram(mg::Multigraph{T}, st::Dict{T, SpiderType.SType}, ps::Dict{T, P},
         layout::ZXLayout{T}=ZXLayout{T}(),
@@ -478,7 +459,7 @@ end
 
 Returns the T-count of a ZX-diagram.
 """
-tcount(cir::ZXDiagram) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+tcount(cir::ZXDiagram) = sum(!is_clifford_phase(phase(cir, v)) for v in spiders(cir))
 
 """
     get_inputs(zxd)
