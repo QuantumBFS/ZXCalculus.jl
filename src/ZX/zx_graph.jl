@@ -131,11 +131,13 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Edg
             return true
         else
             if has_edge(zxg, v1, v2)
-                if is_hadamard(zxg, v1, v2)
+                if is_hadamard(zxg, v1, v2) && edge_type == EdgeType.HAD
                     add_power!(zxg, -2)
                     return rem_edge!(zxg, v1, v2)
+                elseif !is_hadamard(zxg, v1, v2) && edge_type == EdgeType.SIM
+                    return true
                 else
-                    return false
+                    error("edge between $v1 and $v2 already exists with different type")
                 end
             elseif add_edge!(zxg.mg, v1, v2)
                 zxg.et[(min(v1, v2), max(v1, v2))] = edge_type
@@ -147,6 +149,8 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::Edg
 end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
+edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1, v2))]
+
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     if has_vertex(zxg.mg, v)
@@ -189,6 +193,8 @@ function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
         src = min(v1, v2)
         dst = max(v1, v2)
         return zxg.et[(src, dst)] == EdgeType.HAD
+    else
+        error("no edge between $v1 and $v2")
     end
     return false
 end

@@ -304,7 +304,7 @@ function update_frontier!(
             delete!(qubit_map, v)
             for j in 1:length(frontier)
                 for k in (j + 1):length(frontier)
-                    if is_hadamard(zxg, frontier[j], frontier[k])
+                    if has_edge(zxg, frontier[j], frontier[k]) && is_hadamard(zxg, frontier[j], frontier[k])
                         pushfirst_gate!(cir, Val(:CZ), qubit_map[frontier[j]], qubit_map[frontier[k]])
                         rem_edge!(zxg, frontier[j], frontier[k])
                     end
