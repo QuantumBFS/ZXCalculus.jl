@@ -73,8 +73,8 @@ function ancilla_extraction(zxg::ZXGraph)
         pushfirst_gate!(circ, Val(:CNOT), step.r1, step.r2)
     end
 
-    simplify!(Rule(:i1), circ)
-    simplify!(Rule(:i2), circ)
+    simplify!(Identity1Rule(), circ)
+    simplify!(Identity2Rule(), circ)
     return circ
 end
 
