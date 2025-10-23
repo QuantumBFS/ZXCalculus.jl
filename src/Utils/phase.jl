@@ -6,7 +6,8 @@ Base.one(p::AbstractPhase) = throw(MethodError(Base.one, p))
 Base.one(p::Type{<:AbstractPhase}) = throw(MethodError(Base.one, typeof(p)))
 
 is_zero_phase(p::AbstractPhase)::Bool = throw(MethodError(is_zero_phase, p))
-is_pauli_phase(p::AbstractPhase)::Bool = throw(MethodError(is_pauli_phase, p))
+is_one_phase(p::AbstractPhase)::Bool = throw(MethodError(is_one_phase, p))
+is_pauli_phase(p::AbstractPhase)::Bool = is_zero_phase(p) || is_one_phase(p)
 is_clifford_phase(p::AbstractPhase)::Bool = throw(MethodError(is_clifford_phase, p))
 function round_phase(p::P)::P where {P <: AbstractPhase}
     throw(MethodError(round_phase, p))
@@ -102,12 +103,6 @@ Base.:(==)(p1::Phase, p2::Number) = (p1 == Phase(p2))
 Base.:(==)(p1::Number, p2::Phase) = (Phase(p1) == p2)
 
 Base.isless(p1::Phase, p2::Number) = (p1.ex isa Number) && p1.ex < p2
-function Base.rem(p::Phase, d::Number)
-    if p.ex isa Number
-        return Phase(rem(p.ex, d))
-    end
-    return p
-end
 
 Base.convert(::Type{Phase}, p) = Phase(p)
 Base.convert(::Type{Phase}, p::Phase) = p
@@ -117,7 +112,16 @@ Base.zero(::Type{Phase}) = Phase(0//1)
 Base.one(::Phase) = Phase(1//1)
 Base.one(::Type{Phase}) = Phase(1//1)
 
-is_zero_phase(p::Phase) = (p.ex isa Number) && (-1)^p.ex > 0
+is_zero_phase(p::Phase) = (p.ex isa Number) && iszero(rem(p.ex, 2, RoundDown))
+is_one_phase(p::Phase) = (p.ex isa Number) && isone(rem(p.ex, 2, RoundDown))
+is_pauli_phase(p::Phase) = is_zero_phase(p) || is_one_phase(p) || (p.type <: Integer)
+is_clifford_phase(p::Phase) = (p.ex isa Number) && (rem(p.ex, 1//2, RoundDown) == 0)
+function round_phase(p::Phase)
+    if p.ex isa Number
+        return Phase(rem(p.ex, 2, RoundDown))
+    end
+    return p
+end
 
 unwrap_phase(p::Phase) = p.ex * π
 unwrap_phase(p::Number) = p
