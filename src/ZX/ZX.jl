@@ -6,7 +6,8 @@ using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
 using ..Utils: AbstractPhase, Phase,
-               is_zero_phase, is_pauli_phase, is_clifford_phase, round_phase
+               is_zero_phase, is_one_phase, is_pauli_phase,
+               is_half_integer_phase, is_clifford_phase, round_phase
 
 import ..Utils: Scalar,
                 add_phase!, add_power!
