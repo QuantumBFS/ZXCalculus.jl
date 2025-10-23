@@ -21,6 +21,8 @@ function Graphs.rem_vertex!(layout::ZXLayout{T}, v::T) where {T}
     return
 end
 
+nqubits(layout::ZXLayout) = layout.nbits
+
 """
     qubit_loc(layout, v)
 

@@ -203,10 +203,6 @@ end
 for (e, _) in es
     Graphs.add_edge!(zxg, e[1], e[2])
 end
-for i in 1:5
-    push!(zxg.inputs, i)
-    push!(zxg.outputs, i+23)
-end
 
 @test !isnothing(plot(zxg))
 ZX.ancilla_extraction(zxg)

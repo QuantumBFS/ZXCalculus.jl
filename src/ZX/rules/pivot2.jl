@@ -101,6 +101,5 @@ function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     zxg.phase_ids[gad] = phase_id_u
     zxg.phase_ids[v] = (v, 1)
 
-    rem_vertex!(zxg.layout, v)
     return zxg
 end

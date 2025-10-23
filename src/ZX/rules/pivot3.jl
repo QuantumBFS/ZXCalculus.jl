@@ -106,8 +106,6 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     zxg.phase_ids[u] = phase_id_v
     zxg.phase_ids[v] = (v, 1)
 
-    rem_vertex!(zxg.layout, v)
-
     if is_hadamard(zxg, u, bd_u)
         rem_edge!(zxg, u, bd_u)
         add_edge!(zxg, u, bd_u, EdgeType.SIM)

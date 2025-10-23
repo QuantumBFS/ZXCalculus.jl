@@ -14,25 +14,20 @@ struct ZXGraph{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
     st::Dict{T, SpiderType.SType}
     et::Dict{Tuple{T, T}, EdgeType.EType}
 
-    layout::ZXLayout{T}
-
     # TODO: phase ids for phase teleportation only
     # maps a vertex id to its master id and scalar multiplier
     phase_ids::Dict{T, Tuple{T, Int}}
 
     scalar::Scalar{P}
     master::ZXDiagram{T, P}
-    # TODO: decouple input/output
-    inputs::Vector{T}
-    outputs::Vector{T}
 end
 
 function Base.copy(zxg::ZXGraph{T, P}) where {T, P}
     return ZXGraph{T, P}(
         copy(zxg.mg), copy(zxg.ps),
-        copy(zxg.st), copy(zxg.et), copy(zxg.layout),
+        copy(zxg.st), copy(zxg.et),
         deepcopy(zxg.phase_ids), copy(zxg.scalar),
-        copy(zxg.master), copy(zxg.inputs), copy(zxg.outputs)
+        copy(zxg.master)
     )
 end
 
@@ -98,7 +93,8 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
         et[(src(e), dst(e))] = EdgeType.SIM
     end
     zxg = ZXGraph{T, P}(
-        nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.layout, nzxd.phase_ids, nzxd.scalar, zxd, nzxd.inputs, nzxd.outputs)
+        nzxd.mg, nzxd.ps, nzxd.st, et,
+        nzxd.phase_ids, nzxd.scalar, zxd)
 
     for e in eH
         v1, v2 = e
@@ -162,11 +158,11 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     end
     return false
 end
-nqubits(zxg::ZXGraph) = zxg.layout.nbits
 
-qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(zxg.layout, v)
+nqubits(zxg::ZXGraph) = nqubits(generate_layout!(zxg))
+qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(generate_layout!(zxg), v)
 function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
-    c_loc = column_loc(zxg.layout, v)
+    c_loc = column_loc(generate_layout!(zxg), v)
     if !isnothing(c_loc)
         if spider_type(zxg, v) == SpiderType.Out
             nb = neighbors(zxg, v)
@@ -204,7 +200,6 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
             delete!(zxg.phase_ids, v)
-            rem_vertex!(zxg.layout, v)
         end
         return true
     end
