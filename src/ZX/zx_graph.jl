@@ -7,7 +7,7 @@ end
 
 This is the type for representing the graph-like ZX-diagrams.
 """
-struct ZXGraph{T <: Integer, P} <: AbstractZXDiagram{T, P}
+struct ZXGraph{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
     ps::Dict{T, P}
@@ -157,8 +157,7 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
         while p < 0
             p += 2
         end
-        p = rem(p, 2)
-        zxg.ps[v] = p
+        zxg.ps[v] = round_phase(p)
         return true
     end
     return false
@@ -273,7 +272,7 @@ function round_phases!(zxg::ZXGraph{T, P}) where {T <: Integer, P}
         while ps[v] < 0
             ps[v] += 2
         end
-        ps[v] = rem(ps[v], 2)
+        ps[v] = round_phase(ps[v])
     end
 end
 

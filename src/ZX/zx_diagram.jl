@@ -7,7 +7,7 @@ end  # module SpiderType
 
 This is the type for representing ZX-diagrams.
 """
-struct ZXDiagram{T <: Integer, P} <: AbstractZXDiagram{T, P}
+struct ZXDiagram{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
 
     st::Dict{T, SpiderType.SType}
@@ -168,8 +168,7 @@ function set_phase!(zxd::ZXDiagram{T, P}, v::T, p::P) where {T, P}
         while p < 0
             p += 2
         end
-        p = rem(p, 2)
-        zxd.ps[v] = p
+        zxd.ps[v] = round_phase(p)
         return true
     end
     return false
@@ -327,7 +326,7 @@ function round_phases!(zxd::ZXDiagram{T, P}) where {T <: Integer, P}
         while ps[v] < 0
             ps[v] += 2
         end
-        ps[v] = rem(ps[v], 2)
+        ps[v] = round_phase(ps[v])
     end
     return
 end
