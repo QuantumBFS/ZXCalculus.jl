@@ -225,7 +225,7 @@ function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
 
     for v1 in vs
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-           (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
+           (degree(zxg, v1)) > 1 && !is_clifford_phase(phase(zxg, v1)) &&
            length(neighbors(zxg, v1)) > 1 && v1 ∉ v_matched
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z &&
@@ -262,7 +262,7 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
 
     for v1 in vB
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) > 0 &&
-           (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1 &&
+           !is_clifford_phase(phase(zxg, v1)) && length(neighbors(zxg, v1)) > 1 &&
            v1 ∉ v_matched
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
@@ -708,7 +708,7 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-           (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
+           (degree(zxg, v1)) > 1 && !is_clifford_phase(phase(zxg, v1)) &&
            length(neighbors(zxg, v1)) > 1
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
@@ -776,7 +776,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-           (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1
+           !is_clifford_phase(phase(zxg, v1)) && length(neighbors(zxg, v1)) > 1
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                    (phase(zxg, v2) in (0, 1))

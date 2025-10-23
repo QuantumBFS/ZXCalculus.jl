@@ -5,7 +5,7 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using ..Utils: Phase,
+using ..Utils: AbstractPhase, Phase,
                is_zero_phase, is_pauli_phase, is_clifford_phase, round_phase
 
 import ..Utils: Scalar,
@@ -41,4 +41,5 @@ include("phase_teleportation.jl")
 include("ir.jl")
 
 include("equality.jl")
+
 end
