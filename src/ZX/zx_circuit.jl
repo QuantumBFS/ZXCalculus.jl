@@ -53,9 +53,9 @@ function generate_layout!(circ::ZXCircuit{T, P}) where {T, P}
             push!(vs_generated, v)
         end
     end
-    for q in 1:length(zxg.outputs)
-        set_loc!(layout, zxg.outputs[q], q, curr_col + 1)
-        set_loc!(layout, neighbors(zxg, zxg.outputs[q])[1], q, curr_col)
+    for q in 1:length(outputs)
+        set_loc!(layout, outputs[q], q, curr_col + 1)
+        set_loc!(layout, neighbors(zxg, outputs[q])[1], q, curr_col)
     end
     for q in 1:length(inputs)
         set_qubit!(layout, neighbors(zxg, inputs[q])[1], q)
