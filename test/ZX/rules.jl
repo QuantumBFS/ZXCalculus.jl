@@ -1,10 +1,12 @@
-using Test, ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
+using Test
+using ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
 using ZXCalculus: ZX
+using ZXCalculus.Utils: Phase
 
 @testset "Rule{:f}" begin
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     collect(edges(g))
-    ps = [i // 4 for i in 1:3]
+    ps = [Phase(i // 4) for i in 1:3]
     v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:f}(), zxd)
@@ -17,7 +19,7 @@ end
 @testset "Rule{:i1}" begin
     g = Multigraph(path_graph(5))
     add_edge!(g, 1, 2)
-    ps = [1, 0 // 1, 0, 0, 1]
+    ps = [Phase(1), Phase(3 // 1), Phase(0), Phase(0), Phase(1)]
     v_t = [SpiderType.X, SpiderType.X, SpiderType.Z, SpiderType.Z, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:i1}(), zxd)
@@ -28,7 +30,7 @@ end
 
 @testset "Rule{:h} and Rule{:i2}" begin
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
-    ps = [i // 4 for i in 1:3]
+    ps = [Phase(i // 4) for i in 1:3]
     v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:h}(), zxd)
@@ -48,7 +50,7 @@ end
     add_edge!(g, 3, 4)
     add_edge!(g, 3, 5)
     add_edge!(g, 3, 6)
-    ps = [0, 1, 1 // 2, 0, 0, 0]
+    ps = [Phase(0), Phase(1), Phase(1 // 2), Phase(0), Phase(0), Phase(0)]
     v_t = [
         SpiderType.In,
         SpiderType.X,
@@ -66,7 +68,7 @@ end
     # @test !isnothing(zxd)
 
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
-    ps = [1, 1 // 2, 0]
+    ps = [Phase(1), Phase(1 // 2), Phase(0)]
     v_t = [SpiderType.X, SpiderType.Z, SpiderType.In]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:pi}(), zxd)
@@ -82,7 +84,7 @@ end
     add_edge!(g, 2, 3, 2)
     add_edge!(g, 2, 4)
     add_edge!(g, 2, 5)
-    ps = [0, 1 // 2, 0, 0, 0]
+    ps = [Phase(0), Phase(1 // 2), Phase(0), Phase(0), Phase(0)]
     v_t = [SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     matches = match(Rule{:c}(), zxd)
@@ -100,7 +102,7 @@ end
     add_edge!(g, 3, 4)
     add_edge!(g, 3, 5)
     add_edge!(g, 4, 6)
-    ps = [0 // 1 for i in 1:6]
+    ps = [Phase(0 // 1) for i in 1:6]
     v_t = [
         SpiderType.In,
         SpiderType.In,
@@ -127,7 +129,7 @@ end
     for e in [[2, 6], [3, 7], [4, 8], [5, 9]]
         add_edge!(g, e[1], e[2])
     end
-    ps = [1 // 2, 0, 1 // 4, 1 // 2, 3 // 4, 0, 0, 0, 0]
+    ps = [Phase(1 // 2), Phase(0), Phase(1 // 4), Phase(1 // 2), Phase(3 // 4), Phase(0), Phase(0), Phase(0), Phase(0)]
     st = [
         SpiderType.Z,
         SpiderType.Z,
@@ -149,13 +151,14 @@ end
           phase(zxg, 3) == 7 // 4 &&
           phase(zxg, 4) == 0 // 1 &&
           phase(zxg, 5) == 1 // 4
-    @test !isnothing(zxd)
+    @test !isnothing(zxg)
 
     g = Multigraph(14)
     for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14]]
         add_edge!(g, e[1], e[2])
     end
-    ps = [1 // 1, 0, 1 // 4, 1 // 2, 3 // 4, 1, 5 // 4, 3 // 2, 0, 0, 0, 0, 0, 0]
+    ps = [Phase(1 // 1), Phase(0), Phase(1 // 4), Phase(1 // 2), Phase(3 // 4), Phase(1),
+        Phase(5 // 4), Phase(3 // 2), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0)]
     st = [
         SpiderType.Z,
         SpiderType.Z,
@@ -193,7 +196,7 @@ end
     for e in [[2, 6]]
         add_edge!(g, e[1], e[2])
     end
-    ps = [1 // 1, 1 // 4, 1 // 2, 3 // 4, 1, 0]
+    ps = [Phase(1 // 1), Phase(1 // 4), Phase(1 // 2), Phase(3 // 4), Phase(1), Phase(0)]
     st = [SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.Z, SpiderType.In]
     zxg = ZXGraph(ZXDiagram(g, st, ps))
     for e in [[1, 2], [2, 3], [1, 4], [1, 5]]
@@ -209,7 +212,8 @@ end
     for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14]]
         add_edge!(g, e[1], e[2])
     end
-    ps = [1 // 1, 1 // 4, 1 // 4, 1 // 2, 3 // 4, 1, 5 // 4, 3 // 2, 0, 0, 0, 0, 0, 0]
+    ps = [Phase(1 // 1), Phase(1 // 4), Phase(1 // 4), Phase(1 // 2), Phase(3 // 4), Phase(1),
+        Phase(5 // 4), Phase(3 // 2), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0)]
     st = [
         SpiderType.Z,
         SpiderType.Z,
@@ -241,7 +245,8 @@ end
     for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14], [2, 15]]
         add_edge!(g, e[1], e[2])
     end
-    ps = [1 // 1, 1 // 4, 1 // 2, 1 // 2, 3 // 2, 1, 1 // 2, 3 // 2, 0, 0, 0, 0, 0, 0, 0, 0]
+    ps = [Phase(1 // 1), Phase(1 // 4), Phase(1 // 2), Phase(1 // 2), Phase(3 // 2), Phase(1), Phase(1 // 2),
+        Phase(3 // 2), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0), Phase(0)]
     st = [
         SpiderType.Z,
         SpiderType.Z,

@@ -2,7 +2,7 @@ using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
 using ZXCalculus: ZX
 
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
-ps = [Rational(0) for i in 1:3]
+ps = [Phase(0 // 1) for i in 1:3]
 v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
 zxd2 = ZXDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
@@ -18,7 +18,7 @@ zxd2 = copy(zxd)
 @test rem_edge!(zxd, 2, 3)
 @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
 
-ZX.add_spider!(zxd, SpiderType.H, 0 // 1, [2, 3])
+ZX.add_spider!(zxd, SpiderType.H, Phase(0 // 1), [2, 3])
 ZX.insert_spider!(zxd, 2, 4, SpiderType.H)
 @test nv(zxd) == 5 && ne(zxd) == 4
 
