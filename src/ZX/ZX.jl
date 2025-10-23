@@ -5,12 +5,14 @@ using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
 using YaoLocations: plain
 using MLStyle
-using ..Utils: Scalar, Phase, add_phase!
+using ..Utils: Phase,
+               is_zero_phase, is_pauli_phase, is_clifford_phase, round_phase
 
-import ..Utils: add_power!
+import ..Utils: Scalar,
+                add_phase!, add_power!
 
 export spiders,
-    tcount, spider_type, phase, rem_spider!, rem_spiders!, pushfirst_gate!, push_gate!
+       tcount, spider_type, phase, rem_spider!, rem_spiders!, pushfirst_gate!, push_gate!
 
 export SpiderType, EdgeType
 export AbstractZXDiagram, ZXDiagram, ZXGraph
@@ -23,7 +25,7 @@ export rewrite!, simplify!
 export convert_to_chain, convert_to_zxd, convert_to_zxwd
 export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation
 export plot
-export concat!, dagger,  contains_only_bare_wires, verify_equality
+export concat!, dagger, contains_only_bare_wires, verify_equality
 
 include("abstract_zx_diagram.jl")
 include("zx_layout.jl")

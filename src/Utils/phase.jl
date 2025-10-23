@@ -1,11 +1,26 @@
+abstract type AbstractPhase end
+
+Base.zero(p::AbstractPhase) = throw(MethodError(Base.zero, p))
+Base.zero(p::Type{<:AbstractPhase}) = throw(MethodError(Base.zero, typeof(p)))
+Base.one(p::AbstractPhase) = throw(MethodError(Base.one, p))
+Base.one(p::Type{<:AbstractPhase}) = throw(MethodError(Base.one, typeof(p)))
+
+is_zero_phase(p::AbstractPhase)::Bool = throw(MethodError(is_zero_phase, p))
+is_pauli_phase(p::AbstractPhase)::Bool = throw(MethodError(is_pauli_phase, p))
+is_clifford_phase(p::AbstractPhase)::Bool = throw(MethodError(is_clifford_phase, p))
+function round_phase(p::P)::P where {P <: AbstractPhase}
+    throw(MethodError(round_phase, p))
+end
+
 """
     Phase
+
 The type supports manipulating phases as expressions.
 `Phase(x)` represents the number `x⋅π`.
 """
-struct Phase
-    ex
-    type
+struct Phase <: AbstractPhase
+    ex::Any
+    type::Type
 end
 
 Phase(p::T) where {T} = Phase(p, T)
@@ -72,7 +87,6 @@ end
 Base.:(/)(p1::Phase, p2::Number) = p1 / Phase(p2)
 Base.:(/)(p1::Number, p2::Phase) = Phase(p1) / p2
 
-
 function Base.:(-)(p::Phase)
     T0 = p.type
     if p.ex isa Number
@@ -103,7 +117,7 @@ Base.zero(::Type{Phase}) = Phase(0//1)
 Base.one(::Phase) = Phase(1//1)
 Base.one(::Type{Phase}) = Phase(1//1)
 
-Base.iseven(p::Phase) = (p.ex isa Number) && (-1)^p.ex > 0
+is_zero_phase(p::Phase) = (p.ex isa Number) && (-1)^p.ex > 0
 
 unwrap_phase(p::Phase) = p.ex * π
 unwrap_phase(p::Number) = p

@@ -6,21 +6,23 @@ abstract type AbstractRule end
 The struct for identifying different rules.
 
 Rule for `ZXDiagram`s:
-* `Rule{:f}()`: rule f
-* `Rule{:h}()`: rule h
-* `Rule{:i1}()`: rule i1
-* `Rule{:i2}()`: rule i2
-* `Rule{:pi}()`: rule π
-* `Rule{:c}()`: rule c
+
+  - `Rule{:f}()`: rule f
+  - `Rule{:h}()`: rule h
+  - `Rule{:i1}()`: rule i1
+  - `Rule{:i2}()`: rule i2
+  - `Rule{:pi}()`: rule π
+  - `Rule{:c}()`: rule c
 
 Rule for `ZXGraph`s:
-* `Rule{:lc}()`: local complementary rule
-* `Rule{:p1}()`: pivoting rule
-* `Rule{:pab}()`: rule for removing Pauli spiders adjancent to boundary spiders
-* `Rule{:p2}()`: rule p2
-* `Rule{:p3}()`: rule p3
-* `Rule{:id}()`: rule id
-* `Rule{:gf}()`: gadget fushion rule
+
+  - `Rule{:lc}()`: local complementary rule
+  - `Rule{:p1}()`: pivoting rule
+  - `Rule{:pab}()`: rule for removing Pauli spiders adjancent to boundary spiders
+  - `Rule{:p2}()`: rule p2
+  - `Rule{:p3}()`: rule p3
+  - `Rule{:id}()`: rule id
+  - `Rule{:gf}()`: gadget fushion rule
 """
 struct Rule{L} <: AbstractRule end
 Rule(r::Symbol) = Rule{r}()
@@ -30,7 +32,7 @@ Rule(r::Symbol) = Rule{r}()
 
 A struct for saving matched vertices.
 """
-struct Match{T<:Integer}
+struct Match{T <: Integer}
     vertices::Vector{T}
 end
 
@@ -125,7 +127,8 @@ function Base.match(::Rule{:b}, zxd::ZXDiagram{T, P}) where {T, P}
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == zero(P) && (degree(zxd, v1)) == 3
             for v2 in neighbors(zxd, v1)
-                if spider_type(zxd, v2) == SpiderType.Z && phase(zxd, v2) == zero(P) && (degree(zxd, v2)) == 3 && mul(zxd.mg, v1, v2) == 1
+                if spider_type(zxd, v2) == SpiderType.Z && phase(zxd, v2) == zero(P) && (degree(zxd, v2)) == 3 &&
+                   mul(zxd.mg, v1, v2) == 1
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -138,13 +141,13 @@ function Base.match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
-    for i = 1:length(vB)
+    for i in 1:length(vB)
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
     for v in vs
         if spider_type(zxg, v) == SpiderType.Z &&
-            (phase(zxg, v) in (1//2, 3//2))
+           (phase(zxg, v) in (1//2, 3//2))
             if length(searchsorted(vB, v)) == 0
                 if degree(zxg, v) == 1
                     # rewrite phase gadgets first
@@ -163,16 +166,16 @@ function Base.match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
-    for i = 1:length(vB)
+    for i in 1:length(vB)
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
     for v1 in vs
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-            (phase(zxg, v1) in (0, 1))
+           (phase(zxg, v1) in (0, 1))
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
-                    (phase(zxg, v2) in (0, 1)) && v2 > v1
+                   (phase(zxg, v2) in (0, 1)) && v2 > v1
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -185,7 +188,7 @@ function Base.match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
-    for i = 1:length(vB)
+    for i in 1:length(vB)
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
@@ -193,7 +196,7 @@ function Base.match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
         if spider_type(zxg, v2) == SpiderType.Z && length(neighbors(zxg, v2)) > 2
             for v1 in neighbors(zxg, v2)
                 if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-                    (phase(zxg, v1) in (0, 1))
+                   (phase(zxg, v1) in (0, 1))
                     push!(matches, Match{T}([v1, v2]))
                 end
             end
@@ -206,7 +209,7 @@ function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
-    for i = 1:length(vB)
+    for i in 1:length(vB)
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
@@ -222,13 +225,13 @@ function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
 
     for v1 in vs
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) == 0 &&
-            (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
-            length(neighbors(zxg, v1)) > 1 && v1 ∉ v_matched
+           (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
+           length(neighbors(zxg, v1)) > 1 && v1 ∉ v_matched
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z &&
-                    length(searchsorted(vB, v2)) == 0 &&
-                    (phase(zxg, v2) in (0, 1))
-                    if length(searchsorted(gadgets, v2)) == 0  && v2 ∉ v_matched
+                   length(searchsorted(vB, v2)) == 0 &&
+                   (phase(zxg, v2) in (0, 1))
+                    if length(searchsorted(gadgets, v2)) == 0 && v2 ∉ v_matched
                         push!(matches, Match{T}([v1, v2]))
                         push!(v_matched, v1, v2)
                     end
@@ -243,7 +246,7 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
-    for i = 1:length(vB)
+    for i in 1:length(vB)
         push!(vB, neighbors(zxg, vB[i])[1])
     end
     sort!(vB)
@@ -259,11 +262,11 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
 
     for v1 in vB
         if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) > 0 &&
-            (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1 &&
-            v1 ∉ v_matched
+           (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1 &&
+           v1 ∉ v_matched
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
-                    (phase(zxg, v2) in (0, 1)) && length(searchsorted(gadgets, v2)) == 0 && v2 ∉ v_matched
+                   (phase(zxg, v2) in (0, 1)) && length(searchsorted(gadgets, v2)) == 0 && v2 ∉ v_matched
                     push!(matches, Match{T}([v1, v2]))
                     push!(v_matched, v1, v2)
                 end
@@ -273,7 +276,7 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function Base.match(::Rule{:id}, zxg::ZXGraph{T,P}) where {T,P}
+function Base.match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     for v2 in spiders(zxg)
         nb2 = neighbors(zxg, v2)
@@ -286,12 +289,12 @@ function Base.match(::Rule{:id}, zxg::ZXGraph{T,P}) where {T,P}
 
                 if (
                     (
-                        spider_type(zxg, v1) == SpiderType.In ||
-                        spider_type(zxg, v1) == SpiderType.Out
-                    ) && (
-                        spider_type(zxg, v3) == SpiderType.In ||
-                        spider_type(zxg, v3) == SpiderType.Out
-                    )
+                    spider_type(zxg, v1) == SpiderType.In ||
+                    spider_type(zxg, v1) == SpiderType.Out
+                ) && (
+                    spider_type(zxg, v3) == SpiderType.In ||
+                    spider_type(zxg, v3) == SpiderType.Out
+                )
                 )
                     push!(matches, Match{T}([v1, v2, v3]))
                 end
@@ -316,13 +319,13 @@ function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
     gad_ids = vs[[spider_type(zxg, v) == SpiderType.Z && (degree(zxg, v)) == 1 for v in vs]]
     gads = [(v, neighbors(zxg, v)[1], setdiff(neighbors(zxg, neighbors(zxg, v)[1]), [v])) for v in gad_ids]
 
-    for i = 1:length(gads)
+    for i in 1:length(gads)
         v1, v2, gad_v = gads[i]
-        for j in (i+1):length(gads)
+        for j in (i + 1):length(gads)
             u1, u2, gad_u = gads[j]
-            if gad_u == gad_v && 
-                    (spider_type(zxg, v2) == SpiderType.Z && phase(zxg, v2) in (zero(P), one(P))) && 
-                    (spider_type(zxg, u2) == SpiderType.Z && phase(zxg, u2) in (zero(P), one(P)))
+            if gad_u == gad_v &&
+               (spider_type(zxg, v2) == SpiderType.Z && phase(zxg, v2) in (zero(P), one(P))) &&
+               (spider_type(zxg, u2) == SpiderType.Z && phase(zxg, u2) in (zero(P), one(P)))
                 push!(matches, Match{T}([v1, v2, u1, u2]))
             end
         end
@@ -422,7 +425,7 @@ end
 
 function rewrite!(r::Rule{:i1}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1 = vs[1]
-    v2, v3 = neighbors(zxd, v1, count_mul = true)
+    v2, v3 = neighbors(zxd, v1, count_mul=true)
     add_edge!(zxd, v2, v3)
     rem_spider!(zxd, v1)
     return zxd
@@ -441,8 +444,8 @@ end
 
 function rewrite!(r::Rule{:i2}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1, v2 = vs
-    nb1 = neighbors(zxd, v1, count_mul = true)
-    nb2 = neighbors(zxd, v2, count_mul = true)
+    nb1 = neighbors(zxd, v1, count_mul=true)
+    nb2 = neighbors(zxd, v2, count_mul=true)
     @inbounds v3 = (nb1[1] == v2 ? nb1[2] : nb1[1])
     @inbounds v4 = (nb2[1] == v1 ? nb2[2] : nb2[1])
     add_edge!(zxd, v3, v4)
@@ -454,7 +457,7 @@ function check_rule(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T,
     v1, v2 = vs
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v2)) || return false
     if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == one(phase(zxd, v1)) &&
-            (degree(zxd, v1)) == 2
+       (degree(zxd, v1)) == 2
         if v2 in neighbors(zxd, v1)
             if spider_type(zxd, v2) == SpiderType.Z
                 return true
@@ -468,7 +471,7 @@ function rewrite!(r::Rule{:pi}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P
     v1, v2 = vs
     add_global_phase!(zxd, phase(zxd, v2))
     set_phase!(zxd, v2, -phase(zxd, v2))
-    nb = neighbors(zxd, v2, count_mul = true)
+    nb = neighbors(zxd, v2, count_mul=true)
     for v3 in nb
         # TODO
         v3 != v1 && insert_spider!(zxd, v2, v3, SpiderType.X, phase(zxd, v1))
@@ -498,7 +501,7 @@ function rewrite!(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     ph = phase(zxd, v1)
     rem_spider!(zxd, v1)
     add_power!(zxd, 1)
-    nb = neighbors(zxd, v2, count_mul = true)
+    nb = neighbors(zxd, v2, count_mul=true)
     for v3 in nb
         add_spider!(zxd, SpiderType.X, ph, [v3])
         add_power!(zxd, -1)
@@ -512,7 +515,8 @@ function check_rule(r::Rule{:b}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, 
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v2)) || return false
     if spider_type(zxd, v1) == SpiderType.X && phase(zxd, v1) == 0 && (degree(zxd, v1)) == 3
         if v2 in neighbors(zxd, v1)
-            if spider_type(zxd, v2) == SpiderType.Z && phase(zxd, v2) == 0 && (degree(zxd, v2)) == 3 && mul(zxd.mg, v1, v2) == 1
+            if spider_type(zxd, v2) == SpiderType.Z && phase(zxd, v2) == 0 && (degree(zxd, v2)) == 3 &&
+               mul(zxd.mg, v1, v2) == 1
                 return true
             end
         end
@@ -547,7 +551,7 @@ function check_rule(::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     has_vertex(zxg.mg, v) || return false
     if has_vertex(zxg.mg, v)
         if spider_type(zxg, v) == SpiderType.Z &&
-            (phase(zxg, v) in (1//2, 3//2))
+           (phase(zxg, v) in (1//2, 3//2))
             if is_interior(zxg, v)
                 return true
             end
@@ -569,6 +573,7 @@ function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_power!(zxg, (n-1)*(n-2)//2)
     rem_spider!(zxg, v)
     for u1 in nb, u2 in nb
+
         if u2 > u1
             add_edge!(zxg, u1, u2, EdgeType.HAD)
         end
@@ -584,10 +589,10 @@ function check_rule(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     (has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)) || return false
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (phase(zxg, v1) in (0, 1))
+           (phase(zxg, v1) in (0, 1))
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) in (0, 1)) && v2 > v1
+                   (phase(zxg, v2) in (0, 1)) && v2 > v1
                     return true
                 end
             end
@@ -611,12 +616,15 @@ function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     rem_spiders!(zxg, vs)
     for u0 in U, v0 in V
+
         add_edge!(zxg, u0, v0)
     end
     for u0 in U, w0 in W
+
         add_edge!(zxg, u0, w0)
     end
     for v0 in V, w0 in W
+
         add_edge!(zxg, v0, w0)
     end
     for u0 in U
@@ -636,10 +644,10 @@ function check_rule(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
     (has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)) || return false
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (phase(zxg, v1) in (0, 1))
+           (phase(zxg, v1) in (0, 1))
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && !is_interior(zxg, v2) &&
-                    length(neighbors(zxg, v2)) > 2
+                   length(neighbors(zxg, v2)) > 2
                     return true
                 end
             end
@@ -666,7 +674,7 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         zxg.et[(v_bound, w)] = EdgeType.SIM
         v_bound_master = v_bound
         v_master = neighbors(zxg.master, v_bound_master)[1]
-        w_master = insert_spider!(zxg.master, v_bound_master, v_master,  SpiderType.Z)[1]
+        w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.Z)[1]
         # @show w, w_master
         zxg.phase_ids[w] = (w_master, 1)
 
@@ -681,13 +689,13 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         # w = neighbors(zxg, v_bound)[1]
         # set_phase!(zxg, w, phase(zxg, v))
         # zxg.phase_ids[w] = zxg.phase_ids[v]
-        
+
         v_bound_master = v_bound
         v_master = neighbors(zxg.master, v_bound_master)[1]
-        w_master = insert_spider!(zxg.master, v_bound_master, v_master,  SpiderType.X)[1]
+        w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.X)[1]
         # @show w, w_master
         zxg.phase_ids[w] = (w_master, 1)
-        
+
         # set_phase!(zxg, v, zero(P))
         # zxg.phase_ids[v] = (v, 1)
         # rem_edge!(zxg, w, v_bound)
@@ -700,11 +708,11 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
-            (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
-            length(neighbors(zxg, v1)) > 1
+           (degree(zxg, v1)) > 1 && (rem(phase(zxg, v1), 1//2) != 0) &&
+           length(neighbors(zxg, v1)) > 1
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) in (0, 1))
+                   (phase(zxg, v2) in (0, 1))
                     if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
@@ -729,7 +737,7 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_power!(zxg, (length(U)+length(V)-1)*length(W) + length(U)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
-    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+    sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
     if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -737,12 +745,15 @@ function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     end
     rem_spider!(zxg, u)
     for u0 in U, v0 in V
+
         add_edge!(zxg, u0, v0)
     end
     for u0 in U, w0 in W
+
         add_edge!(zxg, u0, w0)
     end
     for v0 in V, w0 in W
+
         add_edge!(zxg, v0, w0)
     end
     for u0 in U
@@ -765,10 +776,10 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
-            (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1
+           (rem(phase(zxg, v1), 1//2) != 0) && length(neighbors(zxg, v1)) > 1
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
-                    (phase(zxg, v2) in (0, 1))
+                   (phase(zxg, v2) in (0, 1))
                     if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
                         return true
                     end
@@ -795,7 +806,7 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_power!(zxg, (length(U)+length(V))*length(W) + (length(U)+1)*(length(V)-1))
 
     phase_id_u = zxg.phase_ids[u]
-    sgn_phase_v = iseven(Phase(phase_v)) ? 1 : -1
+    sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
     if sgn_phase_v < 0
         zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -804,12 +815,15 @@ function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     phase_id_v = zxg.phase_ids[v]
     rem_edge!(zxg, u, v)
     for u0 in U, v0 in V
+
         add_edge!(zxg, u0, v0)
     end
     for u0 in U, w0 in W
+
         add_edge!(zxg, u0, w0)
     end
     for v0 in V, w0 in W
+
         add_edge!(zxg, v0, w0)
     end
     for u0 in U
@@ -873,19 +887,22 @@ function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
 
     phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
-    if !iseven(Phase(phase_u))
+    if !is_zero_phase(Phase(phase_u))
         zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
         phase_id_gadget_u = zxg.phase_ids[gadget_u]
         phase_gadget_u = -phase(zxg, gadget_u)
     end
 
     for u0 in U, v0 in V
+
         add_edge!(zxg, u0, v0)
     end
     for u0 in U, w0 in W
+
         add_edge!(zxg, u0, w0)
     end
     for v0 in V, w0 in W
+
         add_edge!(zxg, v0, w0)
     end
 
@@ -905,18 +922,19 @@ function check_rule(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     if has_vertex(zxg.mg, v2)
         nb2 = neighbors(zxg, v2)
-        if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2 
+        if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             (v1 in nb2 && v3 in nb2) || return false
             if phase(zxg, v2) == 0
                 if spider_type(zxg, v1) == SpiderType.Z && spider_type(zxg, v3) == SpiderType.Z
                     return true
                 end
-                if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out) && 
+                if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out) &&
                     (spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
-                  return true
+                    return true
                 end
 
-            else phase(zxg, v2) == 1
+            else
+                phase(zxg, v2) == 1
                 if spider_type(zxg, v1) == SpiderType.Z && spider_type(zxg, v3) == SpiderType.Z
                     return degree(zxg, v1) == 1 || degree(zxg, v3) == 1
                 end
@@ -933,7 +951,7 @@ function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         set_phase!(zxg, v1, -phase(zxg, v1))
         zxg.phase_ids[v1] = (zxg.phase_ids[v1][1], -zxg.phase_ids[v1][2])
     end
-    if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out || 
+    if ((spider_type(zxg, v1) == SpiderType.In || spider_type(zxg, v1) == SpiderType.Out ||
          spider_type(zxg, v3) == SpiderType.In || spider_type(zxg, v3) == SpiderType.Out))
         rem_spider!(zxg, v2)
         add_edge!(zxg, v1, v3, EdgeType.SIM)
@@ -957,7 +975,7 @@ function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds if all(has_vertex(zxg.mg, v) for v in vs)
         v1, v2, u1, u2 = vs
         if spider_type(zxg, v1) == SpiderType.Z && (degree(zxg, v1)) == 1 &&
-            spider_type(zxg, u1) == SpiderType.Z && (degree(zxg, u1)) == 1
+           spider_type(zxg, u1) == SpiderType.Z && (degree(zxg, u1)) == 1
             if v2 == neighbors(zxg, v1)[1] && u2 == neighbors(zxg, u1)[1]
                 gad_v = setdiff(neighbors(zxg, v2), [v1])
                 gad_u = setdiff(neighbors(zxg, u2), [u1])
@@ -989,7 +1007,7 @@ function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     idv, mulv = zxg.phase_ids[v1]
     idu, mulu = zxg.phase_ids[u1]
-    set_phase!(zxg.master, idv, (mulv * phase(zxg.master,idv) + mulu * phase(zxg.master,idu)) * mulv)
+    set_phase!(zxg.master, idv, (mulv * phase(zxg.master, idv) + mulu * phase(zxg.master, idu)) * mulv)
     set_phase!(zxg.master, idu, zero(P))
 
     add_power!(zxg, degree(zxg, v2)-2)
