@@ -3,14 +3,14 @@ using ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
 using ZXCalculus: ZX
 using ZXCalculus.Utils: Phase
 
-@testset "Rule{:f}" begin
+@testset "FusionRule" begin
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     collect(edges(g))
     ps = [Phase(i // 4) for i in 1:3]
     v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:f}(), zxd)
-    rewrite!(Rule{:f}(), zxd, matches)
+    matches = match(FusionRule(), zxd)
+    rewrite!(FusionRule(), zxd, matches)
     @test sort!(spiders(zxd)) == [1, 3]
     @test phase(zxd, 1) == phase(zxd, 3) == 3 // 4
     @test !isnothing(zxd)

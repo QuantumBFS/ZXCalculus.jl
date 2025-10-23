@@ -63,18 +63,18 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     simplify!(Rule{:i1}(), nzxd)
     simplify!(Rule{:h}(), nzxd)
     simplify!(Rule{:i2}(), nzxd)
-    match_f = match(Rule{:f}(), nzxd)
+    match_f = match(FusionRule(), nzxd)
     while length(match_f) > 0
         for m in match_f
             vs = m.vertices
-            if check_rule(Rule{:f}(), nzxd, vs)
-                rewrite!(Rule{:f}(), nzxd, vs)
+            if check_rule(FusionRule(), nzxd, vs)
+                rewrite!(FusionRule(), nzxd, vs)
                 v1, v2 = vs
                 set_phase!(zxd, v1, phase(zxd, v1) + phase(zxd, v2))
                 set_phase!(zxd, v2, zero(P))
             end
         end
-        match_f = match(Rule{:f}(), nzxd)
+        match_f = match(FusionRule(), nzxd)
     end
 
     vs = spiders(nzxd)

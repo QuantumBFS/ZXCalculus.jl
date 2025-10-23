@@ -15,28 +15,27 @@ begin
 end
 
 # ╔═╡ 741c3ca4-2dd5-406c-9ae5-7d19a3192e7d
-TableOfContents(title = "📚 Table of Contents", indent = true, depth = 2, aside = true)
+TableOfContents(title="📚 Table of Contents", indent=true, depth=2, aside=true)
 
 # ╔═╡ 24749683-0566-4f46-989d-22336d296517
 html"""
 <style>
-	@media screen {
-		main {
-			margin: 0 auto;
-			max-width: 2000px;
+@media screen {
+main {
+margin: 0 auto;
+max-width: 2000px;
     		padding-left: max(283px, 10%);
     		padding-right: max(383px, 10%); 
             # 383px to accomodate TableOfContents(aside=true)
-		}
-	}
+}
+}
 </style>
 """
 
-
 # ╔═╡ 506db9e1-4260-408d-ba72-51581b548e53
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
+function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
     g = plot(zx)
-    Base.show(io, mime, g)
+    return Base.show(io, mime, g)
 end
 
 # ╔═╡ 92dccd1c-6582-40bf-9b57-f326b2aff67a
@@ -105,7 +104,6 @@ begin
     zx_x = ZXDiagram(1)
     push_gate!(zx_x, Val(:X), 1, 1 // 1)
 end
-
 
 # ╔═╡ 3cf7e1a1-7f99-4191-8e38-1533da8ebba1
 md"""
@@ -180,7 +178,6 @@ Contary to quantum logic gates, CNOT is not a gate primitive but composed out of
 begin
     zx_cnot = ZXDiagram(2)
     push_gate!(zx_cnot, Val(:CNOT), 1, 2)
-
 end
 
 # ╔═╡ e2d695a4-7962-4d77-b348-74eb05c72b9c
@@ -199,7 +196,6 @@ begin
     push_gate!(zx, Val(:CNOT), 2, 3)
     push_gate!(zx, Val(:H), 2)
 end
-
 
 # ╔═╡ 92fd5c2b-95a1-4820-99cb-45923429117c
 md"""
@@ -222,14 +218,13 @@ begin
     push_gate!(zx_x, Val(:X), 1, 1 // 1)
 end
 
-
 # ╔═╡ 973ad229-2b87-48f8-9926-c833766d45cb
 md"""
 After fusion them together, we get a phaseless spider.
 """
 
 # ╔═╡ 852455dd-b95d-45a4-a771-053c1e95b82f
-simplify!(Rule{:f}(), zx_x)
+simplify!(FusionRule(), zx_x)
 
 # ╔═╡ b4702fb4-e21a-43b0-8be4-fbfca81b4a8b
 md"""
@@ -267,7 +262,6 @@ begin
     push_gate!(zx_id, Val(:X), 1)
 end
 
-
 # ╔═╡ 8cde99fd-ee0a-4d94-a94e-23ebc9ac8608
 zx_id_graph = ZXGraph(zx_id)
 
@@ -282,7 +276,6 @@ merged_diagram = concat!(zx, zx_dagger)
 
 # ╔═╡ 0b838710-91e4-4572-9fe0-5c97e579ddd1
 m_simple = full_reduction(merged_diagram)
-
 
 # ╔═╡ fdb7ca6a-bf5c-4216-8a18-a7c3603240ea
 contains_only_bare_wires(m_simple)
@@ -363,8 +356,6 @@ begin
       measure q0[1] -> mcm[0];
           """)
     c2 = ZXDiagram(b2)
-
-
 end
 
 # ╔═╡ 02be99e0-1b97-4fe0-b316-5151febe92d8

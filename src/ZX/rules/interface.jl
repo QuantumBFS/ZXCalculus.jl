@@ -7,7 +7,7 @@ The struct for identifying different rules.
 
 Rule for `ZXDiagram`s:
 
-  - `Rule{:f}()`: rule f
+  - `FusionRule()`: rule f
   - `Rule{:h}()`: rule h
   - `Rule{:i1}()`: rule i1
   - `Rule{:i2}()`: rule i2

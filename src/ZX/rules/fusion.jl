@@ -1,4 +1,6 @@
-function Base.match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
+struct FusionRule <: AbstractRule end
+
+function Base.match(::FusionRule, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.Z || spider_type(zxd, v1) == SpiderType.X
@@ -12,7 +14,7 @@ function Base.match(::Rule{:f}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(r::FusionRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v2)) || return false
     if spider_type(zxd, v1) == SpiderType.Z || spider_type(zxd, v1) == SpiderType.X
@@ -25,7 +27,7 @@ function check_rule(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, 
     return false
 end
 
-function rewrite!(r::Rule{:f}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(r::FusionRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     for v3 in neighbors(zxd, v2)
         if v3 != v1

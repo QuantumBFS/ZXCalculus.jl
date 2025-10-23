@@ -20,6 +20,7 @@ export AbstractZXDiagram, ZXDiagram, ZXGraph
 
 export AbstractRule
 export Rule, Match
+export FusionRule
 
 export rewrite!, simplify!
 
