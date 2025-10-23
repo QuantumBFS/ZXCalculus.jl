@@ -1,4 +1,6 @@
-function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
+struct GadgetFusionRule <: AbstractRule end
+
+function Base.match(::GadgetFusionRule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     gad_ids = vs[[spider_type(zxg, v) == SpiderType.Z && (degree(zxg, v)) == 1 for v in vs]]
@@ -18,7 +20,7 @@ function Base.match(::Rule{:gf}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::GadgetFusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds if all(has_vertex(zxg.mg, v) for v in vs)
         v1, v2, u1, u2 = vs
         if spider_type(zxg, v1) == SpiderType.Z && (degree(zxg, v1)) == 1 &&
@@ -35,7 +37,7 @@ function check_rule(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(::Rule{:gf}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::GadgetFusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, u1, u2 = vs
     if is_one_phase(phase(zxg, v2))
         add_global_phase!(zxg, phase(zxg, v1))

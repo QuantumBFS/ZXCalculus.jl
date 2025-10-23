@@ -27,8 +27,8 @@ push_gate!(zxd, Val{:Z}(), 4, 1//2)
 push_gate!(zxd, Val{:X}(), 4, 1//1)
 
 zxg = ZXGraph(zxd)
-replace!(Rule{:lc}(), zxg)
-replace!(Rule{:pab}(), zxg)
+replace!(LocalCompRule(), zxg)
+replace!(PivotBoundaryRule(), zxg)
 
 cir = circuit_extraction(zxg)
 

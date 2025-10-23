@@ -6,18 +6,17 @@ using InteractiveUtils
 
 # ╔═╡ 8ab9b70a-e98d-11ea-239c-73dc659722c2
 begin
-  using OpenQASM
-  using Vega
-  using DataFrames
-  using YaoHIR: BlockIR
-  using ZXCalculus, ZXCalculus.ZX
-  using YaoHIR, YaoLocations
-  using YaoHIR.IntrinsicOperation
+    using OpenQASM
+    using Vega
+    using DataFrames
+    using YaoHIR: BlockIR
+    using ZXCalculus, ZXCalculus.ZX
+    using YaoHIR, YaoLocations
+    using YaoHIR.IntrinsicOperation
 
-  # Used for creating the IRCode for a BlockIR
-  using Core.Compiler: IRCode
-  using PlutoUI
-
+    # Used for creating the IRCode for a BlockIR
+    using Core.Compiler: IRCode
+    using PlutoUI
 end
 
 # ╔═╡ a9bf8e31-686a-4057-acec-bd04e8b5a3dc
@@ -27,9 +26,9 @@ using Multigraphs
 using ZXCalculus.ZXW
 
 # ╔═╡ fdfa8ed2-f19c-4b80-b64e-f4bb22d09327
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
+function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
     g = plot(zx)
-    Base.show(io, mime, g)
+    return Base.show(io, mime, g)
 end
 
 # ╔═╡ 03405af4-0984-43c6-9312-f18fc3b23792
@@ -80,7 +79,7 @@ function load_graph()
     push_gate!(zxd, Val(:H), 2)
     push_gate!(zxd, Val(:H), 3)
     push_gate!(zxd, Val(:Z), 3, 1 // 2)
-    push_gate!(zxd, Val(:CNOT), 3, 2)
+    return push_gate!(zxd, Val(:CNOT), 3, 2)
 end
 
 # ╔═╡ ba769665-063b-4a17-8aa8-afa1fffc574c
@@ -88,11 +87,10 @@ md"""
 # Multigraph ZXDigram
 """
 
-
 # ╔═╡ b9d32b41-8bff-4faa-b198-db096582fb2e
 begin
     g = Multigraph([0 1 0; 1 0 1; 0 1 0])
-    ps = [Rational(0) for i = 1:3]
+    ps = [Rational(0) for i in 1:3]
     v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
     zxd_m = ZXDiagram(g, v_t, ps)
 end
@@ -118,8 +116,8 @@ html"""
 """
 
 # ╔═╡ a6b92942-e99a-11ea-227d-f9fe53f8a1cf
-# simplify!(Rule{:lc}(), zxd)  #  this should not pass! use `DRule` and `GRule` to distinguish them?
-simplify!(Rule{:lc}(), zxg)  # allow Rule(:lc) for simplicity.
+# simplify!(LocalCompRule(), zxd)  #  this should not pass! use `DRule` and `GRule` to distinguish them?
+simplify!(LocalCompRule(), zxg)  # allow Rule(:lc) for simplicity.
 
 # ╔═╡ 86475062-e99f-11ea-2f44-a3c270cc45e5
 md"apply the p1 rule recursively"
@@ -130,7 +128,7 @@ html"""
 """
 
 # ╔═╡ b739540e-e99a-11ea-2a04-abd99889cf92
-simplify!(Rule{:p1}(), zxg)  # does not have any effect?
+simplify!(Pivot1Rule(), zxg)  # does not have any effect?
 
 # ╔═╡ 7af70558-e9b4-11ea-3aa9-3b73357f0a2a
 srule!(sym::Symbol) = g -> simplify!(Rule{sym}(), g)
@@ -150,7 +148,7 @@ html"""
 """
 
 # ╔═╡ bd2b3364-e99a-11ea-06e7-4560cb873d2c
-replace!(Rule{:pab}(), zxg)  # this naming is not explict, what about `simplify_recursive!` and `simplily!`.
+replace!(PivotBoundaryRule(), zxg)  # this naming is not explict, what about `simplify_recursive!` and `simplily!`.
 
 # ╔═╡ c71cdf4c-e9b5-11ea-2aaf-5f4be0eb3e93
 md"## To make life easier"
@@ -222,7 +220,6 @@ Create a BlockIR and convert it into a ZXDiagram
 
 # ╔═╡ 71fc6836-3c30-43de-aa2b-2d3d48bdb3da
 begin
-
     ir_t = IRCode()
     bir_t = BlockIR(ir_t, 4, chain_t)
     zxd_t = convert_to_zxd(bir_t)

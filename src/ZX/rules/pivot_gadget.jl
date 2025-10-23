@@ -1,4 +1,6 @@
-function rewrite!(::Rule{:pivot}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+struct PivotGadgetRule <: AbstractRule end
+
+function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     # This rule should be only used in circuit extraction.
     # This rule will do pivoting on u, v but preserve u, v.
     # And the scalars are not considered in this rule.

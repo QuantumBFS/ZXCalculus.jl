@@ -1,4 +1,6 @@
-function Base.match(::Rule{:h}, zxd::ZXDiagram{T, P}) where {T, P}
+struct HadamardRule <: AbstractRule end
+
+function Base.match(::HadamardRule, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X
@@ -8,7 +10,7 @@ function Base.match(::Rule{:h}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::Rule{:h}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(r::HadamardRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1 = vs[1]
     has_vertex(zxd.mg, v1) || return false
     if spider_type(zxd, v1) == SpiderType.X
@@ -17,7 +19,7 @@ function check_rule(r::Rule{:h}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, 
     return false
 end
 
-function rewrite!(r::Rule{:h}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(r::HadamardRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1 = vs[1]
     for v2 in neighbors(zxd, v1)
         if v2 != v1

@@ -1,4 +1,6 @@
-function Base.match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
+struct Pivot1Rule <: AbstractRule end
+
+function Base.match(::Pivot1Rule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -20,7 +22,7 @@ function Base.match(::Rule{:p1}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::Pivot1Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)) || return false
     if has_vertex(zxg.mg, v1)
@@ -37,7 +39,7 @@ function check_rule(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(::Rule{:p1}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::Pivot1Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v = vs
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)

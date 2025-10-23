@@ -238,7 +238,7 @@ After applying the second idenity rule, we are left with a bare wire.
 """
 
 # ╔═╡ 64be3d04-4983-467e-9b06-45b64132ee30
-simplify!(Rule{:i1}(), zx_x)
+simplify!(Identity1Rule(), zx_x)
 
 # ╔═╡ c604a76d-9b95-4f0d-8133-df2a3e9dabe9
 md"""

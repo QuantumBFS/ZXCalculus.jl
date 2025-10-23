@@ -1,4 +1,6 @@
-function Base.match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
+struct IdentityRemovalRule <: AbstractRule end
+
+function Base.match(::IdentityRemovalRule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     for v2 in spiders(zxg)
         nb2 = neighbors(zxg, v2)
@@ -35,7 +37,7 @@ function Base.match(::Rule{:id}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     if has_vertex(zxg.mg, v2)
         nb2 = neighbors(zxg, v2)
@@ -61,7 +63,7 @@ function check_rule(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(::Rule{:id}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     if is_one_phase(phase(zxg, v2))
         set_phase!(zxg, v2, zero(P))

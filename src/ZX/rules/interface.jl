@@ -7,22 +7,26 @@ The struct for identifying different rules.
 
 Rule for `ZXDiagram`s:
 
-  - `FusionRule()`: rule f
-  - `Rule{:h}()`: rule h
-  - `Rule{:i1}()`: rule i1
-  - `Rule{:i2}()`: rule i2
-  - `Rule{:pi}()`: rule π
-  - `Rule{:c}()`: rule c
+  - `FusionRule()`: fusion rule (also available as `Rule{:f}()`)
+  - `HadamardRule()`: hadamard rule (also available as `Rule{:h}()`)
+  - `Identity1Rule()`: identity rule 1 (also available as `Rule{:i1}()`)
+  - `Identity2Rule()`: identity rule 2 (also available as `Rule{:i2}()`)
+  - `PiRule()`: π rule (also available as `Rule{:pi}()`)
+  - `CopyRule()`: copy rule (also available as `Rule{:c}()`)
+  - `BialgebraRule()`: bialgebra rule (also available as `Rule{:b}()`)
+  - `ScalarRule()`: scalar rule (also available as `Rule{:scalar}()`)
 
 Rule for `ZXGraph`s:
 
-  - `Rule{:lc}()`: local complementary rule
-  - `Rule{:p1}()`: pivoting rule
-  - `Rule{:pab}()`: rule for removing Pauli spiders adjancent to boundary spiders
-  - `Rule{:p2}()`: rule p2
-  - `Rule{:p3}()`: rule p3
-  - `Rule{:id}()`: rule id
-  - `Rule{:gf}()`: gadget fushion rule
+  - `LocalCompRule()`: local complementary rule (also available as `Rule{:lc}()`)
+  - `Pivot1Rule()`: pivoting rule (also available as `Rule{:p1}()`)
+  - `PivotBoundaryRule()`: rule for removing Pauli spiders adjacent to boundary spiders (also available as `Rule{:pab}()`)
+  - `Pivot2Rule()`: pivot rule 2 (also available as `Rule{:p2}()`)
+  - `Pivot3Rule()`: pivot rule 3 (also available as `Rule{:p3}()`)
+  - `IdentityRemovalRule()`: identity removal rule (also available as `Rule{:id}()`)
+  - `GadgetFusionRule()`: gadget fusion rule (also available as `Rule{:gf}()`)
+  - `PivotGadgetRule()`: pivot gadget rule (also available as `Rule{:pivot}()`)
+  - `ScalarRule()`: scalar rule (also available as `Rule{:scalar}()`)
 """
 struct Rule{L} <: AbstractRule end
 Rule(r::Symbol) = Rule{r}()
@@ -39,7 +43,7 @@ end
 """
     match(r, zxd)
 
-Returns all matched vertices, which will be store in sturct `Match`, for rule `r`
+Returns all matched vertices, which will be stored in struct `Match`, for rule `r`
 in a ZX-diagram `zxd`.
 """
 Base.match(r::AbstractRule, ::AbstractZXDiagram{T, P}) where {T, P} = error("match not implemented for rule $(r)")

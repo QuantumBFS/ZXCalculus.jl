@@ -1,4 +1,6 @@
-function Base.match(::Rule{:c}, zxd::ZXDiagram{T, P}) where {T, P}
+struct CopyRule <: AbstractRule end
+
+function Base.match(::CopyRule, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for v1 in spiders(zxd)
         if spider_type(zxd, v1) == SpiderType.X && is_zero_phase(phase(zxd, v1)) && (degree(zxd, v1)) == 1
@@ -12,7 +14,7 @@ function Base.match(::Rule{:c}, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(r::CopyRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v1)) || return false
     if spider_type(zxd, v1) == SpiderType.X && is_zero_phase(phase(zxd, v1)) && (degree(zxd, v1)) == 1
@@ -25,7 +27,7 @@ function check_rule(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, 
     return false
 end
 
-function rewrite!(r::Rule{:c}, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(r::CopyRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     ph = phase(zxd, v1)
     rem_spider!(zxd, v1)

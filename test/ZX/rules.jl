@@ -16,34 +16,34 @@ using ZXCalculus.Utils: Phase
     @test !isnothing(zxd)
 end
 
-@testset "Rule{:i1}" begin
+@testset "Identity1Rule" begin
     g = Multigraph(path_graph(5))
     add_edge!(g, 1, 2)
     ps = [Phase(1), Phase(3 // 1), Phase(0), Phase(0), Phase(1)]
     v_t = [SpiderType.X, SpiderType.X, SpiderType.Z, SpiderType.Z, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:i1}(), zxd)
-    rewrite!(Rule{:i1}(), zxd, matches)
+    matches = match(Identity1Rule(), zxd)
+    rewrite!(Identity1Rule(), zxd, matches)
     @test nv(zxd) == 3 && ne(zxd, count_mul=true) == 3 && ne(zxd) == 2
     @test !isnothing(zxd)
 end
 
-@testset "Rule{:h} and Rule{:i2}" begin
+@testset "HadamardRule and Identity2Rule" begin
     g = Multigraph([0 2 0; 2 0 1; 0 1 0])
     ps = [Phase(i // 4) for i in 1:3]
     v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:h}(), zxd)
-    rewrite!(Rule{:h}(), zxd, matches)
+    matches = match(HadamardRule(), zxd)
+    rewrite!(HadamardRule(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
     @test !isnothing(zxd)
 
-    matches = match(Rule{:i2}(), zxd)
-    rewrite!(Rule{:i2}(), zxd, matches)
+    matches = match(Identity2Rule(), zxd)
+    rewrite!(Identity2Rule(), zxd, matches)
     @test nv(zxd) == 4 && ne(zxd, count_mul=true) == 4 && ne(zxd) == 3
 end
 
-@testset "Rule{:pi}" begin
+@testset "PiRule" begin
     g = Multigraph(6)
     add_edge!(g, 1, 2)
     add_edge!(g, 2, 3)
@@ -60,8 +60,8 @@ end
         SpiderType.Out
     ]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:pi}(), zxd)
-    rewrite!(Rule{:pi}(), zxd, matches)
+    matches = match(PiRule(), zxd)
+    rewrite!(PiRule(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 7
     @test zxd.scalar == Scalar(0, 1 // 2)
     # FIXME generate layout does not terminate
@@ -71,14 +71,14 @@ end
     ps = [Phase(1), Phase(1 // 2), Phase(0)]
     v_t = [SpiderType.X, SpiderType.Z, SpiderType.In]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:pi}(), zxd)
-    rewrite!(Rule{:pi}(), zxd, matches)
+    matches = match(PiRule(), zxd)
+    rewrite!(PiRule(), zxd, matches)
     @test nv(zxd) == 4 && ne(zxd) == 3 && ne(zxd, count_mul=true) == 4
     @test zxd.scalar == Scalar(0, 1 // 2)
     @test !isnothing(zxd)
 end
 
-@testset "Rule{:c}" begin
+@testset "CopyRule" begin
     g = Multigraph(5)
     add_edge!(g, 1, 2)
     add_edge!(g, 2, 3, 2)
@@ -87,15 +87,15 @@ end
     ps = [Phase(0), Phase(1 // 2), Phase(0), Phase(0), Phase(0)]
     v_t = [SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
-    matches = match(Rule{:c}(), zxd)
-    rewrite!(Rule{:c}(), zxd, matches)
+    matches = match(CopyRule(), zxd)
+    rewrite!(CopyRule(), zxd, matches)
     @test nv(zxd) == 7 && ne(zxd) == 4
     @test zxd.scalar == Scalar(-3, 0 // 1)
     # FIXME generate layout does not terminate
     # @test !isnothing(zxd)
 end
 
-@testset "Rule{:b}" begin
+@testset "BialgebraRule" begin
     g = Multigraph(6)
     add_edge!(g, 1, 3)
     add_edge!(g, 2, 4)
@@ -117,14 +117,14 @@ end
         Dict(zip(1:6, [1 // 1, 1, 2, 2, 3, 3]))
     )
     zxd = ZXDiagram(g, v_t, ps, layout)
-    matches = match(Rule{:b}(), zxd)
-    rewrite!(Rule{:b}(), zxd, matches)
+    matches = match(BialgebraRule(), zxd)
+    rewrite!(BialgebraRule(), zxd, matches)
     @test nv(zxd) == 8 && ne(zxd) == 8
     @test zxd.scalar == Scalar(1, 0 // 1)
     @test !isnothing(zxd)
 end
 
-@testset "Rule{:lc}" begin
+@testset "LocalCompRule" begin
     g = Multigraph(9)
     for e in [[2, 6], [3, 7], [4, 8], [5, 9]]
         add_edge!(g, e[1], e[2])
@@ -145,7 +145,7 @@ end
     for e in [[1, 2], [1, 3], [1, 4], [1, 5], [2, 3]]
         add_edge!(zxg, e[1], e[2])
     end
-    replace!(Rule{:lc}(), zxg)
+    replace!(LocalCompRule(), zxg)
     @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
     @test phase(zxg, 2) == 3 // 2 &&
           phase(zxg, 3) == 7 // 4 &&
@@ -180,7 +180,7 @@ end
         add_edge!(zxg, e[1], e[2])
     end
 
-    replace!(Rule{:p1}(), zxg)
+    replace!(Pivot1Rule(), zxg)
     @test !has_edge(zxg, 3, 4) && !has_edge(zxg, 5, 6) && !has_edge(zxg, 7, 8)
     @test nv(zxg) == 12 && ne(zxg) == 18
     @test phase(zxg, 3) == 1 // 4 &&
@@ -191,7 +191,7 @@ end
           phase(zxg, 8) == 1 // 2
 end
 
-@testset "Rule{:pab}" begin
+@testset "PivotBoundaryRule" begin
     g = Multigraph(6)
     for e in [[2, 6]]
         add_edge!(g, e[1], e[2])
@@ -203,8 +203,8 @@ end
         add_edge!(zxg, e[1], e[2])
     end
 
-    @test length(match(Rule{:p1}(), zxg)) == 1
-    replace!(Rule{:pab}(), zxg)
+    @test length(match(Pivot1Rule(), zxg)) == 1
+    replace!(PivotBoundaryRule(), zxg)
     @test nv(zxg) == 7 && ne(zxg) == 6
     @test !isnothing(zxg)
 
@@ -234,13 +234,13 @@ end
     for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
         add_edge!(zxg, e[1], e[2])
     end
-    match(Rule{:p2}(), zxg)
-    replace!(Rule{:p2}(), zxg)
+    match(Pivot2Rule(), zxg)
+    replace!(Pivot2Rule(), zxg)
     @test zxg.phase_ids[15] == (2, -1)
     @test !isnothing(zxg)
 end
 
-@testset "Rule{:p3}" begin
+@testset "Pivot3Rule" begin
     g = Multigraph(15)
     for e in [[3, 9], [4, 10], [5, 11], [6, 12], [7, 13], [8, 14], [2, 15]]
         add_edge!(g, e[1], e[2])
@@ -268,7 +268,7 @@ end
     for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
         add_edge!(zxg, e[1], e[2])
     end
-    replace!(Rule{:p3}(), zxg)
+    replace!(Pivot3Rule(), zxg)
 
     @test nv(zxg) == 16 && ne(zxg) == 28
     @test ZXCalculus.ZX.is_hadamard(zxg, 2, 15) && ZXCalculus.ZX.is_hadamard(zxg, 1, 16)

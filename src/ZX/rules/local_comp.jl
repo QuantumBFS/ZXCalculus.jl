@@ -1,4 +1,6 @@
-function Base.match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
+struct LocalCompRule <: AbstractRule end
+
+function Base.match(::LocalCompRule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -23,7 +25,7 @@ function Base.match(::Rule{:lc}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::LocalCompRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
     has_vertex(zxg.mg, v) || return false
     if has_vertex(zxg.mg, v)
@@ -37,7 +39,7 @@ function check_rule(::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(r::Rule{:lc}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(r::LocalCompRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
     phase_v = phase(zxg, v)
     if phase_v == 1//2

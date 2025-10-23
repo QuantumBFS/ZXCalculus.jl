@@ -75,9 +75,9 @@ For example, in `example/ex1.jl`, we can get a simplified graph-like ZX-diagram 
 ```julia
 zxd = generate_example()
 zxg = ZXGraph(zxd)
-simplify!(Rule{:lc}(), zxg)
-simplify!(Rule{:p1}(), zxg)
-replace!(Rule{:pab}(), zxg)
+simplify!(LocalCompRule(), zxg)
+simplify!(Pivot1Rule(), zxg)
+replace!(PivotBoundaryRule(), zxg)
 ```
 
 The difference between `simplify!` and `replace!` is that `replace!` only matches vertices and tries to rewrite with all matched vertices once, while `simplify!` will keep matching until nothing matched.

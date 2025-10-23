@@ -19,7 +19,7 @@ using ZXCalculus: ZX
     @test !add_edge!(zxg1, 2, 4)
     @test !add_edge!(zxg1, 7, 8)
     @test sum([ZX.is_hadamard(zxg1, src(e), dst(e)) for e in edges(zxg1.mg)]) == 3
-    replace!(Rule{:b}(), zxd)
+    replace!(BialgebraRule(), zxd)
     zxg2 = ZXGraph(zxd)
     @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
 end

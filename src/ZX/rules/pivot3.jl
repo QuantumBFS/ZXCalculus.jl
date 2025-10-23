@@ -1,4 +1,6 @@
-function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
+struct Pivot3Rule <: AbstractRule end
+
+function Base.match(::Pivot3Rule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -32,7 +34,7 @@ function Base.match(::Rule{:p3}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && !is_interior(zxg, v1) &&
@@ -50,7 +52,7 @@ function check_rule(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(::Rule{:p3}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     # u is the boundary spider
     u, v = vs
     phase_u = phase(zxg, u)

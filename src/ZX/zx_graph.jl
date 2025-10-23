@@ -60,9 +60,9 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     zxd = copy(zxd)
     nzxd = copy(zxd)
 
-    simplify!(Rule{:i1}(), nzxd)
-    simplify!(Rule{:h}(), nzxd)
-    simplify!(Rule{:i2}(), nzxd)
+    simplify!(Identity1Rule(), nzxd)
+    simplify!(HadamardRule(), nzxd)
+    simplify!(Identity2Rule(), nzxd)
     match_f = match(FusionRule(), nzxd)
     while length(match_f) > 0
         for m in match_f

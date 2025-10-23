@@ -53,9 +53,9 @@ simplified_ex1 = clifford_simplification(ex1)
 or explicitly use
 ```julia
 zxg = ZXGraph(ex1)
-simplify!(Rule{:lc}(), zxg)
-simplify!(Rule{:p1}(), zxg)
-replace!(Rule{:pab}(), zxg)
+simplify!(LocalCompRule(), zxg)
+simplify!(Pivot1Rule(), zxg)
+replace!(PivotBoundaryRule(), zxg)
 simplified_ex1 = circuit_extraction(zxg)
 ```
 And we draw the simplified circuit.
@@ -185,6 +185,6 @@ Because the information of vertices locations of a general ZX-diagram is not pro
 
 We can manipulate `zxd` by using ZX-calculus [`Rule`](@ref)s.
 ```julia
-matches = match(Rule{:pi}(), zxd)
-rewrite!(Rule{:pi}(), zxd, matches)
+matches = match(PiRule(), zxd)
+rewrite!(PiRule(), zxd, matches)
 ```

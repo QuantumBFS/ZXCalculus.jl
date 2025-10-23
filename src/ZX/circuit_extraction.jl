@@ -1,12 +1,12 @@
 """
     ancilla_extraction(zxg::ZXGraph) -> ZXDiagram
 
-Extract a quantum circuit from a general `ZXGraph` even without a gflow. 
+Extract a quantum circuit from a general `ZXGraph` even without a gflow.
 It will introduce post-selection operators.
 """
 function ancilla_extraction(zxg::ZXGraph)
     nzxg = copy(zxg)
-    simplify!(Rule(:scalar), nzxg)
+    simplify!(ScalarRule(), nzxg)
     ins = copy(get_inputs(nzxg))
     outs = copy(get_outputs(nzxg))
     nbits = length(outs)
@@ -27,7 +27,7 @@ function ancilla_extraction(zxg::ZXGraph)
             insert_spider!(nzxg, u, v)
         end
     end
-    
+
     frontiers = copy(outs)
     circ = ZXDiagram(nbits)
     unextracts = Set(spiders(nzxg))
@@ -86,7 +86,7 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
             pushfirst_gate!(circ, Val(:Z), i, phase(nzxg, v))
             set_phase!(nzxg, v, zero(phase(nzxg, v)))
         end
-        for j in (i+1):length(frontiers)
+        for j in (i + 1):length(frontiers)
             u = frontiers[j]
             if has_edge(nzxg, u, v)
                 pushfirst_gate!(circ, Val(:CZ), i, j)
@@ -97,7 +97,7 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
     for i in eachindex(frontiers)
         v = frontiers[i]
         nb_v = neighbors(nzxg, v)
-        if length(nb_v) == 1 
+        if length(nb_v) == 1
             delete!(unextracts, v)
             @inbounds u = nb_v[1]
             if spider_type(nzxg, u) == SpiderType.Z
@@ -112,7 +112,7 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
         end
         for u in nb_v
             if haskey(gads, u)
-                rewrite!(Rule(:pivot), nzxg, [u, gads[u], v])
+                rewrite!(PivotGadgetRule(), nzxg, [u, gads[u], v])
                 pushfirst_gate!(circ, Val(:H), i)
                 delete!(unextracts, gads[u])
                 delete!(gads, u)
@@ -120,8 +120,8 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
                 qubit_map[u] = i
                 return frontiers
             else
-                spider_type(nzxg, u) == SpiderType.Z && 
-                !(u in nbs) && push!(nbs, u)
+                spider_type(nzxg, u) == SpiderType.Z &&
+                    !(u in nbs) && push!(nbs, u)
             end
         end
     end
@@ -131,9 +131,9 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
     M = biadjacency(nzxg, frontiers, nbs)
     M0, steps = gaussian_elimination(M)
     ws = Int[]
-    @inbounds for i = 1:length(frontiers)
-        if sum(M0[i,:]) == 1
-            push!(ws, nbs[findfirst(isone, M0[i,:])])
+    @inbounds for i in 1:length(frontiers)
+        if sum(M0[i, :]) == 1
+            push!(ws, nbs[findfirst(isone, M0[i, :])])
         end
     end
     if length(ws) > 0
@@ -207,19 +207,19 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
     @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
     qubit_map = Dict(zip(frontier, 1:nbits))
 
-    for i = 1:nbits
+    for i in 1:nbits
         @inbounds w = neighbors(nzxg, Outs[i])[1]
         @inbounds if is_hadamard(nzxg, w, Outs[i])
             pushfirst_gate!(cir, Val{:H}(), i)
         end
         if phase(nzxg, w) != 0
             pushfirst_gate!(cir, Val{:Rz}(), i, phase(nzxg, w))
-            set_phase!(nzxg, w, zero(P)) 
+            set_phase!(nzxg, w, zero(P))
         end
         @inbounds rem_edge!(nzxg, w, Outs[i])
     end
-    for i = 1:nbits
-        for j = i+1:nbits
+    for i in 1:nbits
+        for j in (i + 1):nbits
             @inbounds if has_edge(nzxg, frontier[i], frontier[j])
                 if is_hadamard(nzxg, frontier[i], frontier[j])
                     pushfirst_gate!(cir, Val{:CZ}(), i, j)
@@ -252,7 +252,7 @@ function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
             push!(frontier, nb[])
         end
     end
-    sort!(frontier, by = (v->qubit_map[v]))
+    sort!(frontier, by=(v->qubit_map[v]))
     M = biadjacency(nzxg, frontier, Ins)
     M, steps = gaussian_elimination(M)
     for step in steps
@@ -277,15 +277,16 @@ end
 Update frontier. This is an important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
+function update_frontier!(
+        zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
     # TODO: use inplace methods
     deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
 
-    for i = 1:length(frontier)
+    for i in 1:length(frontier)
         v = frontier[i]
         nb_v = neighbors(zxg, v)
         u = findfirst([u in gads for u in nb_v])
-          if !isnothing(u)
+        if !isnothing(u)
             u = nb_v[u]
             gad_u = zero(T)
             for w in neighbors(zxg, u)
@@ -294,15 +295,15 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
                     break
                 end
             end
-            rewrite!(Rule{:pivot}(), zxg, [u, gad_u, v])
+            rewrite!(PivotGadgetRule(), zxg, [u, gad_u, v])
             pop!(gads, u)
             pop!(gads, gad_u)
             frontier[i] = u
             qubit_map[u] = qubit_map[v]
             pushfirst_gate!(cir, Val(:H), qubit_map[u])
             delete!(qubit_map, v)
-            for j = 1:length(frontier)
-                for k = j+1:length(frontier)
+            for j in 1:length(frontier)
+                for k in (j + 1):length(frontier)
                     if is_hadamard(zxg, frontier[j], frontier[k])
                         pushfirst_gate!(cir, Val(:CZ), qubit_map[frontier[j]], qubit_map[frontier[k]])
                         rem_edge!(zxg, frontier[j], frontier[k])
@@ -323,9 +324,9 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
     M = biadjacency(zxg, frontier, N)
     M0, steps = gaussian_elimination(M)
     ws = T[]
-    @inbounds for i = 1:length(frontier)
-        if sum(M0[i,:]) == 1
-            push!(ws, N[findfirst(isone, M0[i,:])])
+    @inbounds for i in 1:length(frontier)
+        if sum(M0[i, :]) == 1
+            push!(ws, N[findfirst(isone, M0[i, :])])
         end
     end
     # M1 = biadjacency(zxg, frontier, ws)
@@ -374,8 +375,8 @@ function update_frontier!(zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T},
         frontier[i] = w
     end
 
-    @inbounds for i1 = 1:length(frontier)
-        for i2 = i1+1:length(frontier)
+    @inbounds for i1 in 1:length(frontier)
+        for i2 in (i1 + 1):length(frontier)
             if has_edge(zxg, frontier[i1], frontier[i2])
                 pushfirst_gate!(cir, Val{:CZ}(), qubit_map[frontier[i1]],
                     qubit_map[frontier[i2]])
@@ -394,7 +395,7 @@ Return the biadjacency matrix of `zxg` from vertices in `F` to vertices in `N`.
 function biadjacency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, P}
     M = zeros(Int, length(F), length(N))
 
-    for i = 1:length(F)
+    for i in 1:length(F)
         for v2 in neighbors(zxg, F[i])
             if v2 in N
                 M[i, findfirst(isequal(v2), N)] = 1
@@ -421,24 +422,24 @@ end
 Return result and steps of Gaussian elimination of matrix `M`. Here we assume
 that the elements of `M` is in binary field F_2 = {0,1}.
 """
-function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}(); rev = false) where {T<:Integer}
+function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep}=Vector{GEStep}(); rev=false) where {T <: Integer}
     M = copy(M)
     nr, nc = size(M)
     current_col = 1
-    for i = 1:nr
-        if sum(M[i,:]) == 0
+    for i in 1:nr
+        if sum(M[i, :]) == 0
             continue
         end
         while current_col <= nc
             rs = findall(!iszero, M[i:nr, current_col])
             if length(rs) > 0
-                sort!(rs, by = k -> sum(M[k,:]), rev = rev)
+                sort!(rs, by=k -> sum(M[k, :]), rev=rev)
                 r0 = rs[1]
                 r0 += i - 1
                 r0 == i && break
-                M_r0 = M[r0,:]
-                M[r0,:] = M[i,:]
-                M[i,:] = M_r0
+                M_r0 = M[r0, :]
+                M[r0, :] = M[i, :]
+                M[i, :] = M_r0
                 step = GEStep(:swap, r0, i)
                 push!(steps, step)
                 break
@@ -447,10 +448,10 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
             end
         end
         current_col > nc && break
-        for j = 1:nr
+        for j in 1:nr
             j == i && continue
             if M[j, current_col] == M[i, current_col]
-                M[j,:] = M[j,:] .⊻ M[i,:]
+                M[j, :] = M[j, :] .⊻ M[i, :]
                 step = GEStep(:addto, i, j)
                 push!(steps, step)
             end
@@ -460,10 +461,10 @@ function gaussian_elimination(M::Matrix{T}, steps::Vector{GEStep} = Vector{GESte
     return M, steps
 end
 
-function normalize_perm(M::Matrix{T}, steps::Vector{GEStep} = Vector{GEStep}()) where {T<:Integer}
+function normalize_perm(M::Matrix{T}, steps::Vector{GEStep}=Vector{GEStep}()) where {T <: Integer}
     nr, nc = size(M)
     @assert nc <= nr
-    @assert all(sum(M; dims = 1) .<= 1) && all(sum(M; dims = 2) .<= 1)
+    @assert all(sum(M; dims=1) .<= 1) && all(sum(M; dims=2) .<= 1)
     @assert sum(M) == nc
 
     cur_r = 1

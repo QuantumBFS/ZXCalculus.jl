@@ -1,4 +1,6 @@
-function Base.match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
+struct PivotBoundaryRule <: AbstractRule end
+
+function Base.match(::PivotBoundaryRule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -19,7 +21,7 @@ function Base.match(::Rule{:pab}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::PivotBoundaryRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)) || return false
     if has_vertex(zxg.mg, v1)
@@ -36,7 +38,7 @@ function check_rule(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
     return false
 end
 
-function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::PivotBoundaryRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v = vs
     phase_v = phase(zxg, v)
     nb_v = neighbors(zxg, v)
@@ -81,5 +83,5 @@ function rewrite!(::Rule{:pab}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         # rem_edge!(zxg, w, v_bound)
         # add_edge!(zxg, w, v_bound, EdgeType.SIM)
     end
-    return rewrite!(Rule{:p1}(), zxg, Match{T}([u, v]))
+    return rewrite!(Pivot1Rule(), zxg, Match{T}([u, v]))
 end

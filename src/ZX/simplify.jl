@@ -2,6 +2,7 @@ const MAX_ITERATION = Ref{Int}(1000)
 
 """
     replace!(r, zxd)
+
 Match and replace with the rule `r`.
 """
 function Base.replace!(r::AbstractRule, zxd::AbstractZXDiagram)
@@ -12,6 +13,7 @@ end
 
 """
     simplify!(r, zxd)
+
 Simplify `zxd` with the rule `r`.
 """
 function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
@@ -21,7 +23,7 @@ function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
         rewrite!(r, zxd, matches)
         matches = match(r, zxd)
         i += 1
-        if i > MAX_ITERATION.x && r in (Rule{:p2}(), Rule{:p3}(), Rule{:pab}())
+        if i > MAX_ITERATION.x && r in (Pivot2Rule(), Pivot3Rule(), PivotBoundaryRule())
             @warn "Try to simplify this ZX-diagram with rule $r more than $(MAX_ITERATION.x) iterarions"
             break
         end
@@ -31,6 +33,7 @@ end
 
 """
     clifford_simplification(zxd)
+
 Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
 function clifford_simplification(circ::ZXDiagram)
@@ -40,16 +43,16 @@ function clifford_simplification(circ::ZXDiagram)
 end
 
 function clifford_simplification(zxg::ZXGraph)
-    simplify!(Rule{:lc}(), zxg)
-    simplify!(Rule{:p1}(), zxg)
-    match_id = match(Rule{:id}(), zxg)
+    simplify!(LocalCompRule(), zxg)
+    simplify!(Pivot1Rule(), zxg)
+    match_id = match(IdentityRemovalRule(), zxg)
     while length(match_id) > 0
-        rewrite!(Rule{:id}(), zxg, match_id)
-        simplify!(Rule{:lc}(), zxg)
-        simplify!(Rule{:p1}(), zxg)
-        match_id = match(Rule{:id}(), zxg)
+        rewrite!(IdentityRemovalRule(), zxg, match_id)
+        simplify!(LocalCompRule(), zxg)
+        simplify!(Pivot1Rule(), zxg)
+        match_id = match(IdentityRemovalRule(), zxg)
     end
-    replace!(Rule{:pab}(), zxg)
+    replace!(PivotBoundaryRule(), zxg)
 
     return zxg
 end
@@ -68,25 +71,25 @@ function full_reduction(cir::ZXDiagram)
 end
 
 function full_reduction(zxg::ZXGraph)
-    simplify!(Rule{:lc}(), zxg)
-    simplify!(Rule{:p1}(), zxg)
-    simplify!(Rule{:p2}(), zxg)
-    simplify!(Rule{:p3}(), zxg)
-    replace!(Rule(:pab), zxg)
-    simplify!(Rule{:p1}(), zxg)
-    match_id = match(Rule{:id}(), zxg)
-    match_gf = match(Rule{:gf}(), zxg)
+    simplify!(LocalCompRule(), zxg)
+    simplify!(Pivot1Rule(), zxg)
+    simplify!(Pivot2Rule(), zxg)
+    simplify!(Pivot3Rule(), zxg)
+    replace!(PivotBoundaryRule(), zxg)
+    simplify!(Pivot1Rule(), zxg)
+    match_id = match(IdentityRemovalRule(), zxg)
+    match_gf = match(GadgetFusionRule(), zxg)
     while length(match_id) + length(match_gf) > 0
-        rewrite!(Rule{:id}(), zxg, match_id)
-        rewrite!(Rule{:gf}(), zxg, match_gf)
-        simplify!(Rule{:lc}(), zxg)
-        simplify!(Rule{:p1}(), zxg)
-        simplify!(Rule{:p2}(), zxg)
-        simplify!(Rule{:p3}(), zxg)
-        replace!(Rule(:pab), zxg)
-        simplify!(Rule{:p1}(), zxg)
-        match_id = match(Rule{:id}(), zxg)
-        match_gf = match(Rule{:gf}(), zxg)
+        rewrite!(IdentityRemovalRule(), zxg, match_id)
+        rewrite!(GadgetFusionRule(), zxg, match_gf)
+        simplify!(LocalCompRule(), zxg)
+        simplify!(Pivot1Rule(), zxg)
+        simplify!(Pivot2Rule(), zxg)
+        simplify!(Pivot3Rule(), zxg)
+        replace!(PivotBoundaryRule(), zxg)
+        simplify!(Pivot1Rule(), zxg)
+        match_id = match(IdentityRemovalRule(), zxg)
+        match_gf = match(GadgetFusionRule(), zxg)
     end
 
     return zxg
@@ -116,16 +119,14 @@ function compose_permutation(p1::Dict{Int, Int}, p2::Dict{Int, Int})
     return p
 end
 
-map_locations(d::Dict{T, T}, g::Gate) where {T <: Integer} = 
-    Gate(g.operation, map_locations(d, g.locations))
-map_locations(d::Dict{T, T}, cg::Ctrl) where {T <: Integer} = 
-    Ctrl(map_locations(d, cg.gate), map_locations(d, cg.ctrl))
-map_locations(d::Dict{T, T}, locs::Locations) where {T <: Integer} =
-    Locations(Tuple(haskey(d, i) ? d[i] : i for i in locs.storage))
-map_locations(d::Dict{T, T}, locs::CtrlLocations) where {T <: Integer} =
-    CtrlLocations(map_locations(d, locs.storage))
+map_locations(d::Dict{T, T}, g::Gate) where {T <: Integer} = Gate(g.operation, map_locations(d, g.locations))
+map_locations(d::Dict{T, T}, cg::Ctrl) where {T <: Integer} = Ctrl(map_locations(d, cg.gate), map_locations(d, cg.ctrl))
+function map_locations(d::Dict{T, T}, locs::Locations) where {T <: Integer}
+    return Locations(Tuple(haskey(d, i) ? d[i] : i for i in locs.storage))
+end
+map_locations(d::Dict{T, T}, locs::CtrlLocations) where {T <: Integer} = CtrlLocations(map_locations(d, locs.storage))
 
-function simplify_swap!(qc::Chain; replace_swap::Bool = true)
+function simplify_swap!(qc::Chain; replace_swap::Bool=true)
     chain_after_swap = Chain()
     loc_map = Dict{Int, Int}()
     while length(qc.args) > 0
@@ -184,7 +185,7 @@ function replace_swap!(chain_swap::Chain, chain_after_swap::Chain)
         while j <= length(qc_after_swap)
             g = qc_after_swap[j]
             j += 1
-            if g isa Ctrl 
+            if g isa Ctrl
                 if g.gate === X && length(g.gate.locations) == 1 && length(g.ctrl) == 1
                     loc = plain(g.gate.locations)[]
                     ctrl = plain(g.ctrl.storage)[]
@@ -194,7 +195,7 @@ function replace_swap!(chain_swap::Chain, chain_after_swap::Chain)
                     end
                 end
             end
-            qc_after_swap[j-1] = map_locations(qmap, qc_after_swap[j-1])
+            qc_after_swap[j - 1] = map_locations(qmap, qc_after_swap[j - 1])
         end
         if j > length(qc_after_swap)
             push!(qc_after_swap, convert_to_gate(Val(:CNOT), loc1, loc2))

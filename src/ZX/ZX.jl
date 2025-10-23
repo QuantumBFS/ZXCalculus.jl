@@ -20,7 +20,14 @@ export AbstractZXDiagram, ZXDiagram, ZXGraph
 
 export AbstractRule
 export Rule, Match
-export FusionRule
+export FusionRule, HadamardRule,
+       Identity1Rule, Identity2Rule,
+       PiRule, CopyRule, BialgebraRule,
+       LocalCompRule,
+       Pivot1Rule, Pivot2Rule, Pivot3Rule,
+       PivotBoundaryRule, PivotGadgetRule,
+       IdentityRemovalRule, GadgetFusionRule,
+       ScalarRule
 
 export rewrite!, simplify!
 

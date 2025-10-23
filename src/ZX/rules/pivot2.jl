@@ -1,4 +1,6 @@
-function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
+struct Pivot2Rule <: AbstractRule end
+
+function Base.match(::Pivot2Rule, zxg::ZXGraph{T, P}) where {T, P}
     matches = Match{T}[]
     vs = spiders(zxg)
     vB = [get_inputs(zxg); get_outputs(zxg)]
@@ -35,7 +37,7 @@ function Base.match(::Rule{:p2}, zxg::ZXGraph{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     if has_vertex(zxg.mg, v1)
         if spider_type(zxg, v1) == SpiderType.Z && is_interior(zxg, v1) &&
@@ -54,7 +56,7 @@ function check_rule(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(::Rule{:p2}, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     # u has non-Clifford phase
     u, v = vs
     phase_u = phase(zxg, u)
