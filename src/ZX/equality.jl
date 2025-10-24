@@ -4,7 +4,8 @@
 checks the equivalence of two different ZXDiagrams
 """
 function verify_equality(zxd_1::ZXDiagram, zxd_2::ZXDiagram)
-    merged_diagram = concat!(zxd_1, dagger(zxd_2))
+    merged_diagram = copy(zxd_1)
+    merged_diagram = concat!(merged_diagram, dagger(zxd_2))
     m_simple = full_reduction(merged_diagram)
     return contains_only_bare_wires(m_simple)
 end
