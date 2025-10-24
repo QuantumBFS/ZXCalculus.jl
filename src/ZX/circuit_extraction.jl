@@ -4,7 +4,7 @@
 Extract a quantum circuit from a general `ZXGraph` even without a gflow.
 It will introduce post-selection operators.
 """
-function ancilla_extraction(zxg::ZXGraph)
+function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
     nzxg = copy(zxg)
     simplify!(ScalarRule(), nzxg)
     ins = copy(get_inputs(nzxg))

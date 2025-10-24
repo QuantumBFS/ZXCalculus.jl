@@ -29,11 +29,13 @@ function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T
     W = intersect(nb_u, nb_v)
     add_power!(zxg, length(U)*length(V) + length(V)*length(W) + length(W)*length(U))
 
-    phase_id_gadget_u = zxg.phase_ids[gadget_u]
+    # TODO: to ZXCircuit
+    # phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
     if !is_zero_phase(Phase(phase_u))
-        zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
-        phase_id_gadget_u = zxg.phase_ids[gadget_u]
+        # TODO: to ZXCircuit
+        # zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
+        # phase_id_gadget_u = zxg.phase_ids[gadget_u]
         phase_gadget_u = -phase(zxg, gadget_u)
     end
 
@@ -55,8 +57,10 @@ function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T
     end
 
     set_phase!(zxg, v, phase_gadget_u)
-    zxg.phase_ids[v] = phase_id_gadget_u
-    zxg.phase_ids[u] = (u, 1)
+
+    # TODO: to ZXCircuit
+    # zxg.phase_ids[v] = phase_id_gadget_u
+    # zxg.phase_ids[u] = (u, 1)
 
     rem_spider!(zxg, gadget_u)
     return zxg

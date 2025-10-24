@@ -168,3 +168,47 @@ is_hadamard(circ::ZXCircuit, v1::Integer, v2::Integer) = is_hadamard(circ.zx_gra
 add_global_phase!(circ::ZXCircuit{T, P}, p::P) where {T, P} = add_global_phase!(circ.zx_graph, p)
 add_power!(circ::ZXCircuit, n::Integer) = add_power!(circ.zx_graph, n)
 insert_spider!(circ::ZXCircuit{T, P}, args...) where {T, P} = insert_spider!(circ.zx_graph, args...)
+
+qubit_loc(zxg::ZXCircuit{T, P}, v::T) where {T, P} = qubit_loc(generate_layout!(zxg), v)
+function column_loc(zxg::ZXCircuit{T, P}, v::T) where {T, P}
+    c_loc = column_loc(generate_layout!(zxg), v)
+    if !isnothing(c_loc)
+        if spider_type(zxg, v) == SpiderType.Out
+            nb = neighbors(zxg, v)
+            if length(nb) == 1
+                nb = nb[1]
+                spider_type(zxg, nb) == SpiderType.In && return 3//1
+                c_loc = floor(column_loc(zxg, nb) + 2)
+            else
+                c_loc = 1000
+            end
+        end
+        if spider_type(zxg, v) == SpiderType.In
+            nb = neighbors(zxg, v)[1]
+            spider_type(zxg, nb) == SpiderType.Out && return 1//1
+            c_loc = ceil(column_loc(zxg, nb) - 2)
+        end
+    end
+    !isnothing(c_loc) && return c_loc
+    return 0
+end
+
+add_spider!(circ::ZXCircuit, args...) = add_spider!(circ.zx_graph, args...)
+
+function spider_sequence(zxg::ZXCircuit{T, P}) where {T, P}
+    nbits = nqubits(zxg)
+    if nbits > 0
+        vs = spiders(zxg)
+        spider_seq = [T[] for _ in 1:nbits]
+        for v in vs
+            if !isnothing(qubit_loc(zxg, v))
+                q_loc = Int(qubit_loc(zxg, v))
+                q_loc > 0 && push!(spider_seq[q_loc], v)
+            end
+        end
+        for q in 1:nbits
+            sort!(spider_seq[q], by=(v -> column_loc(zxg, v)))
+        end
+        return spider_seq
+    end
+end

@@ -276,28 +276,6 @@ end
 get_inputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In]
 get_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
 
-# TODO: remove it?
-function spider_sequence(zxg::ZXGraph{T, P}) where {T, P}
-    nbits = nqubits(zxg)
-    if nbits > 0
-        vs = spiders(zxg)
-        spider_seq = Vector{Vector{T}}(undef, nbits)
-        for q in 1:nbits
-            spider_seq[q] = Vector{T}()
-        end
-        for v in vs
-            if !isnothing(qubit_loc(zxg, v))
-                q_loc = Int(qubit_loc(zxg, v))
-                q_loc > 0 && push!(spider_seq[q_loc], v)
-            end
-        end
-        for q in 1:nbits
-            sort!(spider_seq[q], by=(v -> column_loc(zxg, v)))
-        end
-        return spider_seq
-    end
-end
-
 function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
     inputs = get_inputs(zxg)
     outputs = get_outputs(zxg)
