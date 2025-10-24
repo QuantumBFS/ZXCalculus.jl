@@ -71,7 +71,6 @@ function rewrite!(::FusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     for v3 in neighbors(zxg, v2)
         if v3 != v1
             et = edge_type(zxg, v2, v3)
-            @show v1, v3, et
             add_edge!(zxg, v1, v3, et)
         end
     end

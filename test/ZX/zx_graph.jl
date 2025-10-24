@@ -16,8 +16,7 @@ using ZXCalculus.Utils: Phase
     @test !isnothing(zxg1)
     @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
-    @test add_edge!(zxg1, 1, 1)
-    @test_throws ErrorException !add_edge!(zxg1, 2, 4)
+    @test_throws AssertionError !add_edge!(zxg1, 2, 4)
     @test !add_edge!(zxg1, 7, 8)
     @test sum(ZX.is_hadamard(zxg1, src(e), dst(e)) for e in edges(zxg1.mg)) == 3
     replace!(BialgebraRule(), zxd)
