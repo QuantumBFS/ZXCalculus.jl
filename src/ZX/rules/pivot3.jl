@@ -69,7 +69,7 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # phase_id_u = zxg.phase_ids[u]
     # if sgn_phase_v < 0
     #     zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -105,7 +105,7 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     gad = add_spider!(zxg, SpiderType.Z, P(sgn_phase_v*phase_u))
     add_edge!(zxg, v, gad)
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # zxg.phase_ids[gad] = phase_id_u
     # zxg.phase_ids[u] = phase_id_v
     # zxg.phase_ids[v] = (v, 1)
@@ -117,5 +117,23 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         rem_edge!(zxg, u, bd_u)
         add_edge!(zxg, u, bd_u)
     end
-    return zxg
+    return zxg, gad
+end
+
+function rewrite!(::Pivot3Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    u, v = vs
+
+    if is_one_phase(phase(circ, v))
+        @assert flip_phase_tracking_sign!(circ, u) "failed to flip phase tracking sign for $u"
+    end
+    phase_id_u = circ.phase_ids[u]
+    phase_id_v = circ.phase_ids[v]
+
+    _, gad = rewrite!(Pivot3Rule(), circ.zx_graph, vs)
+
+    circ.phase_ids[gad] = phase_id_u
+    circ.phase_ids[u] = phase_id_v
+    circ.phase_ids[v] = (v, 1)
+
+    return circ
 end
