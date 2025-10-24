@@ -38,7 +38,6 @@ end
 
 function rewrite!(::PivotBoundaryRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v, v_bound = vs
-    @show vs, zxg.et
     et = edge_type(zxg, v, v_bound)
     new_v = insert_spider!(zxg, v, v_bound)[1]
     w = insert_spider!(zxg, v, new_v)
