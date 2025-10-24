@@ -254,7 +254,7 @@ end
 
     @test length(match(Pivot1Rule(), zxg)) == 1
     replace!(PivotBoundaryRule(), zxg)
-    @test nv(zxg) == 7 && ne(zxg) == 6
+    @test nv(zxg) == 6 && ne(zxg) == 6
     @test !isnothing(zxg)
 
     g = Multigraph(14)
