@@ -1,5 +1,5 @@
 ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
-Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
+YaoHIR.Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
 
 convert_to_gate(::Val{:X}, loc) = Gate(X, Locations(loc))
 convert_to_gate(::Val{:Z}, loc) = Gate(Z, Locations(loc))
@@ -65,7 +65,7 @@ function unwrap_ssa_phase(theta, ir::Core.Compiler.IRCode)
 end
 
 function canonicalize_single_location(ir::YaoHIR.Chain)
-    Chain(map(canonicalize_single_location, ir.args)...)
+    return Chain(map(canonicalize_single_location, ir.args)...)
 end
 
 function canonicalize_single_location(node::YaoHIR.Ctrl)
@@ -86,47 +86,47 @@ function gates_to_circ(circ, circuit, root)
     for gate in YaoHIR.leaves(circuit)
         @switch gate begin
             @case Gate(&Z, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//1)
+            push_gate!(circ, Val(:Z), plain(loc), 1//1)
             @case Gate(&X, loc::Locations{Int})
-                push_gate!(circ, Val(:X), plain(loc), 1//1)
+            push_gate!(circ, Val(:X), plain(loc), 1//1)
             @case Gate(&H, loc::Locations{Int})
-                push_gate!(circ, Val(:H), plain(loc))
+            push_gate!(circ, Val(:H), plain(loc))
             @case Gate(&S, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//2)
+            push_gate!(circ, Val(:Z), plain(loc), 1//2)
             @case Gate(&T, loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 1//4)
+            push_gate!(circ, Val(:Z), plain(loc), 1//4)
             @case Gate(shift(theta), loc::Locations{Int})
-                theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
+            theta = unwrap_ssa_phase(theta, root.parent)
+            push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
             @case Gate(Rx(theta), loc::Locations{Int})
-                theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc), (1/π) * theta)
+            theta = unwrap_ssa_phase(theta, root.parent)
+            push_gate!(circ, Val(:X), plain(loc), (1/π) * theta)
             @case Gate(Ry(theta), loc::Locations{Int})
-                theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:X), plain(loc), 1//2)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
-                push_gate!(circ, Val(:X), plain(loc), -1//2)
+            theta = unwrap_ssa_phase(theta, root.parent)
+            push_gate!(circ, Val(:X), plain(loc), 1//2)
+            push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
+            push_gate!(circ, Val(:X), plain(loc), -1//2)
             @case Gate(Rz(theta), loc::Locations{Int})
-                theta = unwrap_ssa_phase(theta, root.parent)
-                push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
+            theta = unwrap_ssa_phase(theta, root.parent)
+            push_gate!(circ, Val(:Z), plain(loc), (1/π) * theta)
             @case Gate(AdjointOperation(&S), loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 3//2)
+            push_gate!(circ, Val(:Z), plain(loc), 3//2)
             @case Gate(AdjointOperation(&T), loc::Locations{Int})
-                push_gate!(circ, Val(:Z), plain(loc), 7//4)
+            push_gate!(circ, Val(:Z), plain(loc), 7//4)
             @case Ctrl(Gate(&X, loc::Locations), ctrl::CtrlLocations) # CNOT
-                if length(loc) == 1 && length(ctrl) == 1
-                    push_gate!(circ, Val(:CNOT), plain(loc)[1], plain(ctrl)[1])
-                else
-                    error("Multi qubits controlled gates are not supported")
-                end
+            if length(loc) == 1 && length(ctrl) == 1
+                push_gate!(circ, Val(:CNOT), plain(loc)[1], plain(ctrl)[1])
+            else
+                error("Multi qubits controlled gates are not supported")
+            end
             @case Ctrl(Gate(&Z, loc::Locations), ctrl::CtrlLocations) # CZ
-                if length(loc) == 1 && length(ctrl) == 1
-                    push_gate!(circ, Val(:CZ), plain(loc)[1], plain(ctrl)[1])
-                else
-                    error("Multi qubits controlled gates are not supported")
-                end
+            if length(loc) == 1 && length(ctrl) == 1
+                push_gate!(circ, Val(:CZ), plain(loc)[1], plain(ctrl)[1])
+            else
+                error("Multi qubits controlled gates are not supported")
+            end
             @case _
-                error("$gate is not supported")
+            error("$gate is not supported")
         end
     end
     return circ
@@ -135,9 +135,8 @@ end
 function convert_to_zxd(root::YaoHIR.BlockIR)
     diagram = ZXDiagram(root.nqubits)
     circuit = canonicalize_single_location(root.circuit)
-    gates_to_circ(diagram, circuit, root)
+    return gates_to_circ(diagram, circuit, root)
 end
-
 
 function push_spider_to_chain!(qc, q, ps, st)
     if ps != 0
@@ -176,7 +175,7 @@ function push_spider_to_chain!(qc, q, ps, st)
     end
 end
 
-function convert_to_chain(circ::ZXDiagram{TT,P}) where {TT,P}
+function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
     spider_seq = spider_sequence(circ)
     qc = []
     for vs in spider_seq
