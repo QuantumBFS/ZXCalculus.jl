@@ -92,7 +92,7 @@ end
     @test !isnothing(plot(zxg))
     fl_chain = circuit_extraction(zxg)
     layout = ZX.generate_layout!(zxg)
-    @test ZX.qubit_loc(layout, 40) == 0//1
+    @test ZX.qubit_loc(layout, 40) == 2//1
     ZX.spider_sequence(zxg)
 
     pt_bir = phase_teleportation(bir)

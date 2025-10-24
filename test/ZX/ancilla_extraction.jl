@@ -16,7 +16,6 @@ end
 zxd = gen_phase_gadget()
 zxg = full_reduction(zxd)
 anc_circ = ancilla_extraction(zxg)
-
 @test !isnothing(plot(anc_circ))
 
 zxd_swap = ZXDiagram(2)
