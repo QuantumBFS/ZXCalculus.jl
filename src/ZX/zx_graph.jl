@@ -177,8 +177,6 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         for v in vs
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
-            # TODO: to ZXCircuit
-            # delete!(zxg.phase_ids, v)
         end
         return true
     end
@@ -191,10 +189,6 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P),
     v = add_vertex!(zxg.mg)[1]
     set_phase!(zxg, v, phase)
     zxg.st[v] = st
-    if st in (SpiderType.Z, SpiderType.X)
-        # TODO: to ZXCircuit
-        # zxg.phase_ids[v] = (v, 1)
-    end
     if all(has_vertex(zxg, c) for c in connect)
         for c in connect
             add_edge!(zxg, v, c)
@@ -208,7 +202,7 @@ function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P=zero(P)) wher
     return v
 end
 
-tcount(cir::ZXGraph) = sum([phase(cir, v) % 1//2 != 0 for v in spiders(cir)])
+tcount(cir::ZXGraph) = sum(!is_clifford_phase(phase(cir, v)) for v in spiders(cir) if is_zx_spider(cir, v))
 
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T <: Integer}
     st_v = spider_type(zxg, v)

@@ -167,6 +167,25 @@ Graphs.rem_edge!(zxg::ZXCircuit, args...) = rem_edge!(zxg.zx_graph, args...)
 is_hadamard(circ::ZXCircuit, v1::Integer, v2::Integer) = is_hadamard(circ.zx_graph, v1, v2)
 add_global_phase!(circ::ZXCircuit{T, P}, p::P) where {T, P} = add_global_phase!(circ.zx_graph, p)
 add_power!(circ::ZXCircuit, n::Integer) = add_power!(circ.zx_graph, n)
+
+function rem_spiders!(circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    rem_spiders!(circ.zx_graph, vs)
+    for v in vs
+        delete!(circ.phase_ids, v)
+    end
+    return circ
+end
+rem_spider!(circ::ZXCircuit{T, P}, v::T) where {T, P} = rem_spiders!(circ, [v])
+
+function add_spider!(circ::ZXCircuit{T, P}, st::SpiderType.SType, p::P=zero(P), connect::Vector{T}=T[]) where {
+        T, P}
+    v = add_spider!(circ.zx_graph, st, p, connect)
+    if st in (SpiderType.Z, SpiderType.X)
+        circ.phase_ids[v] = (v, 1)
+    end
+    return v
+end
+
 insert_spider!(circ::ZXCircuit{T, P}, args...) where {T, P} = insert_spider!(circ.zx_graph, args...)
 
 qubit_loc(zxg::ZXCircuit{T, P}, v::T) where {T, P} = qubit_loc(generate_layout!(zxg), v)
