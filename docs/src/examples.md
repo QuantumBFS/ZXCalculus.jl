@@ -52,7 +52,7 @@ simplified_ex1 = clifford_simplification(ex1)
 ```
 or explicitly use
 ```julia
-zxg = ZXGraph(ex1)
+zxg = ZXCircuit(ex1)
 simplify!(LocalCompRule(), zxg)
 simplify!(Pivot1Rule(), zxg)
 replace!(PivotBoundaryRule(), zxg)

@@ -105,7 +105,7 @@ zxd = load_graph()
 tcount(zxd)
 
 # ╔═╡ db9a0d4e-e99e-11ea-22ab-1fead216dd07
-zxg = ZXGraph(zxd)
+zxg = ZXCircuit(zxd)
 
 # ╔═╡ 66eb6e1a-e99f-11ea-141c-a9017390524f
 md"apply the `lc` rule recursively"
@@ -163,7 +163,7 @@ ex_zxd = clifford_simplification(zxd2)
 pt_zxd = phase_teleportation(zxd2)
 
 # ╔═╡ 52c1ae46-a440-4d72-8dc1-fa9903feac80
-pt_zxg = ZXGraph(pt_zxd)
+pt_zxg = ZXCircuit(pt_zxd)
 
 # ╔═╡ c3e8b5b4-e99a-11ea-0e56-6b18757f94df
 md"# Extract circuit"
@@ -226,7 +226,7 @@ begin
 end
 
 # ╔═╡ 31753c83-847a-4c2a-a6b3-8be6aaa8f792
-zxg_t = ZXGraph(zxd_t)
+zxg_t = ZXCircuit(zxd_t)
 
 # ╔═╡ 4a189a46-9ae6-458c-94c4-7cc8d5dab788
 md"""

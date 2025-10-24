@@ -76,11 +76,12 @@ function rewrite!(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) wher
         add_edge!(zxg, v1, v3, EdgeType.SIM)
 
     else
-        set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
-        id1, mul1 = zxg.phase_ids[v1]
-        id3, mul3 = zxg.phase_ids[v3]
-        set_phase!(zxg.master, id3, (mul3 * phase(zxg.master, id3) + mul1 * phase(zxg.master, id1)) * mul3)
-        set_phase!(zxg.master, id1, zero(P))
+        # TODO: to ZXCircuit
+        # set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
+        # id1, mul1 = zxg.phase_ids[v1]
+        # id3, mul3 = zxg.phase_ids[v3]
+        # set_phase!(zxg.master, id3, (mul3 * phase(zxg.master, id3) + mul1 * phase(zxg.master, id1)) * mul3)
+        # set_phase!(zxg.master, id1, zero(P))
         for v in neighbors(zxg, v1)
             v == v2 && continue
             add_edge!(zxg, v, v3, is_hadamard(zxg, v, v1) ? EdgeType.HAD : EdgeType.SIM)

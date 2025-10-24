@@ -1,8 +1,7 @@
 using ZXCalculus, Documenter, Test
-using Vega
-using DataFrames
+using Vega, DataFrames
 
-@testset "ZX module" begin
+# @testset "ZX module" begin
     @testset "plots.jl" begin
         include("ZX/plots.jl")
     end

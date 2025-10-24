@@ -195,7 +195,7 @@ es = Dict(
     (46+1, 47+1) => EdgeType.HAD
 )
 
-zxg = ZXGraph(ZXDiagram(0))
+zxg = ZXCircuit(ZXDiagram(0))
 vs = 1:52
 for v in vs
     ZX.add_spider!(zxg, st[v], Phase(ps[v]))

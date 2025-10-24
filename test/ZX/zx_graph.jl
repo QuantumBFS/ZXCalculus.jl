@@ -12,7 +12,7 @@ using ZXCalculus.Utils: Phase
     ps = [Phase(0 // 1) for i in 1:6]
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
-    zxg1 = ZXGraph(zxd)
+    zxg1 = ZXCircuit(zxd)
     @test !isnothing(zxg1)
     @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
@@ -20,7 +20,7 @@ using ZXCalculus.Utils: Phase
     @test !add_edge!(zxg1, 7, 8)
     @test sum(ZX.is_hadamard(zxg1, src(e), dst(e)) for e in edges(zxg1.mg)) == 3
     replace!(BialgebraRule(), zxd)
-    zxg2 = ZXGraph(zxd)
+    zxg2 = ZXCircuit(zxd)
     @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
 end
 
@@ -28,10 +28,10 @@ end
     zxd = ZXDiagram(2)
     push_gate!(zxd, Val(:H), 1)
     push_gate!(zxd, Val(:CNOT), 2, 1)
-    zxg = ZXGraph(zxd)
+    zxg = ZXCircuit(zxd)
     @test !isnothing(zxg)
 
-    zxg3 = ZXGraph(ZXDiagram(3))
+    zxg3 = ZXCircuit(ZXDiagram(3))
     ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
     ZX.add_power!(zxg3, 3)
     @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)

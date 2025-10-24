@@ -86,3 +86,7 @@ Check whether the vertices `vs` in ZX-diagram `zxd` still match the rule `r`.
 function check_rule(r::AbstractRule, ::AbstractZXDiagram{T, P}, ::Vector{T}) where {T, P}
     return error("check_rule not implemented for rule $(r)!")
 end
+
+Base.match(r::AbstractRule, zxc::ZXCircuit{T, P}) where {T, P} = match(r, zxc.zx_graph)
+rewrite!(r::AbstractRule, zxc::ZXCircuit{T, P}, vs::Vector{T}) where {T, P} = rewrite!(r, zxc.zx_graph, vs)
+check_rule(r::AbstractRule, zxc::ZXCircuit{T, P}, vs::Vector{T}) where {T, P} = check_rule(r, zxc.zx_graph, vs)

@@ -47,7 +47,7 @@ function generate_example()
 end
 ```
 
-In the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178), they introduced a special type of ZX-diagrams, graph-like ZX-diagrams, which consists of Z-spiders with 2 different types of edges only. We use [`ZXCalculus.ZX.ZXGraph`](@ref) for representing this special type of ZX-diagrams. One can convert a `ZXDiagram` into a `ZXGraph` by simply use the construction function [`ZXCalculus.ZX.ZXGraph(zxd::ZXCalculus.ZX.ZXDiagram{T, P}) where {T, P}`](@ref):
+In the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178), they introduced a special type of ZX-diagrams, graph-like ZX-diagrams, which consists of Z-spiders with 2 different types of edges only. We use [`ZXCalculus.ZX.ZXGraph`](@ref) for representing this special type of ZX-diagrams. One can convert a `ZXDiagram` into a `ZXGraph` by simply use the construction function [`ZXCalculus.ZX.ZXCircuit(zxd::ZXCalculus.ZX.ZXDiagram{T, P}) where {T, P}`](@ref):
 
 ## Visualization
 
@@ -74,7 +74,7 @@ One can rewrite ZX-diagrams with rules. In `ZXCalculus.jl`, rules are identified
 For example, in `example/ex1.jl`, we can get a simplified graph-like ZX-diagram by:
 ```julia
 zxd = generate_example()
-zxg = ZXGraph(zxd)
+zxg = ZXCircuit(zxd)
 simplify!(LocalCompRule(), zxg)
 simplify!(Pivot1Rule(), zxg)
 replace!(PivotBoundaryRule(), zxg)

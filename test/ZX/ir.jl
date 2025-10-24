@@ -218,7 +218,7 @@ end
         ir = IRCode()
         bir = BlockIR(ir, 5, circ)
         zxd = ZXDiagram(bir)
-        zxg = ZXGraph(zxd)
+        zxg = ZXCircuit(zxd)
         full_reduction(zxg)
         ZX.generate_layout!(zxg)
         @test !isnothing(plot(zxg))
@@ -228,7 +228,7 @@ end
     @testset "generate_layout with chain" begin
         bir = BlockIR(ir, 5, chain)
         zxd = ZXDiagram(bir)
-        zxg = ZXGraph(zxd)
+        zxg = ZXCircuit(zxd)
         full_reduction(zxg)
         ZX.generate_layout!(zxg)
         @test !isnothing(plot(zxg))
@@ -290,7 +290,7 @@ end
         circ = random_identity(5, 50)
         zxd = convert_to_zxd(circ)
         @test !isnothing(plot(zxd))
-        zxg = ZXGraph(zxd)
+        zxg = ZXCircuit(zxd)
         @test !isnothing(plot(zxg))
         @test !isnothing(plot(zxg |> clifford_simplification |> full_reduction))
     end

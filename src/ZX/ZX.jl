@@ -16,7 +16,7 @@ export spiders,
        tcount, spider_type, phase, rem_spider!, rem_spiders!, pushfirst_gate!, push_gate!
 
 export SpiderType, EdgeType
-export AbstractZXDiagram, ZXDiagram, ZXGraph
+export AbstractZXDiagram, ZXDiagram, ZXGraph, ZXCircuit
 
 export AbstractRule
 export Rule, Match

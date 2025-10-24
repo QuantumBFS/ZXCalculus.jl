@@ -25,7 +25,9 @@ spider_sequence(zxd::AbstractZXDiagram) = throw(MethodError(ZX.spider_sequence, 
 round_phases!(zxd::AbstractZXDiagram) = throw(MethodError(ZX.round_phases!, zxd))
 
 spider_type(zxd::AbstractZXDiagram, v) = throw(MethodError(ZX.spider_type, (zxd, v)))
+spider_types(zxd::AbstractZXDiagram) = throw(MethodError(ZX.spider_types, zxd))
 phase(zxd::AbstractZXDiagram, v) = throw(MethodError(ZX.phase, (zxd, v)))
+phases(zxd::AbstractZXDiagram) = throw(MethodError(ZX.phases, zxd))
 rem_spider!(zxd::AbstractZXDiagram, v) = throw(MethodError(ZX.rem_spider!, (zxd, v)))
 rem_spiders!(zxd::AbstractZXDiagram, vs) = throw(MethodError(ZX.rem_spiders!, (zxd, vs)))
 qubit_loc(zxd::AbstractZXDiagram, v) = throw(MethodError(ZX.qubit_loc, (zxd, v)))

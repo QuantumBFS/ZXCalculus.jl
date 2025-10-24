@@ -9,108 +9,27 @@ This is the type for representing the graph-like ZX-diagrams.
 """
 struct ZXGraph{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
     mg::Multigraph{T}
-
     ps::Dict{T, P}
     st::Dict{T, SpiderType.SType}
     et::Dict{Tuple{T, T}, EdgeType.EType}
-
-    # TODO: phase ids for phase teleportation only
-    # maps a vertex id to its master id and scalar multiplier
-    phase_ids::Dict{T, Tuple{T, Int}}
-
     scalar::Scalar{P}
-    master::ZXDiagram{T, P}
 end
 
 function Base.copy(zxg::ZXGraph{T, P}) where {T, P}
     return ZXGraph{T, P}(
         copy(zxg.mg), copy(zxg.ps),
         copy(zxg.st), copy(zxg.et),
-        deepcopy(zxg.phase_ids), copy(zxg.scalar),
-        copy(zxg.master)
+        copy(zxg.scalar)
     )
-end
-
-"""
-    ZXGraph(zxd::ZXDiagram)
-
-Convert a ZX-diagram to graph-like ZX-diagram.
-
-```jldoctest
-julia> using ZXCalculus.ZX
-
-julia> zxd = ZXDiagram(2);
-       push_gate!(zxd, Val{:CNOT}(), 2, 1);
-
-julia> zxg = ZXGraph(zxd)
-ZX-graph with 6 vertices and 5 edges:
-(S_1{input} <-> S_5{phase = 0//1⋅π})
-(S_2{output} <-> S_5{phase = 0//1⋅π})
-(S_3{input} <-> S_6{phase = 0//1⋅π})
-(S_4{output} <-> S_6{phase = 0//1⋅π})
-(S_5{phase = 0//1⋅π} <-> S_6{phase = 0//1⋅π})
-```
-"""
-function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
-    zxd = copy(zxd)
-    nzxd = copy(zxd)
-
-    simplify!(Identity1Rule(), nzxd)
-    simplify!(XToZRule(), nzxd)
-    simplify!(HBoxRule(), nzxd)
-    match_f = match(FusionRule(), nzxd)
-    while length(match_f) > 0
-        for m in match_f
-            vs = m.vertices
-            if check_rule(FusionRule(), nzxd, vs)
-                rewrite!(FusionRule(), nzxd, vs)
-                v1, v2 = vs
-                set_phase!(zxd, v1, phase(zxd, v1) + phase(zxd, v2))
-                set_phase!(zxd, v2, zero(P))
-            end
-        end
-        match_f = match(FusionRule(), nzxd)
-    end
-
-    vs = spiders(nzxd)
-    vH = T[]
-    vZ = T[]
-    vB = T[]
-    for v in vs
-        if spider_type(nzxd, v) == SpiderType.H
-            push!(vH, v)
-        elseif spider_type(nzxd, v) == SpiderType.Z
-            push!(vZ, v)
-        else
-            push!(vB, v)
-        end
-    end
-    eH = [(neighbors(nzxd, v, count_mul=true)[1], neighbors(nzxd, v, count_mul=true)[2]) for v in vH]
-
-    rem_spiders!(nzxd, vH)
-    et = Dict{Tuple{T, T}, EdgeType.EType}()
-    for e in edges(nzxd.mg)
-        et[(src(e), dst(e))] = EdgeType.SIM
-    end
-    zxg = ZXGraph{T, P}(
-        nzxd.mg, nzxd.ps, nzxd.st, et,
-        nzxd.phase_ids, nzxd.scalar, zxd)
-
-    for e in eH
-        v1, v2 = e
-        add_edge!(zxg, v1, v2)
-    end
-
-    return zxg
 end
 
 function ZXGraph()
     return ZXGraph{Int, Phase}(Multigraph(zero(Int)), Dict{Int, Phase}(), Dict{Int, SpiderType.SType}(),
-        Dict{Tuple{Int, Int}, EdgeType.EType}(), Dict{Int, Tuple{Int, Int}}(),
-        Scalar{Phase}(0, Phase(0 // 1)), ZXDiagram(zero(Int)))
+        Dict{Tuple{Int, Int}, EdgeType.EType}(), Scalar{Phase}(0, Phase(0 // 1)))
 end
 
 Graphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
+Graphs.has_vertex(zxg::ZXGraph, v::Integer) = has_vertex(zxg.mg, v)
 Graphs.nv(zxg::ZXGraph) = nv(zxg.mg)
 Graphs.ne(zxg::ZXGraph) = ne(zxg.mg)
 Graphs.outneighbors(zxg::ZXGraph, v::Integer) = outneighbors(zxg.mg, v)
@@ -128,7 +47,7 @@ function Graphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
 end
 
 function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType=EdgeType.HAD)
-    if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
+    if has_vertex(zxg, v1) && has_vertex(zxg, v2)
         if v1 == v2
             reduce_self_loop!(zxg, v1, etype)
             return true
@@ -182,11 +101,12 @@ function reduce_self_loop!(zxg::ZXGraph, v::Integer, etype::EdgeType.EType)
 end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
+spider_types(zxg::ZXGraph) = zxg.st
 edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1, v2))]
 is_zx_spider(zxg::ZXGraph, v::Integer) = spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
 
 function set_spider_type!(zxg::ZXGraph, v::Integer, st::SpiderType.SType)
-    if has_vertex(zxg.mg, v)
+    if has_vertex(zxg, v)
         zxg.st[v] = st
         return true
     end
@@ -202,8 +122,9 @@ function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.
 end
 
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
+phases(zxg::ZXGraph) = zxg.ps
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
-    if has_vertex(zxg.mg, v)
+    if has_vertex(zxg, v)
         while p < 0
             p += 2
         end
@@ -255,7 +176,8 @@ function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
         for v in vs
             delete!(zxg.ps, v)
             delete!(zxg.st, v)
-            delete!(zxg.phase_ids, v)
+            # TODO: to ZXCircuit
+            # delete!(zxg.phase_ids, v)
         end
         return true
     end
@@ -269,9 +191,10 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P),
     set_phase!(zxg, v, phase)
     zxg.st[v] = st
     if st in (SpiderType.Z, SpiderType.X)
-        zxg.phase_ids[v] = (v, 1)
+        # TODO: to ZXCircuit
+        # zxg.phase_ids[v] = (v, 1)
     end
-    if all(has_vertex(zxg.mg, c) for c in connect)
+    if all(has_vertex(zxg, c) for c in connect)
         for c in connect
             add_edge!(zxg, v, c)
         end
@@ -337,7 +260,7 @@ end
 Return `true` if `v` is a interior spider of `zxg`.
 """
 function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
-    if has_vertex(zxg.mg, v)
+    if has_vertex(zxg, v)
         (spider_type(zxg, v) == SpiderType.In || spider_type(zxg, v) == SpiderType.Out) && return false
         for u in neighbors(zxg, v)
             if spider_type(zxg, u) == SpiderType.In || spider_type(zxg, u) == SpiderType.Out

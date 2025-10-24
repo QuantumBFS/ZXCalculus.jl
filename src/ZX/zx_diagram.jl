@@ -131,6 +131,7 @@ end
 Returns the spider type of a spider.
 """
 spider_type(zxd::ZXDiagram{T, P}, v::T) where {T <: Integer, P} = zxd.st[v]
+spider_types(zxd::ZXDiagram) = zxd.st
 
 """
     phase(zxd, v)
@@ -138,6 +139,7 @@ spider_type(zxd::ZXDiagram{T, P}, v::T) where {T <: Integer, P} = zxd.st[v]
 Returns the phase of a spider. If the spider is not a Z or X spider, then return 0.
 """
 phase(zxd::ZXDiagram{T, P}, v::T) where {T <: Integer, P} = zxd.ps[v]
+phases(zxd::ZXDiagram{T, P}) where {T <: Integer, P} = zxd.ps
 
 """
     set_phase!(zxd, v, p)

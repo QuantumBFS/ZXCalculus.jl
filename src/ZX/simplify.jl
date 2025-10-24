@@ -37,7 +37,7 @@ end
 Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
 function clifford_simplification(circ::ZXDiagram)
-    zxg = ZXGraph(circ)
+    zxg = ZXCircuit(circ)
     zxg = clifford_simplification(zxg)
     return zxg
 end
@@ -65,12 +65,12 @@ function clifford_simplification(bir::BlockIR)
 end
 
 function full_reduction(cir::ZXDiagram)
-    zxg = ZXGraph(cir)
+    zxg = ZXCircuit(cir)
     zxg = full_reduction(zxg)
     return zxg
 end
 
-function full_reduction(zxg::ZXGraph)
+function full_reduction(zxg::ZXCircuit)
     simplify!(LocalCompRule(), zxg)
     simplify!(Pivot1Rule(), zxg)
     simplify!(Pivot2Rule(), zxg)

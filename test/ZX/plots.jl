@@ -6,7 +6,7 @@ zxd = ZXDiagram(3)
 ZX.insert_spider!(zxd, 1, 2, SpiderType.H)
 ZX.insert_spider!(zxd, 1, 2, SpiderType.X)
 ZX.insert_spider!(zxd, 1, 2, SpiderType.Z)
-zxg = ZXGraph(zxd)
+zxg = ZXCircuit(zxd)
 
 @test !isnothing(plot(zxd))
 @test !isnothing(plot(zxg))

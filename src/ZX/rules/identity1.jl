@@ -12,7 +12,7 @@ function Base.match(::Identity1Rule, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::Identity1Rule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::Identity1Rule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1 = vs[1]
     has_vertex(zxd.mg, v1) || return false
     if spider_type(zxd, v1) == SpiderType.Z || spider_type(zxd, v1) == SpiderType.X
@@ -23,7 +23,7 @@ function check_rule(r::Identity1Rule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where
     return false
 end
 
-function rewrite!(r::Identity1Rule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::Identity1Rule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1 = vs[1]
     v2, v3 = neighbors(zxd, v1, count_mul=true)
     add_edge!(zxd, v2, v3)

@@ -26,7 +26,7 @@ push_gate!(zxd, Val{:H}(), 1)
 push_gate!(zxd, Val{:Z}(), 4, 1//2)
 push_gate!(zxd, Val{:X}(), 4, 1//1)
 
-zxg = ZXGraph(zxd)
+zxg = ZXCircuit(zxd)
 replace!(LocalCompRule(), zxg)
 replace!(PivotBoundaryRule(), zxg)
 

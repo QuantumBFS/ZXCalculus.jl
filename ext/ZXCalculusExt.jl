@@ -46,11 +46,11 @@ function generate_d_edges(zxd::ZXGraph)
     end
     return DataFrame(src=s, dst=d, isHadamard=isH)
 end
+generate_d_edges(zxd::ZXCircuit) = generate_d_edges(zxd.zx_graph)
 
-function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
+function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph, ZXCircuit}; kwargs...)
     scale = 2
     lattice_unit = 50 * scale
-    zxd = copy(zxd)
     layout = ZXCalculus.ZX.generate_layout!(zxd)
     vs = spiders(zxd)
     x_locs = layout.spider_col
@@ -70,8 +70,8 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph}; kwargs...)
         y_locs_normal[k] = v * lattice_unit
     end
 
-    st = zxd.st
-    ps = zxd.ps
+    st = ZX.spider_types(zxd)
+    ps = ZX.phases(zxd)
 
     d_spiders = generate_d_spiders(vs, st, ps, x_locs_normal, y_locs_normal)
     d_edges = generate_d_edges(zxd)

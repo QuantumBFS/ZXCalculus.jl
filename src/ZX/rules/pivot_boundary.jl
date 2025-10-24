@@ -50,33 +50,33 @@ function rewrite!(::PivotBoundaryRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where 
         end
     end
     @inbounds if is_hadamard(zxg, v, v_bound)
-        # TODO
-        w = insert_spider!(zxg, v, v_bound)[1]
+        # TODO: to ZXCircuit
+        # w = insert_spider!(zxg, v, v_bound)[1]
 
-        zxg.et[(v_bound, w)] = EdgeType.SIM
-        v_bound_master = v_bound
-        v_master = neighbors(zxg.master, v_bound_master)[1]
-        w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.Z)[1]
-        # @show w, w_master
-        zxg.phase_ids[w] = (w_master, 1)
+        # zxg.et[(v_bound, w)] = EdgeType.SIM
+        # v_bound_master = v_bound
+        # v_master = neighbors(zxg.master, v_bound_master)[1]
+        # w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.Z)[1]
+        # # @show w, w_master
+        # zxg.phase_ids[w] = (w_master, 1)
 
-        # set_phase!(zxg, w, phase(zxg, v))
-        # zxg.phase_ids[w] = zxg.phase_ids[v]
-        # set_phase!(zxg, v, zero(P))
-        # zxg.phase_ids[v] = (v, 1)
+        # # set_phase!(zxg, w, phase(zxg, v))
+        # # zxg.phase_ids[w] = zxg.phase_ids[v]
+        # # set_phase!(zxg, v, zero(P))
+        # # zxg.phase_ids[v] = (v, 1)
     else
-        # TODO
         w = insert_spider!(zxg, v, v_bound)[1]
         # insert_spider!(zxg, w, v_bound, phase_v)
         # w = neighbors(zxg, v_bound)[1]
         # set_phase!(zxg, w, phase(zxg, v))
         # zxg.phase_ids[w] = zxg.phase_ids[v]
 
-        v_bound_master = v_bound
-        v_master = neighbors(zxg.master, v_bound_master)[1]
-        w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.X)[1]
-        # @show w, w_master
-        zxg.phase_ids[w] = (w_master, 1)
+        # TODO: to ZXCircuit
+        # v_bound_master = v_bound
+        # v_master = neighbors(zxg.master, v_bound_master)[1]
+        # w_master = insert_spider!(zxg.master, v_bound_master, v_master, SpiderType.X)[1]
+        # # @show w, w_master
+        # zxg.phase_ids[w] = (w_master, 1)
 
         # set_phase!(zxg, v, zero(P))
         # zxg.phase_ids[v] = (v, 1)

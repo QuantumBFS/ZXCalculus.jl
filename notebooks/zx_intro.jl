@@ -253,7 +253,7 @@ md"""#
 ## ZXDiagrams and ZXGraphs"""
 
 # ╔═╡ 7da637f0-e359-41d9-b395-27168459c20c
-zx_graph = ZXGraph(zx)
+zx_graph = ZXCircuit(zx)
 
 # ╔═╡ bed7a0c5-da16-40b5-9d84-4dad2dfb8739
 begin
@@ -263,7 +263,7 @@ begin
 end
 
 # ╔═╡ 8cde99fd-ee0a-4d94-a94e-23ebc9ac8608
-zx_id_graph = ZXGraph(zx_id)
+zx_id_graph = ZXCircuit(zx_id)
 
 # ╔═╡ 99bb5eff-79e7-4c0e-95ae-a6d2130f46cb
 md"## Equality"
