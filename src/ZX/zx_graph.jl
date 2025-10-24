@@ -104,6 +104,12 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     return zxg
 end
 
+function ZXGraph()
+    return ZXGraph{Int, Phase}(Multigraph(zero(Int)), Dict{Int, Phase}(), Dict{Int, SpiderType.SType}(),
+        Dict{Tuple{Int, Int}, EdgeType.EType}(), Dict{Int, Tuple{Int, Int}}(),
+        Scalar{Phase}(0, Phase(0 // 1)), ZXDiagram(zero(Int)))
+end
+
 Graphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 Graphs.nv(zxg::ZXGraph) = nv(zxg.mg)
 Graphs.ne(zxg::ZXGraph) = ne(zxg.mg)
@@ -121,35 +127,69 @@ function Graphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
     return false
 end
 
-function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, edge_type::EdgeType.EType=EdgeType.HAD)
+function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType=EdgeType.HAD)
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
-            if edge_type == EdgeType.HAD
-                set_phase!(zxg, v1, phase(zxg, v1)+1)
-                add_power!(zxg, -1)
-            end
-            return true
+            reduce_self_loop!(zxg, v1, etype)
         else
-            if has_edge(zxg, v1, v2)
-                if is_hadamard(zxg, v1, v2) && edge_type == EdgeType.HAD
-                    add_power!(zxg, -2)
-                    return rem_edge!(zxg, v1, v2)
-                elseif !is_hadamard(zxg, v1, v2) && edge_type == EdgeType.SIM
-                    return true
-                else
-                    error("edge between $v1 and $v2 already exists with different type")
-                end
-            elseif add_edge!(zxg.mg, v1, v2)
-                zxg.et[(min(v1, v2), max(v1, v2))] = edge_type
-                return true
+            if !has_edge(zxg, v1, v2)
+                add_edge!(zxg.mg, v1, v2)
+                zxg.et[(min(v1, v2), max(v1, v2))] = etype
+            else
+                reduce_parallel_edges!(zxg, v1, v2, etype)
             end
         end
     end
-    return false
+    return true
+end
+
+function reduce_parallel_edges!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
+    st1 = spider_type(zxg, v1)
+    st2 = spider_type(zxg, v2)
+    @assert is_zx_spider(zxg, v1) && is_zx_spider(zxg, v2) "Trying to process parallel edges to non-Z/X spider $v1 or $v2"
+    function parallel_edge_helper()
+        add_power!(zxg, -2)
+        return rem_edge!(zxg, v1, v2)
+    end
+
+    if st1 == st2
+        if edge_type(zxg, v1, v2) === etype === EdgeType.HAD
+            parallel_edge_helper()
+        elseif edge_type(zxg, v1, v2) !== etype
+            set_edge_type!(zxg, v1, v2, EdgeType.SIM)
+            reduce_self_loop!(zxg, v1, EdgeType.HAD)
+        end
+    elseif st1 != st2
+        if edge_type(zxg, v1, v2) === etype === EdgeType.SIM
+            parallel_edge_helper()
+        elseif edge_type(zxg, v1, v2) !== etype
+            set_edge_type!(zxg, v1, v2, EdgeType.HAD)
+            reduce_self_loop!(zxg, v1, EdgeType.HAD)
+        end
+    end
+    return zxg
+end
+
+function reduce_self_loop!(zxg::ZXGraph, v::Integer, etype::EdgeType.EType)
+    @assert is_zx_spider(zxg, v) "Trying to process a self-loop on non-Z/X spider $v"
+    if etype == EdgeType.HAD
+        set_phase!(zxg, v, phase(zxg, v)+1)
+        add_power!(zxg, -1)
+    end
+    return zxg
 end
 
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1, v2))]
+is_zx_spider(zxg::ZXGraph, v::Integer) = spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+
+function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
+    if has_edge(zxg, v1, v2)
+        zxg.et[(min(v1, v2), max(v1, v2))] = etype
+        return true
+    end
+    return false
+end
 
 phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
@@ -240,6 +280,10 @@ function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T <: Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
         printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
+    elseif st_v == SpiderType.X
+        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:red)
+    elseif st_v == SpiderType.H
+        printstyled(io, "H_$(v)", color=:yellow)
     elseif st_v == SpiderType.In
         print(io, "S_$(v){input}")
     elseif st_v == SpiderType.Out
