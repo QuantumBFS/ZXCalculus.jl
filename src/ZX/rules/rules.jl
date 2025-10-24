@@ -18,9 +18,9 @@ include("./scalar.jl")
 
 # Compatibility aliases for backward compatibility
 @deprecate Rule{:f}() FusionRule()
-@deprecate Rule{:h}() HadamardRule()
+@deprecate Rule{:h}() XToZRule()
 @deprecate Rule{:i1}() Identity1Rule()
-@deprecate Rule{:i2}() Identity2Rule()
+@deprecate Rule{:i2}() HBoxRule()
 @deprecate Rule{:pi}() PiRule()
 @deprecate Rule{:c}() CopyRule()
 @deprecate Rule{:b}() BialgebraRule()

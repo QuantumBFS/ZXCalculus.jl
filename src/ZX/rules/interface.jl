@@ -8,9 +8,9 @@ The struct for identifying different rules.
 Rule for `ZXDiagram`s:
 
   - `FusionRule()`: fusion rule (also available as `Rule{:f}()`)
-  - `HadamardRule()`: hadamard rule (also available as `Rule{:h}()`)
+  - `XToZRule()`: hadamard rule (also available as `Rule{:h}()`)
   - `Identity1Rule()`: identity rule 1 (also available as `Rule{:i1}()`)
-  - `Identity2Rule()`: identity rule 2 (also available as `Rule{:i2}()`)
+  - `HBoxRule()`: identity rule 2 (also available as `Rule{:i2}()`)
   - `PiRule()`: π rule (also available as `Rule{:pi}()`)
   - `CopyRule()`: copy rule (also available as `Rule{:c}()`)
   - `BialgebraRule()`: bialgebra rule (also available as `Rule{:b}()`)

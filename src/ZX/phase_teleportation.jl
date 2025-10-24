@@ -27,7 +27,7 @@ function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     end
 
     simplify!(Identity1Rule(), ncir)
-    simplify!(Identity2Rule(), ncir)
+    simplify!(HBoxRule(), ncir)
     return ncir
 end
 

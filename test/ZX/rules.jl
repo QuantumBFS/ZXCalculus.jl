@@ -3,6 +3,23 @@ using ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
 using ZXCalculus: ZX
 using ZXCalculus.Utils: Phase
 
+function test_graph()
+    zxg = ZXGraph()
+    v1 = ZX.add_spider!(zxg, SpiderType.In)
+    v2 = ZX.add_spider!(zxg, SpiderType.Out)
+    v3 = ZX.add_spider!(zxg, SpiderType.In)
+    v4 = ZX.add_spider!(zxg, SpiderType.Out)
+    v5 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v1])
+    v6 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v2])
+    v7 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v3, v4])
+    v8 = ZX.add_spider!(zxg, SpiderType.X, Phase(0//1))
+    ZX.add_edge!(zxg, v5, v6, EdgeType.SIM)
+    ZX.add_edge!(zxg, v5, v7, EdgeType.HAD)
+    ZX.add_edge!(zxg, v6, v7, EdgeType.HAD)
+    ZX.add_edge!(zxg, v7, v8, EdgeType.SIM)
+    return zxg
+end
+
 @testset "FusionRule" begin
     @testset "ZXDiagram" begin
         g = Multigraph([0 2 0; 2 0 1; 0 1 0])
@@ -18,20 +35,8 @@ using ZXCalculus.Utils: Phase
     end
 
     @testset "ZXGraph" begin
-        zxg = ZXGraph()
-        v1 = ZX.add_spider!(zxg, SpiderType.In)
-        v2 = ZX.add_spider!(zxg, SpiderType.Out)
-        v3 = ZX.add_spider!(zxg, SpiderType.In)
-        v4 = ZX.add_spider!(zxg, SpiderType.Out)
-        v5 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v1])
-        v6 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v2])
-        v7 = ZX.add_spider!(zxg, SpiderType.Z, Phase(0//1), [v3, v4])
-        v8 = ZX.add_spider!(zxg, SpiderType.X, Phase(0//1))
-        ZX.add_edge!(zxg, v5, v6, EdgeType.SIM)
-        ZX.add_edge!(zxg, v5, v7, EdgeType.HAD)
-        ZX.add_edge!(zxg, v6, v7, EdgeType.HAD)
-        ZX.add_edge!(zxg, v7, v8, EdgeType.SIM)
-        ZX.add_edge!(zxg, v7, v8, EdgeType.SIM)
+        zxg = test_graph()
+        ZX.add_edge!(zxg, 7, 8, EdgeType.SIM)
         @test zxg.scalar == Scalar(-2, 0 // 1)
         matches = match(FusionRule(), zxg)
         rewrite!(FusionRule(), zxg, matches)
@@ -52,19 +57,30 @@ end
     @test !isnothing(zxd)
 end
 
-@testset "XToZRule and Identity2Rule" begin
-    g = Multigraph([0 2 0; 2 0 1; 0 1 0])
-    ps = [Phase(i // 4) for i in 1:3]
-    v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
-    zxd = ZXDiagram(g, v_t, ps)
-    matches = match(XToZRule(), zxd)
-    rewrite!(XToZRule(), zxd, matches)
-    @test nv(zxd) == 8 && ne(zxd) == 8
-    @test !isnothing(zxd)
+@testset "XToZRule and HBoxRule" begin
+    @testset "ZXDiagram" begin
+        g = Multigraph([0 2 0; 2 0 1; 0 1 0])
+        ps = [Phase(i // 4) for i in 1:3]
+        v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
+        zxd = ZXDiagram(g, v_t, ps)
+        matches = match(XToZRule(), zxd)
+        rewrite!(XToZRule(), zxd, matches)
+        @test nv(zxd) == 8 && ne(zxd) == 8
+        @test !isnothing(zxd)
 
-    matches = match(Identity2Rule(), zxd)
-    rewrite!(Identity2Rule(), zxd, matches)
-    @test nv(zxd) == 4 && ne(zxd, count_mul=true) == 4 && ne(zxd) == 3
+        matches = match(HBoxRule(), zxd)
+        rewrite!(HBoxRule(), zxd, matches)
+        @test nv(zxd) == 4 && ne(zxd, count_mul=true) == 4 && ne(zxd) == 3
+    end
+    @testset "ZXGraph" begin
+        zxg = test_graph()
+        add_edge!(zxg, 8, 5, EdgeType.HAD)
+        matches = match(XToZRule(), zxg)
+        rewrite!(XToZRule(), zxg, matches)
+        @test nv(zxg) == 8 && ne(zxg) == 9
+        @test ZX.edge_type(zxg, 7, 8) === EdgeType.HAD
+        @test ZX.edge_type(zxg, 8, 5) === EdgeType.SIM
+    end
 end
 
 @testset "PiRule" begin

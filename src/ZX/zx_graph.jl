@@ -56,8 +56,8 @@ function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     nzxd = copy(zxd)
 
     simplify!(Identity1Rule(), nzxd)
-    simplify!(HadamardRule(), nzxd)
-    simplify!(Identity2Rule(), nzxd)
+    simplify!(XToZRule(), nzxd)
+    simplify!(HBoxRule(), nzxd)
     match_f = match(FusionRule(), nzxd)
     while length(match_f) > 0
         for m in match_f
@@ -131,6 +131,7 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeTyp
     if has_vertex(zxg.mg, v1) && has_vertex(zxg.mg, v2)
         if v1 == v2
             reduce_self_loop!(zxg, v1, etype)
+            return true
         else
             if !has_edge(zxg, v1, v2)
                 add_edge!(zxg.mg, v1, v2)
@@ -138,9 +139,10 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeTyp
             else
                 reduce_parallel_edges!(zxg, v1, v2, etype)
             end
+            return true
         end
     end
-    return true
+    return false
 end
 
 function reduce_parallel_edges!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
@@ -182,6 +184,14 @@ end
 spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
 edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1, v2))]
 is_zx_spider(zxg::ZXGraph, v::Integer) = spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+
+function set_spider_type!(zxg::ZXGraph, v::Integer, st::SpiderType.SType)
+    if has_vertex(zxg.mg, v)
+        zxg.st[v] = st
+        return true
+    end
+    return false
+end
 
 function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
     if has_edge(zxg, v1, v2)

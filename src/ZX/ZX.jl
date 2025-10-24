@@ -20,8 +20,8 @@ export AbstractZXDiagram, ZXDiagram, ZXGraph
 
 export AbstractRule
 export Rule, Match
-export FusionRule, HadamardRule,
-       Identity1Rule, Identity2Rule,
+export FusionRule, XToZRule,
+       Identity1Rule, HBoxRule,
        PiRule, CopyRule, BialgebraRule,
        LocalCompRule,
        Pivot1Rule, Pivot2Rule, Pivot3Rule,

@@ -74,7 +74,7 @@ function ancilla_extraction(zxg::ZXGraph)
     end
 
     simplify!(Identity1Rule(), circ)
-    simplify!(Identity2Rule(), circ)
+    simplify!(HBoxRule(), circ)
     return circ
 end
 
