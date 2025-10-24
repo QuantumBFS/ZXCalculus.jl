@@ -69,14 +69,6 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
-    # DONE: to ZXCircuit
-    # phase_id_u = zxg.phase_ids[u]
-    # if sgn_phase_v < 0
-    #     zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
-    #     phase_id_u = zxg.phase_ids[u]
-    # end
-    # phase_id_v = zxg.phase_ids[v]
-
     rem_edge!(zxg, u, v)
     for u0 in U, v0 in V
 
@@ -104,11 +96,6 @@ function rewrite!(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     set_phase!(zxg, u, phase_v)
     gad = add_spider!(zxg, SpiderType.Z, P(sgn_phase_v*phase_u))
     add_edge!(zxg, v, gad)
-
-    # DONE: to ZXCircuit
-    # zxg.phase_ids[gad] = phase_id_u
-    # zxg.phase_ids[u] = phase_id_v
-    # zxg.phase_ids[v] = (v, 1)
 
     if is_hadamard(zxg, u, bd_u)
         rem_edge!(zxg, u, bd_u)

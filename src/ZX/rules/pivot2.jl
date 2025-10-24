@@ -71,12 +71,6 @@ function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
-    # DONE: to ZXCircuit
-    # phase_id_u = zxg.phase_ids[u]
-    # if sgn_phase_v < 0
-    #     zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
-    #     phase_id_u = zxg.phase_ids[u]
-    # end
     rem_spider!(zxg, u)
     for u0 in U, v0 in V
 
@@ -99,10 +93,6 @@ function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     gad = add_spider!(zxg, SpiderType.Z, P(sgn_phase_v*phase_u))
     add_edge!(zxg, v, gad)
     set_phase!(zxg, v, zero(P))
-
-    # DONE: to ZXCircuit
-    # zxg.phase_ids[gad] = phase_id_u
-    # zxg.phase_ids[v] = (v, 1)
 
     return zxg, gad
 end

@@ -54,12 +54,6 @@ function rewrite!(::GadgetFusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {
 
     set_phase!(zxg, v1, phase(zxg, v1)+phase(zxg, u1))
 
-    # DONE: to ZXCircuit
-    # idv, mulv = zxg.phase_ids[v1]
-    # idu, mulu = zxg.phase_ids[u1]
-    # set_phase!(zxg.master, idv, (mulv * phase(zxg.master, idv) + mulu * phase(zxg.master, idu)) * mulv)
-    # set_phase!(zxg.master, idu, zero(P))
-
     add_power!(zxg, degree(zxg, v2)-2)
     rem_spiders!(zxg, [u1, u2])
     return zxg
