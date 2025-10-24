@@ -110,10 +110,10 @@ end
 function rewrite!(::Pivot2Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
     u, v = vs
 
-    phase_id_u = circ.phase_ids[u]
     if is_one_phase(phase(circ, v))
         @assert flip_phase_tracking_sign!(circ, u) "failed to flip phase tracking sign for $u"
     end
+    phase_id_u = circ.phase_ids[u]
     _, gad = rewrite!(Pivot2Rule(), circ.zx_graph, vs)
 
     circ.phase_ids[gad] = phase_id_u

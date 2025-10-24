@@ -286,7 +286,7 @@ end
     match(Pivot2Rule(), zxg)
     replace!(Pivot2Rule(), zxg)
     # TODO: to ZXCircuit
-    # @test zxg.phase_ids[15] == (2, -1)
+    @test zxg.phase_ids[15] == (2, -1)
     @test !isnothing(zxg)
 end
 
