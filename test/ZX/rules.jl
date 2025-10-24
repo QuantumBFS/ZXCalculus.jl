@@ -75,11 +75,20 @@ end
     @testset "ZXGraph" begin
         zxg = test_graph()
         add_edge!(zxg, 8, 5, EdgeType.HAD)
-        matches = match(XToZRule(), zxg)
-        rewrite!(XToZRule(), zxg, matches)
+        matches_x2z = match(XToZRule(), zxg)
+        @test length(matches_x2z) == 1
+        rewrite!(XToZRule(), zxg, matches_x2z)
+        @test nv(zxg) == 8 && ne(zxg) == 9
+
+        v = ZX.add_spider!(zxg, SpiderType.H, Phase(0//1), [8, 5])
+        matches_box = match(HBoxRule(), zxg)
+        @test length(matches_box) == 1
+        rewrite!(HBoxRule(), zxg, matches_box)
+
         @test nv(zxg) == 8 && ne(zxg) == 9
         @test ZX.edge_type(zxg, 7, 8) === EdgeType.HAD
         @test ZX.edge_type(zxg, 8, 5) === EdgeType.SIM
+        @test ZX.is_one_phase(phase(zxg, 5)) || ZX.is_one_phase(phase(zxg, 8))
     end
 end
 

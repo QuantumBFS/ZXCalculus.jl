@@ -54,7 +54,7 @@ end
 
 function rewrite!(::HBoxRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
-    u, w = neighbors(zxg, v, count_mul=true)
+    u, w = neighbors(zxg, v)
     et_u = edge_type(zxg, v, u)
     et_w = edge_type(zxg, v, w)
     et_new = et_u === et_w ? EdgeType.HAD : EdgeType.SIM
