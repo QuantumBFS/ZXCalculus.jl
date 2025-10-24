@@ -71,7 +71,7 @@ function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
 
     sgn_phase_v = is_zero_phase(Phase(phase_v)) ? 1 : -1
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # phase_id_u = zxg.phase_ids[u]
     # if sgn_phase_v < 0
     #     zxg.phase_ids[u] = (phase_id_u[1], -phase_id_u[2])
@@ -100,9 +100,25 @@ function rewrite!(::Pivot2Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     add_edge!(zxg, v, gad)
     set_phase!(zxg, v, zero(P))
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # zxg.phase_ids[gad] = phase_id_u
     # zxg.phase_ids[v] = (v, 1)
 
-    return zxg
+    return zxg, gad
+end
+
+function rewrite!(::Pivot2Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    u, v = vs
+
+    phase_id_u = circ.phase_ids[u]
+    if is_one_phase(phase(circ, v))
+        @assert flip_phase_tracking_sign!(circ, u) "failed to flip phase tracking sign for $u"
+    end
+    _, gad = rewrite!(Pivot2Rule(), circ.zx_graph, vs)
+
+    circ.phase_ids[gad] = phase_id_u
+    # TODO: verify why phase id of v is assigned (v, 1)
+    circ.phase_ids[v] = (v, 1)
+    delete!(circ.phase_ids, u)
+    return circ
 end
