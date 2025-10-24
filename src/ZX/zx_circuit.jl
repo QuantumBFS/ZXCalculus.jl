@@ -231,3 +231,25 @@ function spider_sequence(zxg::ZXCircuit{T, P}) where {T, P}
         return spider_seq
     end
 end
+
+function flip_phase_tracking_sign!(circ::ZXCircuit, v::Integer)
+    if haskey(circ.phase_ids, v)
+        id, sign = circ.phase_ids[v]
+        circ.phase_ids[v] = (id, -sign)
+        return true
+    end
+    return false
+end
+
+function merge_phase_tracking!(circ::ZXCircuit{T, P}, v1::T, v3::T) where {T, P}
+    if haskey(circ.phase_ids, v1) && haskey(circ.phase_ids, v3)
+        id_from, sign_from = circ.phase_ids[v1]
+        id_to, sign_to = circ.phase_ids[v3]
+        merged_phase = (sign_from * phase(circ.master, id_from) + sign_to * phase(circ.master, id_to)) * sign_to
+        set_phase!(circ.master, id_from, zero(P))
+        set_phase!(circ.master, id_to, merged_phase)
+        return true
+    end
+    @show circ.phase_ids
+    return false
+end

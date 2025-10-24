@@ -67,7 +67,7 @@ function rewrite!(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) wher
         set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
         for v in neighbors(zxg, v1)
             v == v2 && continue
-            add_edge!(zxg, v, v3, is_hadamard(zxg, v, v1) ? EdgeType.HAD : EdgeType.SIM)
+            add_edge!(zxg, v, v3, edge_type(zxg, v, v1))
         end
         rem_spiders!(zxg, [v1, v2])
     end
@@ -77,14 +77,11 @@ end
 function rewrite!(::IdentityRemovalRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
     v1, v2, v3 = vs
     if is_one_phase(phase(circ, v2))
-        circ.phase_ids[v1] = (circ.phase_ids[v1][1], -circ.phase_ids[v1][2])
+        @assert flip_phase_tracking_sign!(circ, v1) "failed to flip phase tracking sign for $v1"
     end
 
     if spider_type(circ, v1) == spider_type(circ, v3) == SpiderType.Z
-        id1, mul1 = circ.phase_ids[v1]
-        id3, mul3 = circ.phase_ids[v3]
-        set_phase!(circ.master, id3, (mul3 * phase(circ.master, id3) + mul1 * phase(circ.master, id1)) * mul3)
-        set_phase!(circ.master, id1, zero(P))
+        @assert merge_phase_tracking!(circ, v1, v3) "failed to merge phase tracking id from $v1 to $v3"
     end
 
     rewrite!(IdentityRemovalRule(), circ.zx_graph, vs)
