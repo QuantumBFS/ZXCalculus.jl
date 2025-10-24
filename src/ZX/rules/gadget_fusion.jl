@@ -54,12 +54,20 @@ function rewrite!(::GadgetFusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {
 
     set_phase!(zxg, v1, phase(zxg, v1)+phase(zxg, u1))
 
-    idv, mulv = zxg.phase_ids[v1]
-    idu, mulu = zxg.phase_ids[u1]
-    set_phase!(zxg.master, idv, (mulv * phase(zxg.master, idv) + mulu * phase(zxg.master, idu)) * mulv)
-    set_phase!(zxg.master, idu, zero(P))
+    # DONE: to ZXCircuit
+    # idv, mulv = zxg.phase_ids[v1]
+    # idu, mulu = zxg.phase_ids[u1]
+    # set_phase!(zxg.master, idv, (mulv * phase(zxg.master, idv) + mulu * phase(zxg.master, idu)) * mulv)
+    # set_phase!(zxg.master, idu, zero(P))
 
     add_power!(zxg, degree(zxg, v2)-2)
     rem_spiders!(zxg, [u1, u2])
     return zxg
+end
+
+function rewrite!(::GadgetFusionRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    v, _, u, _ = vs
+    @assert merge_phase_tracking!(circ, u, v) "Failed to merge phase tracking of $u and $v in Gadget Fusion rule."
+    rewrite!(GadgetFusionRule(), circ.zx_graph, vs)
+    return circ
 end
