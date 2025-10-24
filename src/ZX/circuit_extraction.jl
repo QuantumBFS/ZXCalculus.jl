@@ -176,7 +176,7 @@ end
 
 Extract circuit from a graph-like ZX-diagram.
 """
-function circuit_extraction(zxg::ZXGraph{T, P}) where {T, P}
+function circuit_extraction(zxg::Union{ZXGraph{T, P}, ZXCircuit{T, P}}) where {T, P}
     nzxg = copy(zxg)
     nbits = nqubits(nzxg)
     gads = Set{T}()
@@ -277,8 +277,8 @@ end
 Update frontier. This is an important step in the circuit extraction algorithm.
 For more detail, please check the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
-function update_frontier!(
-        zxg::ZXGraph{T, P}, gads::Set{T}, frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
+function update_frontier!(zxg::Union{ZXGraph{T, P}, ZXCircuit{T, P}}, gads::Set{T},
+        frontier::Vector{T}, qubit_map::Dict{T, Int}, cir) where {T, P}
     # TODO: use inplace methods
     deleteat!(frontier, [spider_type(zxg, f) != SpiderType.Z || (degree(zxg, f)) == 0 for f in frontier])
 
@@ -392,7 +392,7 @@ end
 
 Return the biadjacency matrix of `zxg` from vertices in `F` to vertices in `N`.
 """
-function biadjacency(zxg::ZXGraph{T, P}, F::Vector{T}, N::Vector{T}) where {T, P}
+function biadjacency(zxg::Union{ZXGraph{T, P}, ZXCircuit{T, P}}, F::Vector{T}, N::Vector{T}) where {T, P}
     M = zeros(Int, length(F), length(N))
 
     for i in 1:length(F)

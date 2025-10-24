@@ -14,6 +14,16 @@ function Base.show(io::IO, circ::ZXCircuit)
     return show(io, circ.zx_graph)
 end
 
+function Base.copy(circ::ZXCircuit{T, P}) where {T, P}
+    return ZXCircuit{T, P}(
+        copy(circ.zx_graph),
+        copy(circ.inputs),
+        copy(circ.outputs),
+        copy(circ.layout),
+        copy(circ.phase_ids),
+        copy(circ.master))
+end
+
 function ZXCircuit(zxd::ZXDiagram{T, P}) where {T, P}
     zxd = copy(zxd)
     nzxd = copy(zxd)
@@ -127,16 +137,22 @@ function generate_layout!(circ::ZXCircuit{T, P}) where {T, P}
     return layout
 end
 
+nqubits(circ::ZXCircuit) = max(length(circ.inputs), length(circ.outputs))
 spiders(circ::ZXCircuit) = spiders(circ.zx_graph)
 spider_type(circ::ZXCircuit, v::Integer) = spider_type(circ.zx_graph, v)
 spider_types(circ::ZXCircuit) = spider_types(circ.zx_graph)
 phase(circ::ZXCircuit, v::Integer) = phase(circ.zx_graph, v)
 phases(circ::ZXCircuit) = phases(circ.zx_graph)
+set_phase!(circ::ZXCircuit{T, P}, args...) where {T, P} = set_phase!(circ.zx_graph, args...)
 scalar(circ::ZXCircuit) = scalar(circ.zx_graph)
+
+get_inputs(circ::ZXCircuit) = circ.inputs
+get_outputs(circ::ZXCircuit) = circ.outputs
 
 Graphs.has_edge(zxg::ZXCircuit, vs...) = has_edge(zxg.zx_graph, vs...)
 Graphs.nv(zxg::ZXCircuit) = Graphs.nv(zxg.zx_graph)
 Graphs.ne(zxg::ZXCircuit) = Graphs.ne(zxg.zx_graph)
+Graphs.neighbors(zxg::ZXCircuit, v::Integer) = Graphs.neighbors(zxg.zx_graph, v)
 Graphs.outneighbors(zxg::ZXCircuit, v::Integer) = Graphs.outneighbors(zxg.zx_graph, v)
 Graphs.inneighbors(zxg::ZXCircuit, v::Integer) = Graphs.inneighbors(zxg.zx_graph, v)
 Graphs.degree(zxg::ZXCircuit, v::Integer) = Graphs.degree(zxg.zx_graph, v)
@@ -146,7 +162,9 @@ Graphs.edges(zxg::ZXCircuit) = Graphs.edges(zxg.zx_graph)
 function Graphs.add_edge!(zxg::ZXCircuit, v1::Integer, v2::Integer, etype::EdgeType.EType=EdgeType.HAD)
     return add_edge!(zxg.zx_graph, v1, v2, etype)
 end
+Graphs.rem_edge!(zxg::ZXCircuit, args...) = rem_edge!(zxg.zx_graph, args...)
 
 is_hadamard(circ::ZXCircuit, v1::Integer, v2::Integer) = is_hadamard(circ.zx_graph, v1, v2)
 add_global_phase!(circ::ZXCircuit{T, P}, p::P) where {T, P} = add_global_phase!(circ.zx_graph, p)
 add_power!(circ::ZXCircuit, n::Integer) = add_power!(circ.zx_graph, n)
+insert_spider!(circ::ZXCircuit{T, P}, args...) where {T, P} = insert_spider!(circ.zx_graph, args...)

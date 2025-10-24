@@ -42,7 +42,7 @@ function clifford_simplification(circ::ZXDiagram)
     return zxg
 end
 
-function clifford_simplification(zxg::ZXGraph)
+function clifford_simplification(zxg::Union{ZXCircuit, ZXGraph})
     simplify!(LocalCompRule(), zxg)
     simplify!(Pivot1Rule(), zxg)
     match_id = match(IdentityRemovalRule(), zxg)
@@ -70,7 +70,7 @@ function full_reduction(cir::ZXDiagram)
     return zxg
 end
 
-function full_reduction(zxg::ZXCircuit)
+function full_reduction(zxg::Union{ZXGraph, ZXCircuit})
     simplify!(LocalCompRule(), zxg)
     simplify!(Pivot1Rule(), zxg)
     simplify!(Pivot2Rule(), zxg)
