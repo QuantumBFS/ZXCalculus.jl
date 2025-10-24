@@ -36,8 +36,8 @@ end
     ZX.add_power!(zxg3, 3)
     @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
     @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
-    # TODO: to ZXCircuit
-    # @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
-    # @test ZX.column_loc(zxg3, 1) == 1 // 1
-    # @test ZX.column_loc(zxg3, 2) == 3 // 1
+
+    @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
+    @test ZX.column_loc(zxg3, 1) == 1 // 1
+    @test ZX.column_loc(zxg3, 2) == 3 // 1
 end
