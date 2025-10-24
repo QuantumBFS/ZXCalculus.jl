@@ -29,11 +29,11 @@ function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T
     W = intersect(nb_u, nb_v)
     add_power!(zxg, length(U)*length(V) + length(V)*length(W) + length(W)*length(U))
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # phase_id_gadget_u = zxg.phase_ids[gadget_u]
     phase_gadget_u = phase(zxg, gadget_u)
     if !is_zero_phase(Phase(phase_u))
-        # TODO: to ZXCircuit
+        # DONE: to ZXCircuit
         # zxg.phase_ids[gadget_u] = (phase_id_gadget_u[1], -phase_id_gadget_u[2])
         # phase_id_gadget_u = zxg.phase_ids[gadget_u]
         phase_gadget_u = -phase(zxg, gadget_u)
@@ -58,10 +58,27 @@ function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T
 
     set_phase!(zxg, v, phase_gadget_u)
 
-    # TODO: to ZXCircuit
+    # DONE: to ZXCircuit
     # zxg.phase_ids[v] = phase_id_gadget_u
     # zxg.phase_ids[u] = (u, 1)
 
     rem_spider!(zxg, gadget_u)
     return zxg
+end
+
+function rewrite!(::PivotGadgetRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    u, gadget_u, v = vs
+    zxg = circ
+
+    if is_one_phase(phase(zxg, u))
+        @assert flip_phase_tracking_sign!(circ, gadget_u) "failed to flip phase tracking sign for $gadget_u"
+    end
+    phase_id_gadget_u = zxg.phase_ids[gadget_u]
+
+    # TODO: verify if needed
+    zxg.phase_ids[v] = phase_id_gadget_u
+    zxg.phase_ids[u] = (u, 1)
+
+    rewrite!(PivotGadgetRule(), circ.zx_graph, vs)
+    return circ
 end
