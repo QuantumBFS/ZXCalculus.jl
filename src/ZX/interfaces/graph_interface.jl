@@ -1,10 +1,8 @@
-using Interfaces
-
 """
 Graph Interface for AbstractZXDiagram
 
-This interface defines the Graphs.jl-compatible operations that all ZX-diagrams must implement.
-It provides basic graph structure queries and manipulation methods.
+This file documents the Graphs.jl-compatible interface that all ZX-diagrams must implement.
+The methods are imported from Graphs.jl and implementations should define them for their types.
 
 # Methods (11 total):
 
@@ -26,29 +24,22 @@ It provides basic graph structure queries and manipulation methods.
 - `Graphs.has_edge(zxd, v1, v2)`: Check if edge exists
 - `Graphs.add_edge!(zxd, v1, v2)`: Add an edge
 - `Graphs.rem_edge!(zxd, v1, v2)`: Remove an edge
+
+All methods from Graphs.jl are imported and should be extended by concrete implementations.
 """
-_components_graph = (
-    mandatory=(
-        # Vertex and edge counts
-        nv=x -> Graphs.nv(x)::Int,
-        ne=x -> Graphs.ne(x)::Int,
 
-        # Degree queries
-        degree=(x, v) -> Graphs.degree(x, v)::Int,
-        indegree=(x, v) -> Graphs.indegree(x, v)::Int,
-        outdegree=(x, v) -> Graphs.outdegree(x, v)::Int,
+# Import Graphs.jl methods that should be implemented
+using Graphs
 
-        # Neighbor queries
-        neighbors=(x, v) -> Graphs.neighbors(x, v)::Vector,
-        outneighbors=(x, v) -> Graphs.outneighbors(x, v)::Vector,
-        inneighbors=(x, v) -> Graphs.inneighbors(x, v)::Vector,
-
-        # Edge operations
-        has_edge=(x, v1, v2) -> Graphs.has_edge(x, v1, v2)::Bool,
-        (add_edge!)=(x, v1, v2) -> Graphs.add_edge!(x, v1, v2),
-        (rem_edge!)=(x, v1, v2) -> Graphs.rem_edge!(x, v1, v2),
-    ),
-    optional=(;)
-)
-
-@interface GraphInterface AbstractZXDiagram _components_graph "Graphs.jl-compatible interface for ZX-diagrams"
+# These methods are imported from Graphs.jl and should be extended by implementations:
+# - Graphs.nv
+# - Graphs.ne
+# - Graphs.degree
+# - Graphs.indegree
+# - Graphs.outdegree
+# - Graphs.neighbors
+# - Graphs.outneighbors
+# - Graphs.inneighbors
+# - Graphs.has_edge
+# - Graphs.add_edge!
+# - Graphs.rem_edge!

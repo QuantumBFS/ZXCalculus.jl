@@ -1,10 +1,8 @@
-using Interfaces
-
 """
 Circuit Interface for AbstractZXCircuit
 
-This interface defines circuit-specific operations including structure queries and gate operations.
-It extends AbstractZXDiagram with circuit semantics.
+This file documents and declares circuit-specific operations including structure queries and gate operations.
+All concrete implementations of AbstractZXCircuit must implement these methods.
 
 # Methods (5 total):
 
@@ -20,19 +18,10 @@ It extends AbstractZXDiagram with circuit semantics.
 Supported gates: :Z, :X, :H, :CNOT, :CZ, :SWAP
 Phase gates (:Z, :X) accept an optional phase parameter.
 """
-_components_circuit = (
-    mandatory=(
-        # Circuit structure
-        nqubits=x -> nqubits(x)::Int,
-        get_inputs=x -> get_inputs(x)::Vector,
-        get_outputs=x -> get_outputs(x)::Vector,
 
-        # Gate operations
-        (push_gate!)=(x, args...) -> push_gate!(x, args...),
-        (pushfirst_gate!)=(x, args...) -> pushfirst_gate!(x, args...),
-    ),
-    optional=(;)
-)
-
-# Don't create CircuitInterface yet - will be combined with layout_interface
-# @interface CircuitInterface AbstractZXCircuit _components_circuit "Circuit structure and gate operations"
+# Declare interface functions
+function nqubits end
+function get_inputs end
+function get_outputs end
+function push_gate! end
+function pushfirst_gate! end

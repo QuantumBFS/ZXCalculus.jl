@@ -2,7 +2,6 @@ using Test
 using ZXCalculus
 using ZXCalculus.ZX
 using ZXCalculus.Utils: Phase
-using Interfaces
 using Graphs
 
 # Import functions and types from ZX module for testing
@@ -12,59 +11,12 @@ import ZXCalculus.ZX: add_spider!, rem_spider!, rem_spiders!, set_phase!,
                       qubit_loc, column_loc, generate_layout!, spider_sequence,
                       add_edge!, add_global_phase!, add_power!, ZXLayout
 
-@testset "Interface definitions" begin
-    @testset "AbstractZXDiagram interface" begin
-        # Check interface is defined
-        @test isdefined(ZX, :AbstractZXDiagramInterface)
-
-        # Get interface type from ZX module
-        AbstractZXDiagramInterface = getfield(ZX, :AbstractZXDiagramInterface)
-        @test AbstractZXDiagramInterface <: Interfaces.Interface
-
-        # Check interface components
-        components = Interfaces.components(AbstractZXDiagramInterface)
-        @test haskey(components, :mandatory)
-        @test haskey(components, :optional)
-
-        # Check mandatory methods are defined
-        mandatory = components.mandatory
-        @test haskey(mandatory, :nv)
-        @test haskey(mandatory, :ne)
-        @test haskey(mandatory, :spiders)
-        @test haskey(mandatory, :spider_type)
-        @test haskey(mandatory, :phase)
-        @test haskey(mandatory, :scalar)
-        @test haskey(mandatory, :tcount)
-    end
-
-    @testset "AbstractZXCircuit interface" begin
-        # Check interface is defined
-        @test isdefined(ZX, :AbstractZXCircuitInterface)
-
-        # Get interface type from ZX module
-        AbstractZXCircuitInterface = getfield(ZX, :AbstractZXCircuitInterface)
-        @test AbstractZXCircuitInterface <: Interfaces.Interface
-
-        # Check interface components
-        components = Interfaces.components(AbstractZXCircuitInterface)
-        @test haskey(components, :mandatory)
-        @test haskey(components, :optional)
-
-        # Check mandatory methods are defined
-        mandatory = components.mandatory
-        @test haskey(mandatory, :nqubits)
-        @test haskey(mandatory, :get_inputs)
-        @test haskey(mandatory, :get_outputs)
-        @test haskey(mandatory, :qubit_loc)
-        @test haskey(mandatory, :column_loc)
-        @test haskey(mandatory, :generate_layout!)
-        @test haskey(mandatory, :spider_sequence)
-    end
-end
-
 @testset "ZXGraph implements AbstractZXDiagram" begin
-    # Create a simple test ZXGraph
+    # Create a simple test ZXGraph with some spiders for testing
     zxg = ZXGraph()
+    v1 = add_spider!(zxg, SpiderType.Z, Phase(0))
+    v2 = add_spider!(zxg, SpiderType.X, Phase(0))
+    add_edge!(zxg, v1, v2)
 
     @testset "Type hierarchy" begin
         @test zxg isa AbstractZXDiagram
@@ -73,7 +25,24 @@ end
         @test !(ZXGraph <: AbstractZXCircuit)
     end
 
+    @testset "Interface implementation" begin
+        # Test graph operations work correctly
+        @test Graphs.nv(zxg) == 2
+        @test Graphs.ne(zxg) == 1
+        @test Graphs.degree(zxg, v1) == 1
+        @test v2 in Graphs.neighbors(zxg, v1)
+        @test Graphs.has_edge(zxg, v1, v2)
+
+        # Test calculus operations work correctly
+        @test length(spiders(zxg)) == 2
+        @test spider_type(zxg, v1) == SpiderType.Z
+        @test phase(zxg, v1) == Phase(0)
+        @test scalar(zxg) isa ZXCalculus.Utils.Scalar
+        @test tcount(zxg) >= 0
+    end
+
     @testset "Basic graph operations" begin
+        zxg = ZXGraph()
         # Test nv and ne
         @test Graphs.nv(zxg) == 0
         @test Graphs.ne(zxg) == 0
@@ -199,6 +168,23 @@ end
         @test ZXCircuit{Int, Phase} <: AbstractZXDiagram{Int, Phase}
     end
 
+    @testset "Interface implementation" begin
+        # Test circuit operations work correctly
+        @test nqubits(circ) == 2
+        @test length(get_inputs(circ)) == 2
+        @test length(get_outputs(circ)) == 2
+
+        # Test layout operations work correctly
+        inputs = get_inputs(circ)
+        v1 = inputs[1]
+        generate_layout!(circ)
+        loc = qubit_loc(circ, v1)
+        @test loc !== nothing
+        col = column_loc(circ, v1)
+        @test col !== nothing
+        @test spider_sequence(circ) isa Vector
+    end
+
     @testset "Circuit structure" begin
         # Test nqubits
         @test nqubits(circ) == 2
@@ -245,6 +231,22 @@ end
         # Check with concrete type parameters
         @test ZXDiagram{Int, Phase} <: AbstractZXCircuit{Int, Phase}
         @test ZXDiagram{Int, Phase} <: AbstractZXDiagram{Int, Phase}
+    end
+
+    @testset "Interface implementation" begin
+        # Test circuit operations work correctly
+        @test nqubits(zxd) == 2
+        @test length(get_inputs(zxd)) == 2
+        @test length(get_outputs(zxd)) == 2
+
+        # Test layout operations work correctly
+        inputs = get_inputs(zxd)
+        v1 = inputs[1]
+        generate_layout!(zxd)
+        loc = qubit_loc(zxd, v1)
+        @test loc !== nothing
+        col = column_loc(zxd, v1)
+        @test col !== nothing
     end
 
     @testset "Circuit operations" begin

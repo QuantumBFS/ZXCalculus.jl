@@ -1,10 +1,8 @@
-using Interfaces
-
 """
 Calculus Interface for AbstractZXDiagram
 
-This interface defines ZX-calculus-specific operations for spider and scalar manipulation.
-It covers queries, modifications, and global properties of ZX-diagrams.
+This file documents and declares the ZX-calculus-specific operations for spider and scalar manipulation.
+All concrete implementations of AbstractZXDiagram must implement these methods.
 
 # Methods (17 total):
 
@@ -33,43 +31,20 @@ It covers queries, modifications, and global properties of ZX-diagrams.
 - `Base.show(io, zxd)`: Display ZX-diagram
 - `Base.copy(zxd)`: Create a copy
 """
-_components_calculus = (
-    mandatory=(
-        # Spider queries
-        spiders=x -> spiders(x)::Vector,
-        spider_type=(x, v) -> spider_type(x, v),
-        spider_types=x -> spider_types(x)::Dict,
-        phase=(x, v) -> phase(x, v),
-        phases=x -> phases(x)::Dict,
 
-        # Spider manipulation
-        (set_phase!)=(x, v, p) -> set_phase!(x, v, p),
-        (add_spider!)=(x, st, p) -> add_spider!(x, st, p),
-        (rem_spider!)=(x, v) -> rem_spider!(x, v),
-        (rem_spiders!)=(x, vs) -> rem_spiders!(x, vs),
-        (insert_spider!)=(x, v1, v2) -> insert_spider!(x, v1, v2),
-
-        # Global properties
-        scalar=x -> scalar(x),
-        (add_global_phase!)=(x, p) -> add_global_phase!(x, p),
-        (add_power!)=(x, n) -> add_power!(x, n),
-        tcount=x -> tcount(x)::Int,
-        (round_phases!)=x -> round_phases!(x),
-
-        # Base methods
-        show = (io, x) -> Base.show(io, x),
-        copy = x -> Base.copy(x),
-    ),
-    optional=(;)
-)
-
-# Combine graph and calculus components into AbstractZXDiagramInterface for compatibility
-_components_zxdiagram = (
-    mandatory=merge(
-        _components_graph.mandatory,
-        _components_calculus.mandatory
-    ),
-    optional=(;)
-)
-
-@interface AbstractZXDiagramInterface AbstractZXDiagram _components_zxdiagram "Interface for ZX-diagram graph operations and calculus"
+# Declare interface functions
+function spiders end
+function spider_type end
+function spider_types end
+function phase end
+function phases end
+function set_phase! end
+function add_spider! end
+function rem_spider! end
+function rem_spiders! end
+function insert_spider! end
+function scalar end
+function add_global_phase! end
+function add_power! end
+function tcount end
+function round_phases! end

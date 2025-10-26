@@ -1,89 +1,44 @@
 using Test, Graphs, ZXCalculus, ZXCalculus.ZX
 using ZXCalculus.Utils: Phase
 using ZXCalculus: ZX
-using Interfaces
 
 # Import functions for testing
 import ZXCalculus.ZX: spiders, scalar, tcount, nqubits, get_inputs, get_outputs, add_spider!
 
-@testset "AbstractZXDiagram interface enforcement" begin
-    # Define a minimal incomplete implementation to test interface requirements
-    struct IncompleteZXDiagram{T, P} <: AbstractZXDiagram{T, P} end
+@testset "AbstractZXDiagram type hierarchy" begin
+    # Test that ZXGraph is a subtype of AbstractZXDiagram
+    @test ZXGraph{Int, Phase} <: AbstractZXDiagram{Int, Phase}
+    @test !(ZXGraph{Int, Phase} <: AbstractZXCircuit{Int, Phase})
 
-    test_zxd = IncompleteZXDiagram{Int, Phase}()
+    # Test that ZXCircuit is a subtype of both
+    @test ZXCircuit{Int, Phase} <: AbstractZXDiagram{Int, Phase}
+    @test ZXCircuit{Int, Phase} <: AbstractZXCircuit{Int, Phase}
 
-    # Get the interface type
-    AbstractZXDiagramInterface = getfield(ZX, :AbstractZXDiagramInterface)
-
-    # Test that incomplete implementation fails interface checks
-    @testset "Interface components defined" begin
-        components = Interfaces.components(AbstractZXDiagramInterface)
-        @test haskey(components, :mandatory)
-        @test haskey(components, :optional)
-
-        # Check that all mandatory methods are defined in the interface
-        mandatory = components.mandatory
-        @test length(mandatory) >= 26  # We defined 26 mandatory methods
-    end
-
-    @testset "Incomplete implementation throws errors" begin
-        # Test that calling methods on incomplete implementation throws errors
-        # Note: Interfaces.jl doesn't enforce MethodError specifically,
-        # but methods should fail when not implemented
-
-        # Test some key graph methods
-        @test_throws Exception Graphs.nv(test_zxd)
-        @test_throws Exception Graphs.ne(test_zxd)
-        @test_throws Exception spiders(test_zxd)
-        @test_throws Exception scalar(test_zxd)
-        @test_throws Exception tcount(test_zxd)
-    end
+    # Test that ZXDiagram (deprecated) is a subtype of both
+    @test ZXDiagram{Int, Phase} <: AbstractZXDiagram{Int, Phase}
+    @test ZXDiagram{Int, Phase} <: AbstractZXCircuit{Int, Phase}
 end
 
-@testset "Complete implementations pass interface" begin
-    # Test that our complete implementations work correctly
-    @testset "ZXGraph implements AbstractZXDiagram" begin
-        zxg = ZXGraph()
+@testset "AbstractZXDiagram methods" begin
+    # Test that all required methods work for ZXGraph
+    zxg = ZXGraph()
+    v1 = add_spider!(zxg, SpiderType.Z, Phase(0))
 
-        # These should all work without throwing
-        @test Graphs.nv(zxg) >= 0
-        @test Graphs.ne(zxg) >= 0
-        @test spiders(zxg) isa Vector
-        @test scalar(zxg) !== nothing
+    @test spiders(zxg) isa Vector
+    @test scalar(zxg) isa ZXCalculus.Utils.Scalar
+    @test tcount(zxg) >= 0
+    @test Graphs.nv(zxg) == 1
+    @test Graphs.ne(zxg) == 0
+end
 
-        # Add a spider so tcount doesn't fail on empty collection
-        add_spider!(zxg, SpiderType.Z, Phase(0))
-        @test tcount(zxg) >= 0
-    end
+@testset "AbstractZXCircuit methods" begin
+    # Test that all required methods work for ZXCircuit
+    zxd = ZXDiagram(2)
+    circ = ZXCircuit(zxd)
 
-    @testset "ZXCircuit implements AbstractZXCircuit" begin
-        zxd = ZXDiagram(2)
-        circ = ZXCircuit(zxd)
-
-        # Test AbstractZXDiagram interface
-        @test Graphs.nv(circ) >= 0
-        @test spiders(circ) isa Vector
-        @test scalar(circ) !== nothing
-
-        # Test AbstractZXCircuit interface
-        @test nqubits(circ) == 2
-        @test get_inputs(circ) isa Vector
-        @test get_outputs(circ) isa Vector
-        @test length(get_inputs(circ)) == 2
-        @test length(get_outputs(circ)) == 2
-    end
-
-    @testset "ZXDiagram implements AbstractZXCircuit" begin
-        zxd = ZXDiagram(3)
-
-        # Test AbstractZXDiagram interface
-        @test Graphs.nv(zxd) >= 0
-        @test spiders(zxd) isa Vector
-        @test scalar(zxd) !== nothing
-
-        # Test AbstractZXCircuit interface
-        @test nqubits(zxd) == 3
-        @test get_inputs(zxd) isa Vector
-        @test get_outputs(zxd) isa Vector
-    end
+    @test nqubits(circ) == 2
+    @test get_inputs(circ) isa Vector
+    @test get_outputs(circ) isa Vector
+    @test length(get_inputs(circ)) == 2
+    @test length(get_outputs(circ)) == 2
 end
