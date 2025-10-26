@@ -1,6 +1,8 @@
+using Test
 using YaoHIR: BlockIR
 using YaoHIR, YaoLocations
 using Core.Compiler: IRCode
+using ZXCalculus.ZX
 
 chain = Chain()
 push_gate!(chain, Val(:H), 1)

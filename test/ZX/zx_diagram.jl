@@ -1,10 +1,16 @@
 using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
 using ZXCalculus: ZX
+using ZXCalculus.Utils: Phase, SpiderType
 
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
 ps = [Phase(0 // 1) for i in 1:3]
 v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
 zxd = ZXDiagram(g, v_t, ps)
+@test mul(zxd, 1, 2) == 1
+@testset for e in edges(zxd)
+    @test has_edge(zxd, src(e), dst(e)) && mul(zxd, src(e), dst(e)) == 1
+end
+
 zxd2 = ZXDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
 @test zxd.mg == zxd2.mg && zxd.st == zxd2.st && zxd.ps == zxd2.ps
 @test !isnothing(zxd)
