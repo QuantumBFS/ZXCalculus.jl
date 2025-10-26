@@ -6,37 +6,42 @@ Abstract type for ZX-diagrams with circuit structure.
 This type represents ZX-diagrams that have explicit quantum circuit semantics,
 including ordered inputs, outputs, and layout information for visualization.
 
-# Circuit-specific interface
+# Interface Requirements
 
-Concrete subtypes must implement:
-- `nqubits(zxc)`: Return the number of qubits
-- `get_inputs(zxc)`: Return ordered input spiders
-- `get_outputs(zxc)`: Return ordered output spiders
-- `qubit_loc(zxc, v)`: Return the qubit location of spider `v`
-- `column_loc(zxc, v)`: Return the column location of spider `v`
-- `generate_layout!(zxc)`: Generate layout information for visualization
-- `spider_sequence(zxc)`: Return spiders ordered by qubit and column
-- `push_gate!(zxc, args...)`: Add a gate at the end of the circuit
-- `pushfirst_gate!(zxc, args...)`: Add a gate at the beginning of the circuit
+Concrete subtypes must implement both:
 
-In addition to the basic graph operations required by `AbstractZXDiagram`.
+ 1. The `AbstractZXDiagram` interface (graph operations)
+ 2. The circuit-specific interface defined by `@interface`
+
+Use `Interfaces.test` to verify implementations.
 
 # See also
-- [`AbstractZXDiagram`](@ref): Base abstract type for all ZX-diagrams
-- [`ZXCircuit`](@ref): Main implementation with ZXGraph composition
-- [`ZXGraph`](@ref): Pure graph representation without circuit assumptions
+
+  - [`AbstractZXDiagram`](@ref): Base abstract type for all ZX-diagrams
+  - [`ZXCircuit`](@ref): Main implementation with ZXGraph composition
+  - [`ZXGraph`](@ref): Pure graph representation without circuit assumptions
 """
 abstract type AbstractZXCircuit{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P} end
 
-# Circuit-specific interface declarations
-# These methods must be implemented by concrete subtypes
+# Define the circuit-specific interface using Interfaces.jl
+_components_zxcircuit = (
+    mandatory=(
+        # Circuit structure
+        nqubits=x -> nqubits(x)::Int,
+        get_inputs=x -> get_inputs(x)::Vector,
+        get_outputs=x -> get_outputs(x)::Vector,
 
-nqubits(zxd::AbstractZXCircuit) = throw(MethodError(ZX.nqubits, zxd))
-get_inputs(zxd::AbstractZXCircuit) = throw(MethodError(ZX.get_inputs, zxd))
-get_outputs(zxd::AbstractZXCircuit) = throw(MethodError(ZX.get_outputs, zxd))
-qubit_loc(zxd::AbstractZXCircuit, v) = throw(MethodError(ZX.qubit_loc, (zxd, v)))
-column_loc(zxd::AbstractZXCircuit, v) = throw(MethodError(ZX.column_loc, (zxd, v)))
-generate_layout!(zxd::AbstractZXCircuit) = throw(MethodError(ZX.generate_layout!, zxd))
-spider_sequence(zxd::AbstractZXCircuit) = throw(MethodError(ZX.spider_sequence, zxd))
-push_gate!(zxd::AbstractZXCircuit, args...) = throw(MethodError(ZX.push_gate!, (zxd, args...)))
-pushfirst_gate!(zxd::AbstractZXCircuit, args...) = throw(MethodError(ZX.pushfirst_gate!, (zxd, args...)))
+        # Layout information
+        qubit_loc=(x, v) -> qubit_loc(x, v),
+        column_loc=(x, v) -> column_loc(x, v),
+        (generate_layout!)=x -> generate_layout!(x),
+        spider_sequence=x -> spider_sequence(x),
+
+        # Gate operations (circuit-specific)
+        (push_gate!)=(x, args...) -> push_gate!(x, args...),
+        (pushfirst_gate!)=(x, args...) -> pushfirst_gate!(x, args...)
+    ),
+    optional=(;)
+)
+
+@interface AbstractZXCircuitInterface AbstractZXCircuit _components_zxcircuit "Interface for ZX-diagrams with circuit structure"

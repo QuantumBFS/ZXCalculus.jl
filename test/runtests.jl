@@ -2,6 +2,10 @@ using ZXCalculus, Documenter, Test
 using Vega, DataFrames
 
 @testset "ZX module" begin
+    @testset "interfaces.jl" begin
+        include("ZX/interfaces.jl")
+    end
+
     @testset "plots.jl" begin
         include("ZX/plots.jl")
     end
