@@ -1,8 +1,8 @@
 """
 Graph Interface for AbstractZXDiagram
 
-This file documents the Graphs.jl-compatible interface that all ZX-diagrams must implement.
-The methods are imported from Graphs.jl and implementations should define them for their types.
+This file declares the Graphs.jl-compatible interface that all ZX-diagrams must implement.
+All concrete subtypes of AbstractZXDiagram should implement these methods.
 
 # Methods (11 total):
 
@@ -24,22 +24,26 @@ The methods are imported from Graphs.jl and implementations should define them f
 - `Graphs.has_edge(zxd, v1, v2)`: Check if edge exists
 - `Graphs.add_edge!(zxd, v1, v2)`: Add an edge
 - `Graphs.rem_edge!(zxd, v1, v2)`: Remove an edge
-
-All methods from Graphs.jl are imported and should be extended by concrete implementations.
 """
 
-# Import Graphs.jl methods that should be implemented
 using Graphs
 
-# These methods are imported from Graphs.jl and should be extended by implementations:
-# - Graphs.nv
-# - Graphs.ne
-# - Graphs.degree
-# - Graphs.indegree
-# - Graphs.outdegree
-# - Graphs.neighbors
-# - Graphs.outneighbors
-# - Graphs.inneighbors
-# - Graphs.has_edge
-# - Graphs.add_edge!
-# - Graphs.rem_edge!
+# Declare interface methods with abstract type signatures
+# Vertex and edge counts
+Graphs.nv(::AbstractZXDiagram) = error("nv not implemented")
+Graphs.ne(::AbstractZXDiagram) = error("ne not implemented")
+
+# Degree queries
+Graphs.degree(::AbstractZXDiagram, v) = error("degree not implemented")
+Graphs.indegree(::AbstractZXDiagram, v) = error("indegree not implemented")
+Graphs.outdegree(::AbstractZXDiagram, v) = error("outdegree not implemented")
+
+# Neighbor queries
+Graphs.neighbors(::AbstractZXDiagram, v) = error("neighbors not implemented")
+Graphs.outneighbors(::AbstractZXDiagram, v) = error("outneighbors not implemented")
+Graphs.inneighbors(::AbstractZXDiagram, v) = error("inneighbors not implemented")
+
+# Edge operations
+Graphs.has_edge(::AbstractZXDiagram, v1, v2) = error("has_edge not implemented")
+Graphs.add_edge!(::AbstractZXDiagram, v1, v2) = error("add_edge! not implemented")
+Graphs.rem_edge!(::AbstractZXDiagram, v1, v2) = error("rem_edge! not implemented")

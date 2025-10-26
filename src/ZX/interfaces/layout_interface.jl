@@ -1,7 +1,7 @@
 """
 Layout Interface for AbstractZXCircuit
 
-This file documents and declares layout information for visualization and analysis of ZX-circuits.
+This file declares layout information for visualization and analysis of ZX-circuits.
 All concrete implementations of AbstractZXCircuit must implement these methods.
 
 # Methods (4 total):
@@ -21,8 +21,12 @@ All concrete implementations of AbstractZXCircuit must implement these methods.
 - Spider sequence: Vector of vectors, one per qubit, ordered by column
 """
 
-# Declare interface functions
-function qubit_loc end
-function column_loc end
-function generate_layout! end
-function spider_sequence end
+# Declare interface methods with abstract type signatures
+
+# Layout queries
+qubit_loc(::AbstractZXCircuit, v) = error("qubit_loc not implemented")
+column_loc(::AbstractZXCircuit, v) = error("column_loc not implemented")
+
+# Layout generation
+generate_layout!(::AbstractZXCircuit) = error("generate_layout! not implemented")
+spider_sequence(::AbstractZXCircuit) = error("spider_sequence not implemented")

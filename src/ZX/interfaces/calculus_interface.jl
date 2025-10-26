@@ -1,7 +1,7 @@
 """
 Calculus Interface for AbstractZXDiagram
 
-This file documents and declares the ZX-calculus-specific operations for spider and scalar manipulation.
+This file declares the ZX-calculus-specific operations for spider and scalar manipulation.
 All concrete implementations of AbstractZXDiagram must implement these methods.
 
 # Methods (17 total):
@@ -32,19 +32,28 @@ All concrete implementations of AbstractZXDiagram must implement these methods.
 - `Base.copy(zxd)`: Create a copy
 """
 
-# Declare interface functions
-function spiders end
-function spider_type end
-function spider_types end
-function phase end
-function phases end
-function set_phase! end
-function add_spider! end
-function rem_spider! end
-function rem_spiders! end
-function insert_spider! end
-function scalar end
-function add_global_phase! end
-function add_power! end
-function tcount end
-function round_phases! end
+# Declare interface methods with abstract type signatures
+
+# Spider queries
+spiders(::AbstractZXDiagram) = error("spiders not implemented")
+spider_type(::AbstractZXDiagram, v) = error("spider_type not implemented")
+spider_types(::AbstractZXDiagram) = error("spider_types not implemented")
+phase(::AbstractZXDiagram, v) = error("phase not implemented")
+phases(::AbstractZXDiagram) = error("phases not implemented")
+
+# Spider manipulation
+set_phase!(::AbstractZXDiagram, v, p) = error("set_phase! not implemented")
+add_spider!(::AbstractZXDiagram, st, p) = error("add_spider! not implemented")
+rem_spider!(::AbstractZXDiagram, v) = error("rem_spider! not implemented")
+rem_spiders!(::AbstractZXDiagram, vs) = error("rem_spiders! not implemented")
+insert_spider!(::AbstractZXDiagram, v1, v2) = error("insert_spider! not implemented")
+
+# Global properties and scalar
+scalar(::AbstractZXDiagram) = error("scalar not implemented")
+add_global_phase!(::AbstractZXDiagram, p) = error("add_global_phase! not implemented")
+add_power!(::AbstractZXDiagram, n) = error("add_power! not implemented")
+tcount(::AbstractZXDiagram) = error("tcount not implemented")
+round_phases!(::AbstractZXDiagram) = error("round_phases! not implemented")
+
+# Base methods are typically not declared here since they're defined in Base
+# Concrete implementations should extend Base.show and Base.copy directly
