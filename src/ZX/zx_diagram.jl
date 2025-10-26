@@ -209,6 +209,9 @@ sum of multiplicities of all multiple edges. Otherwise, it will return the
 number of multiple edges.
 """
 Graphs.ne(zxd::ZXDiagram; count_mul::Bool=false) = ne(zxd.mg, count_mul=count_mul)
+Graphs.edges(zxd::ZXDiagram) = edges(zxd.mg)
+Graphs.has_edge(zxd::ZXDiagram, v1::Integer, v2::Integer) = has_edge(zxd.mg, v1, v2)
+Multigraphs.mul(zxd::ZXDiagram, v1::Integer, v2::Integer) = mul(zxd.mg, v1, v2)
 
 Graphs.outneighbors(zxd::ZXDiagram, v; count_mul::Bool=false) = outneighbors(zxd.mg, v, count_mul=count_mul)
 Graphs.inneighbors(zxd::ZXDiagram, v; count_mul::Bool=false) = inneighbors(zxd.mg, v, count_mul=count_mul)

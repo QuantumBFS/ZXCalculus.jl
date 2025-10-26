@@ -15,6 +15,8 @@ include("./pivot_gadget.jl")
 include("./identity_remove.jl")
 include("./gadget_fusion.jl")
 include("./scalar.jl")
+include("./parallel_edge.jl")
+include("./hedge.jl")
 
 # Compatibility aliases for backward compatibility
 @deprecate Rule{:f}() FusionRule()

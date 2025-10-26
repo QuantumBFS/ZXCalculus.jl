@@ -1,4 +1,4 @@
-struct ZXCircuit{T, P} <: AbstractZXDiagram{T, P}
+struct ZXCircuit{T, P} <: AbstractZXCircuit{T, P}
     zx_graph::ZXGraph{T, P}
     inputs::Vector{T}
     outputs::Vector{T}
@@ -6,7 +6,7 @@ struct ZXCircuit{T, P} <: AbstractZXDiagram{T, P}
 
     # maps a vertex id to its master id and scalar multiplier
     phase_ids::Dict{T, Tuple{T, Int}}
-    master::ZXDiagram{T, P}
+    master::Union{Nothing, ZXCircuit{T, P}}
 end
 
 function Base.show(io::IO, circ::ZXCircuit)
@@ -21,62 +21,37 @@ function Base.copy(circ::ZXCircuit{T, P}) where {T, P}
         copy(circ.outputs),
         copy(circ.layout),
         copy(circ.phase_ids),
-        copy(circ.master))
+        isnothing(circ.master) ? nothing : copy(circ.master))
 end
 
-function ZXCircuit(zxd::ZXDiagram{T, P}) where {T, P}
-    zxd = copy(zxd)
-    nzxd = copy(zxd)
+# Basic constructor without master
+function ZXCircuit(zxg::ZXGraph{T, P}, inputs::Vector{T}, outputs::Vector{T},
+        layout::ZXLayout{T}, phase_ids::Dict{T, Tuple{T, Int}}) where {T, P}
+    return ZXCircuit{T, P}(zxg, inputs, outputs, layout, phase_ids, nothing)
+end
+
+function ZXCircuit(zxd::ZXDiagram{T, P}; track_phase::Bool=true, normalize::Bool=true) where {T, P}
+    zxg = ZXGraph(zxd)
     inputs = zxd.inputs
     outputs = zxd.outputs
     layout = zxd.layout
+    phase_ids = Dict{T, Tuple{T, Int}}(
+        (v, (v, 1)) for v in spiders(zxg) if spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+    )
+    circ = ZXCircuit(zxg, inputs, outputs, layout, phase_ids, nothing)
+    track_phase && (circ = phase_tracker(circ))
+    normalize && to_z_form!(circ)
+    return circ
+end
 
-    simplify!(Identity1Rule(), nzxd)
-    simplify!(XToZRule(), nzxd)
-    simplify!(HBoxRule(), nzxd)
-    match_f = match(FusionRule(), nzxd)
-    while length(match_f) > 0
-        for m in match_f
-            vs = m.vertices
-            if check_rule(FusionRule(), nzxd, vs)
-                rewrite!(FusionRule(), nzxd, vs)
-                v1, v2 = vs
-                set_phase!(zxd, v1, phase(zxd, v1) + phase(zxd, v2))
-                set_phase!(zxd, v2, zero(P))
-            end
-        end
-        match_f = match(FusionRule(), nzxd)
-    end
-
-    vs = spiders(nzxd)
-    vH = T[]
-    vZ = T[]
-    vB = T[]
-    for v in vs
-        if spider_type(nzxd, v) == SpiderType.H
-            push!(vH, v)
-        elseif spider_type(nzxd, v) == SpiderType.Z
-            push!(vZ, v)
-        else
-            push!(vB, v)
-        end
-    end
-    eH = [(neighbors(nzxd, v, count_mul=true)[1], neighbors(nzxd, v, count_mul=true)[2]) for v in vH]
-
-    rem_spiders!(nzxd, vH)
-    et = Dict{Tuple{T, T}, EdgeType.EType}()
-    for e in edges(nzxd.mg)
-        et[(src(e), dst(e))] = EdgeType.SIM
-    end
-    zxg = ZXGraph{T, P}(
-        nzxd.mg, nzxd.ps, nzxd.st, et, nzxd.scalar)
-
-    for e in eH
-        v1, v2 = e
-        add_edge!(zxg, v1, v2)
-    end
-
-    return ZXCircuit(zxg, inputs, outputs, layout, nzxd.phase_ids, zxd)
+function phase_tracker(circ::ZXCircuit{T, P}) where {T, P}
+    master_circ = circ
+    phase_ids = Dict{T, Tuple{T, Int}}(
+        (v, (v, 1)) for v in spiders(circ.zx_graph) if spider_type(circ.zx_graph, v) in (SpiderType.Z, SpiderType.X)
+    )
+    return ZXCircuit{T, P}(copy(circ.zx_graph),
+        copy(circ.inputs), copy(circ.outputs), copy(circ.layout),
+        phase_ids, master_circ)
 end
 
 function generate_layout!(circ::ZXCircuit{T, P}) where {T, P}
@@ -145,6 +120,7 @@ phase(circ::ZXCircuit, v::Integer) = phase(circ.zx_graph, v)
 phases(circ::ZXCircuit) = phases(circ.zx_graph)
 set_phase!(circ::ZXCircuit{T, P}, args...) where {T, P} = set_phase!(circ.zx_graph, args...)
 scalar(circ::ZXCircuit) = scalar(circ.zx_graph)
+tcount(circ::ZXCircuit) = tcount(circ.zx_graph)
 
 get_inputs(circ::ZXCircuit) = circ.inputs
 get_outputs(circ::ZXCircuit) = circ.outputs
@@ -245,11 +221,25 @@ function merge_phase_tracking!(circ::ZXCircuit{T, P}, v_from::T, v_to::T) where 
     if haskey(circ.phase_ids, v_from) && haskey(circ.phase_ids, v_to)
         id_from, sign_from = circ.phase_ids[v_from]
         id_to, sign_to = circ.phase_ids[v_to]
-        merged_phase = (sign_from * phase(circ.master, id_from) + sign_to * phase(circ.master, id_to)) * sign_to
-        set_phase!(circ.master, id_from, zero(P))
-        set_phase!(circ.master, id_to, merged_phase)
+        if !isnothing(circ.master)
+            merged_phase = (sign_from * phase(circ.master, id_from) + sign_to * phase(circ.master, id_to)) * sign_to
+            set_phase!(circ.master, id_from, zero(P))
+            set_phase!(circ.master, id_to, merged_phase)
+        end
         return true
     end
-    @show circ.phase_ids
     return false
+end
+
+function ZXDiagram(circ::ZXCircuit{T, P}) where {T, P}
+    layout = circ.layout
+    phase_ids = circ.phase_ids
+    inputs = circ.inputs
+    outputs = circ.outputs
+
+    zxg = copy(circ.zx_graph)
+    simplify!(HEdgeRule(), zxg)
+    ps = phases(zxg)
+    st = spider_types(zxg)
+    return ZXDiagram{T, P}(zxg.mg, st, ps, layout, phase_ids, scalar(zxg), inputs, outputs)
 end

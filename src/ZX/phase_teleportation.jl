@@ -4,8 +4,7 @@
 Reducing T-count of `zxd` with the algorithms in [arXiv:1903.10477](https://arxiv.org/abs/1903.10477).
 """
 function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
-    zxg = ZXCircuit(cir)
-    ncir = zxg.master
+    zxg = ZXCircuit(cir; track_phase=true, normalize=true)
 
     simplify!(LocalCompRule(), zxg)
     simplify!(Pivot1Rule(), zxg)
@@ -26,9 +25,10 @@ function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
         match_gf = match(GadgetFusionRule(), zxg)
     end
 
-    simplify!(Identity1Rule(), ncir)
-    simplify!(HBoxRule(), ncir)
-    return ncir
+    teleported = ZXDiagram(zxg.master)
+    simplify!(Identity1Rule(), teleported)
+    simplify!(HBoxRule(), teleported)
+    return teleported
 end
 
 function phase_teleportation(bir::BlockIR)

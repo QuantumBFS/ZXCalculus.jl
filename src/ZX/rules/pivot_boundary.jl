@@ -53,16 +53,18 @@ function rewrite!(::PivotBoundaryRule, circ::ZXCircuit{T, P}, vs::Vector{T}) whe
     _, new_v, w = rewrite!(PivotBoundaryRule(), circ.zx_graph, vs)
 
     v_bound_master = v_bound
-    v_master = neighbors(circ.master, v_bound_master)[1]
-    # TODO: add edge type here for simple edges
-    if is_hadamard(circ, new_v, v_bound)
-        w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.Z)[1]
-    else
+    if !isnothing(circ.master)
+        v_master = neighbors(circ.master, v_bound_master)[1]
         # TODO: add edge type here for simple edges
-        w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.X)[1]
+        if is_hadamard(circ, new_v, v_bound)
+            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.Z)[1]
+        else
+            # TODO: add edge type here for simple edges
+            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.X)[1]
+        end
+        circ.phase_ids[w] = (w_master, 1)
     end
 
-    circ.phase_ids[w] = (w_master, 1)
     circ.phase_ids[new_v] = circ.phase_ids[v]
     delete!(circ.phase_ids, v)
 

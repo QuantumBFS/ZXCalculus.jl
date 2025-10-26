@@ -78,3 +78,10 @@ function rewrite!(::FusionRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     rem_spider!(zxg, v2)
     return zxg
 end
+
+function rewrite!(::FusionRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    v_to, v_from = vs
+    rewrite!(FusionRule(), circ.zx_graph, vs)
+    merge_phase_tracking!(circ, v_from, v_to)
+    return circ
+end

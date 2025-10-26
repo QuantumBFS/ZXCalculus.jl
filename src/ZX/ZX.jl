@@ -27,7 +27,7 @@ export FusionRule, XToZRule,
        Pivot1Rule, Pivot2Rule, Pivot3Rule,
        PivotBoundaryRule, PivotGadgetRule,
        IdentityRemovalRule, GadgetFusionRule,
-       ScalarRule
+       ScalarRule, ParallelEdgeRemovalRule
 
 export rewrite!, simplify!
 
@@ -37,6 +37,7 @@ export plot
 export concat!, dagger, contains_only_bare_wires, verify_equality
 
 include("abstract_zx_diagram.jl")
+include("abstract_zx_circuit.jl")
 include("zx_layout.jl")
 include("zx_diagram.jl")
 include("zx_graph.jl")

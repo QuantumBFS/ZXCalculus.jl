@@ -31,13 +31,20 @@ function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
     return zxd
 end
 
+function to_z_form!(zxg::Union{ZXGraph, ZXCircuit})
+    simplify!(HBoxRule(), zxg)
+    simplify!(XToZRule(), zxg)
+    simplify!(FusionRule(), zxg)
+    return zxg
+end
+
 """
     clifford_simplification(zxd)
 
 Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
 """
 function clifford_simplification(circ::ZXDiagram)
-    zxg = ZXCircuit(circ)
+    zxg = ZXCircuit(circ; track_phase=true, normalize=true)
     zxg = clifford_simplification(zxg)
     return zxg
 end
@@ -65,7 +72,7 @@ function clifford_simplification(bir::BlockIR)
 end
 
 function full_reduction(cir::ZXDiagram)
-    zxg = ZXCircuit(cir)
+    zxg = ZXCircuit(cir; track_phase=true, normalize=true)
     zxg = full_reduction(zxg)
     return zxg
 end

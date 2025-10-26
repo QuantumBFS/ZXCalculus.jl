@@ -28,6 +28,18 @@ function ZXGraph()
         Dict{Tuple{Int, Int}, EdgeType.EType}(), Scalar{Phase}(0, Phase(0 // 1)))
 end
 
+function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
+    zxd = copy(zxd)
+    simplify!(ParallelEdgeRemovalRule(), zxd)
+    et = Dict{Tuple{T, T}, EdgeType.EType}()
+    for e in edges(zxd)
+        @assert mul(zxd, src(e), dst(e)) == 1 "ZXCircuit: multiple edges should have been removed."
+        s, d = src(e), dst(e)
+        et[(min(s, d), max(s, d))] = EdgeType.SIM
+    end
+    return ZXGraph{T, P}(zxd.mg, zxd.ps, zxd.st, et, zxd.scalar)
+end
+
 Graphs.has_edge(zxg::ZXGraph, vs...) = has_edge(zxg.mg, vs...)
 Graphs.has_vertex(zxg::ZXGraph, v::Integer) = has_vertex(zxg.mg, v)
 Graphs.nv(zxg::ZXGraph) = nv(zxg.mg)
@@ -196,8 +208,9 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P),
     end
     return v
 end
-function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T, phase::P=zero(P)) where {T <: Integer, P}
-    v = add_spider!(zxg, SpiderType.Z, phase, [v1, v2])
+function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T,
+        stype::SpiderType.SType=SpiderType.Z, phase::P=zero(P)) where {T <: Integer, P}
+    v = add_spider!(zxg, stype, phase, [v1, v2])
     rem_edge!(zxg, v1, v2)
     return v
 end
