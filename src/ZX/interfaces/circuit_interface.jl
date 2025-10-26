@@ -4,30 +4,77 @@ Circuit Interface for AbstractZXCircuit
 This file declares circuit-specific operations including structure queries and gate operations.
 All concrete implementations of AbstractZXCircuit must implement these methods.
 
-# Methods (5 total):
-
-## Circuit Structure (3):
-- `nqubits(circ)`: Number of qubits in the circuit
-- `get_inputs(circ)`: Get ordered input spider vertices
-- `get_outputs(circ)`: Get ordered output spider vertices
-
-## Gate Operations (2):
-- `push_gate!(circ, ::Val{gate}, locs..., [phase])`: Add gate to end of circuit
-- `pushfirst_gate!(circ, ::Val{gate}, locs..., [phase])`: Add gate to beginning of circuit
-
 Supported gates: :Z, :X, :H, :CNOT, :CZ, :SWAP
-Phase gates (:Z, :X) accept an optional phase parameter.
+Rotation gates (:Z, :X) accept an optional phase parameter.
 """
 
-# Declare interface methods with abstract type signatures
+using DocStringExtensions
 
 # Circuit structure
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the number of qubits in the circuit.
+
+Returns an integer representing the qubit count.
+"""
 nqubits(::AbstractZXCircuit) = error("nqubits not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the ordered input spider vertices of the circuit.
+
+Returns a vector of vertex identifiers in qubit order.
+"""
 get_inputs(::AbstractZXCircuit) = error("get_inputs not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the ordered output spider vertices of the circuit.
+
+Returns a vector of vertex identifiers in qubit order.
+"""
 get_outputs(::AbstractZXCircuit) = error("get_outputs not implemented")
 
 # Gate operations
-# Note: push_gate! and pushfirst_gate! have variable arguments and Val types,
-# so we only declare them without default error implementations
+
+"""
+    push_gate!(circ::AbstractZXCircuit, ::Val{gate}, locs..., [phase])
+
+Add a gate to the end of the circuit.
+
+# Arguments
+
+  - `circ`: The circuit to modify
+  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
+  - `locs`: Qubit locations where the gate is applied
+  - `phase`: Optional phase parameter for phase gates (:Z, :X)
+
+# Supported gates
+
+  - Single-qubit: `:Z`, `:X`, `:H`
+  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
+"""
 function push_gate! end
+
+"""
+    pushfirst_gate!(circ::AbstractZXCircuit, ::Val{gate}, locs..., [phase])
+
+Add a gate to the beginning of the circuit.
+
+# Arguments
+
+  - `circ`: The circuit to modify
+  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
+  - `locs`: Qubit locations where the gate is applied
+  - `phase`: Optional phase parameter for phase gates (:Z, :X)
+
+# Supported gates
+
+  - Single-qubit: `:Z`, `:X`, `:H`
+  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
+"""
 function pushfirst_gate! end
