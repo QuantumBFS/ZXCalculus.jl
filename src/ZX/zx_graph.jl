@@ -147,30 +147,9 @@ function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
     return false
 end
 
-nqubits(zxg::ZXGraph) = nqubits(generate_layout!(zxg))
-qubit_loc(zxg::ZXGraph{T, P}, v::T) where {T, P} = qubit_loc(generate_layout!(zxg), v)
-function column_loc(zxg::ZXGraph{T, P}, v::T) where {T, P}
-    c_loc = column_loc(generate_layout!(zxg), v)
-    if !isnothing(c_loc)
-        if spider_type(zxg, v) == SpiderType.Out
-            nb = neighbors(zxg, v)
-            if length(nb) == 1
-                nb = nb[1]
-                spider_type(zxg, nb) == SpiderType.In && return 3//1
-                c_loc = floor(column_loc(zxg, nb) + 2)
-            else
-                c_loc = 1000
-            end
-        end
-        if spider_type(zxg, v) == SpiderType.In
-            nb = neighbors(zxg, v)[1]
-            spider_type(zxg, nb) == SpiderType.Out && return 1//1
-            c_loc = ceil(column_loc(zxg, nb) - 2)
-        end
-    end
-    !isnothing(c_loc) && return c_loc
-    return 0
-end
+# Note: Circuit-specific methods (nqubits, qubit_loc, column_loc, generate_layout!)
+# have been moved to AbstractZXCircuit interface.
+# ZXGraph is a pure graph representation without circuit structure assumptions.
 
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
     if has_edge(zxg, v1, v2)
@@ -280,17 +259,27 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
     return false
 end
 
-get_inputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In]
-get_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
+# Helper functions for finding input/output spiders in a ZXGraph
+# Note: These are not methods - ZXGraph has no circuit structure guarantees.
+# Use ZXCircuit if you need ordered inputs/outputs.
 
-function generate_layout!(zxg::ZXGraph{T, P}) where {T, P}
-    inputs = get_inputs(zxg)
-    outputs = get_outputs(zxg)
-    nbits = max(length(inputs), length(outputs))
-    layout = ZXLayout{T}(nbits)
-    circ = ZXCircuit{T, P}(zxg, inputs, outputs, layout)
-    return generate_layout!(circ)
-end
+"""
+    find_inputs(zxg::ZXGraph)
+
+Find all spiders with type `SpiderType.In` in the graph.
+This is a search utility and does not guarantee circuit structure or ordering.
+"""
+find_inputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In]
+get_inputs(zxg::ZXGraph) = find_inputs(zxg)
+
+"""
+    find_outputs(zxg::ZXGraph)
+
+Find all spiders with type `SpiderType.Out` in the graph.
+This is a search utility and does not guarantee circuit structure or ordering.
+"""
+find_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
+get_outputs(zxg::ZXGraph) = find_outputs(zxg)
 
 scalar(zxg::ZXGraph) = zxg.scalar
 

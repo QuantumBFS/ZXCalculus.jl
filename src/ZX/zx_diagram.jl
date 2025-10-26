@@ -6,8 +6,16 @@ end  # module SpiderType
     ZXDiagram{T, P}
 
 This is the type for representing ZX-diagrams.
+
+!!! warning "Deprecated"
+
+    `ZXDiagram` is deprecated and will be removed in a future version.
+    Please use `ZXCircuit` instead for circuit representations.
+
+    `ZXCircuit` provides the same functionality with better separation of concerns
+    and more efficient graph-based simplification algorithms.
 """
-struct ZXDiagram{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
+struct ZXDiagram{T <: Integer, P <: AbstractPhase} <: AbstractZXCircuit{T, P}
     mg::Multigraph{T}
 
     st::Dict{T, SpiderType.SType}
@@ -92,9 +100,13 @@ end
 """
     ZXDiagram(nbits)
 
+!!! warning "Deprecated"
+
+    `ZXDiagram` is deprecated. Use `ZXCircuit` instead.
+
 Construct a ZXDiagram of a empty circuit with qubit number `nbit`
 
-```jldoctest; setup = :(using ZXCalculus.ZX)
+```
 julia> zxd = ZXDiagram(3)
 ZX-diagram with 6 vertices and 3 multiple edges:
 (S_1{input} <-1-> S_2{output})
@@ -103,6 +115,7 @@ ZX-diagram with 6 vertices and 3 multiple edges:
 ```
 """
 function ZXDiagram(nbits::T) where {T <: Integer}
+    Base.depwarn("ZXDiagram is deprecated, use ZXCircuit instead", :ZXDiagram)
     mg = Multigraph(2*nbits)
     st = [SpiderType.In for _ in 1:(2 * nbits)]
     ps = [Phase(0//1) for _ in 1:(2 * nbits)]

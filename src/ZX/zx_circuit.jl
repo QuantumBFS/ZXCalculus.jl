@@ -44,6 +44,14 @@ function ZXCircuit(zxd::ZXDiagram{T, P}; track_phase::Bool=true, normalize::Bool
     return circ
 end
 
+function ZXCircuit(zxg::ZXGraph{T, P}) where {T, P}
+    inputs = find_inputs(zxg)
+    outputs = find_outputs(zxg)
+    layout = ZXLayout{T}()
+    phase_ids = Dict{T, Tuple{T, Int}}()
+    return ZXCircuit(zxg, inputs, outputs, layout, phase_ids, nothing)
+end
+
 function phase_tracker(circ::ZXCircuit{T, P}) where {T, P}
     master_circ = circ
     phase_ids = Dict{T, Tuple{T, Int}}(

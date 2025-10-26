@@ -48,7 +48,11 @@ function generate_d_edges(zxd::ZXGraph)
 end
 generate_d_edges(zxd::ZXCircuit) = generate_d_edges(zxd.zx_graph)
 
-function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXGraph, ZXCircuit}; kwargs...)
+function ZXCalculus.ZX.plot(zxg::ZXGraph{T, P}; kwargs...) where {T, P}
+    return ZXCalculus.ZX.plot(ZXCircuit(zxg); kwargs...)
+end
+
+function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit}; kwargs...)
     scale = 2
     lattice_unit = 50 * scale
     layout = ZXCalculus.ZX.generate_layout!(zxd)
