@@ -36,13 +36,45 @@ export clifford_simplification, full_reduction, circuit_extraction, phase_telepo
 export plot
 export concat!, dagger, contains_only_bare_wires, verify_equality
 
-include("abstract_zx_diagram.jl")
-include("abstract_zx_circuit.jl")
-include("zx_layout.jl")
-include("zx_diagram.jl")
-include("zx_graph.jl")
-include("zx_circuit.jl")
+# Load types
+include("types/spider_type.jl")
+include("types/edge_type.jl")
+include("types/zx_layout.jl")
 
+# Load interfaces
+include("interfaces/abstract_zx_diagram.jl")
+include("interfaces/graph_interface.jl")
+include("interfaces/calculus_interface.jl")
+include("interfaces/abstract_zx_circuit.jl")
+include("interfaces/circuit_interface.jl")
+include("interfaces/layout_interface.jl")
+
+# Load utilities
+include("utils/conversion.jl")
+
+# Load implementations
+# ZXDiagram must be loaded first (needed by ZXGraph and ZXCircuit constructors)
+include("implementations/zx_diagram/type.jl")
+include("implementations/zx_diagram/graph_ops.jl")
+include("implementations/zx_diagram/calculus_ops.jl")
+include("implementations/zx_diagram/circuit_ops.jl")
+include("implementations/zx_diagram/layout_ops.jl")
+include("implementations/zx_diagram/composition_ops.jl")
+
+# ZXGraph
+include("implementations/zx_graph/type.jl")
+include("implementations/zx_graph/graph_ops.jl")
+include("implementations/zx_graph/calculus_ops.jl")
+
+# ZXCircuit
+include("implementations/zx_circuit/type.jl")
+include("implementations/zx_circuit/graph_ops.jl")
+include("implementations/zx_circuit/calculus_ops.jl")
+include("implementations/zx_circuit/circuit_ops.jl")
+include("implementations/zx_circuit/layout_ops.jl")
+include("implementations/zx_circuit/phase_tracking.jl")
+
+# Rules and algorithms
 include("rules/rules.jl")
 include("simplify.jl")
 

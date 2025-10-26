@@ -1,0 +1,109 @@
+# Calculus Interface Implementation for ZXGraph
+
+# Spider queries
+spiders(zxg::ZXGraph) = vertices(zxg.mg)
+spider_type(zxg::ZXGraph, v::Integer) = zxg.st[v]
+spider_types(zxg::ZXGraph) = zxg.st
+phase(zxg::ZXGraph, v::Integer) = zxg.ps[v]
+phases(zxg::ZXGraph) = zxg.ps
+
+# Edge type queries (ZXGraph-specific)
+edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1, v2))]
+is_zx_spider(zxg::ZXGraph, v::Integer) = spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
+
+function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
+    if has_edge(zxg, v1, v2)
+        src = min(v1, v2)
+        dst = max(v1, v2)
+        return zxg.et[(src, dst)] == EdgeType.HAD
+    else
+        error("no edge between $v1 and $v2")
+    end
+    return false
+end
+
+# Spider manipulation
+function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
+    if has_vertex(zxg, v)
+        while p < 0
+            p += 2
+        end
+        zxg.ps[v] = round_phase(p)
+        return true
+    end
+    return false
+end
+
+function set_spider_type!(zxg::ZXGraph, v::Integer, st::SpiderType.SType)
+    if has_vertex(zxg, v)
+        zxg.st[v] = st
+        return true
+    end
+    return false
+end
+
+function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
+    if has_edge(zxg, v1, v2)
+        zxg.et[(min(v1, v2), max(v1, v2))] = etype
+        return true
+    end
+    return false
+end
+
+function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P), connect::Vector{T}=T[]) where {
+        T <: Integer, P}
+    v = add_vertex!(zxg.mg)[1]
+    set_phase!(zxg, v, phase)
+    zxg.st[v] = st
+    if all(has_vertex(zxg, c) for c in connect)
+        for c in connect
+            add_edge!(zxg, v, c)
+        end
+    end
+    return v
+end
+
+function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+    if rem_vertices!(zxg.mg, vs)
+        for v in vs
+            delete!(zxg.ps, v)
+            delete!(zxg.st, v)
+        end
+        return true
+    end
+    return false
+end
+
+rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
+
+function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T,
+        stype::SpiderType.SType=SpiderType.Z, phase::P=zero(P)) where {T <: Integer, P}
+    v = add_spider!(zxg, stype, phase, [v1, v2])
+    rem_edge!(zxg, v1, v2)
+    return v
+end
+
+# Global properties
+scalar(zxg::ZXGraph) = zxg.scalar
+
+function add_global_phase!(zxg::ZXGraph{T, P}, p::P) where {T, P}
+    add_phase!(zxg.scalar, p)
+    return zxg
+end
+
+function add_power!(zxg::ZXGraph, n)
+    add_power!(zxg.scalar, n)
+    return zxg
+end
+
+tcount(cir::ZXGraph) = sum(!is_clifford_phase(phase(cir, v)) for v in spiders(cir) if is_zx_spider(cir, v))
+
+function round_phases!(zxg::ZXGraph{T, P}) where {T <: Integer, P}
+    ps = zxg.ps
+    for v in keys(ps)
+        while ps[v] < 0
+            ps[v] += 2
+        end
+        ps[v] = round_phase(ps[v])
+    end
+end
