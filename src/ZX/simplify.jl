@@ -1,9 +1,13 @@
+using DocStringExtensions
+
 const MAX_ITERATION = Ref{Int}(1000)
 
 """
-    replace!(r, zxd)
+    $(TYPEDSIGNATURES)
 
 Match and replace with the rule `r`.
+
+Returns the modified ZX-diagram.
 """
 function Base.replace!(r::AbstractRule, zxd::AbstractZXDiagram)
     matches = match(r, zxd)
@@ -12,9 +16,13 @@ function Base.replace!(r::AbstractRule, zxd::AbstractZXDiagram)
 end
 
 """
-    simplify!(r, zxd)
+    $(TYPEDSIGNATURES)
 
 Simplify `zxd` with the rule `r`.
+
+Repeatedly applies the rule until no more matches are found or MAX_ITERATION is reached.
+
+Returns the simplified ZX-diagram.
 """
 function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
     i = 1
@@ -39,9 +47,14 @@ function to_z_form!(zxg::Union{ZXGraph, ZXCircuit})
 end
 
 """
-    clifford_simplification(zxd)
+    $(TYPEDSIGNATURES)
 
-Simplify `zxd` with the algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
+Simplify `zxd` with the Clifford simplification algorithms in [arXiv:1902.03178](https://arxiv.org/abs/1902.03178).
+
+This applies a sequence of local complementation and pivot rules to simplify the ZX-diagram
+while preserving Clifford structure.
+
+Returns the simplified ZX-diagram.
 """
 function clifford_simplification(circ::ZXDiagram)
     zxg = ZXCircuit(circ; track_phase=true, normalize=true)

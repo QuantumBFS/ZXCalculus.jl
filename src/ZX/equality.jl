@@ -1,7 +1,15 @@
-"""
-    verify_equality(zxd_1::ZXDiagram, zxd_2::ZXDiagram)
+using DocStringExtensions
 
-checks the equivalence of two different ZXDiagrams
+"""
+    $(TYPEDSIGNATURES)
+
+Check the equivalence of two different ZX-diagrams.
+
+This function concatenates the first diagram with the dagger of the second,
+then performs full reduction. If the result contains only bare wires, the
+diagrams are equivalent.
+
+Returns `true` if the diagrams are equivalent, `false` otherwise.
 """
 function verify_equality(zxd_1::ZXDiagram, zxd_2::ZXDiagram)
     merged_diagram = copy(zxd_1)

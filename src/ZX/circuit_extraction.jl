@@ -1,8 +1,14 @@
-"""
-    ancilla_extraction(zxg::ZXGraph) -> ZXDiagram
+using DocStringExtensions
 
-Extract a quantum circuit from a general `ZXGraph` even without a gflow.
-It will introduce post-selection operators.
+"""
+    $(TYPEDSIGNATURES)
+
+Extract a quantum circuit from a general ZX-graph even without a gflow.
+
+This function can handle ZX-graphs that don't have a generalised flow (gflow),
+and will introduce post-selection operators as needed.
+
+Returns a `ZXDiagram` representing the extracted circuit.
 """
 function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
     nzxg = copy(zxg)
@@ -172,9 +178,14 @@ function update_frontier_ancilla!(frontiers, nzxg, gads, qubit_map, unextracts, 
 end
 
 """
-    circuit_extraction(zxg::ZXGraph)
+    $(TYPEDSIGNATURES)
 
-Extract circuit from a graph-like ZX-diagram.
+Extract a quantum circuit from a graph-like ZX-diagram.
+
+This is the main circuit extraction algorithm that converts a ZX-diagram
+in graph-like form into an equivalent quantum circuit.
+
+Returns a `ZXDiagram` representing the extracted circuit.
 """
 function circuit_extraction(zxg::Union{ZXGraph{T, P}, ZXCircuit{T, P}}) where {T, P}
     nzxg = copy(zxg)

@@ -1,7 +1,14 @@
-"""
-    phase_teleportation(zxd)
+using DocStringExtensions
 
-Reducing T-count of `zxd` with the algorithms in [arXiv:1903.10477](https://arxiv.org/abs/1903.10477).
+"""
+    $(TYPEDSIGNATURES)
+
+Reduce T-count of `zxd` with the phase teleportation algorithms in [arXiv:1903.10477](https://arxiv.org/abs/1903.10477).
+
+This optimization technique reduces the number of non-Clifford (T) gates in the circuit
+by teleporting phases through the diagram.
+
+Returns a ZX-diagram with reduced T-count.
 """
 function phase_teleportation(cir::ZXDiagram{T, P}) where {T, P}
     zxg = ZXCircuit(cir; track_phase=true, normalize=true)

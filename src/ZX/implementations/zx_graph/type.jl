@@ -1,17 +1,27 @@
+using DocStringExtensions
+
 """
-    ZXGraph{T, P}
+$(TYPEDEF)
 
 This is the type for representing the graph-like ZX-diagrams.
 
 A pure graph representation without circuit structure assumptions.
 Spiders of type In/Out can exist but are treated as searchable vertices,
 not as ordered inputs/outputs.
+
+# Fields
+$(TYPEDFIELDS)
 """
 struct ZXGraph{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
+    "The underlying multigraph structure"
     mg::Multigraph{T}
+    "Phases of spiders indexed by vertex"
     ps::Dict{T, P}
+    "Spider types indexed by vertex"
     st::Dict{T, SpiderType.SType}
+    "Edge types indexed by sorted vertex pairs"
     et::Dict{Tuple{T, T}, EdgeType.EType}
+    "Global scalar factor"
     scalar::Scalar{P}
 end
 

@@ -1,5 +1,7 @@
+using DocStringExtensions
+
 """
-    ZXDiagram{T, P}
+$(TYPEDEF)
 
 This is the type for representing ZX-diagrams.
 
@@ -10,18 +12,29 @@ This is the type for representing ZX-diagrams.
 
     `ZXCircuit` provides the same functionality with better separation of concerns
     and more efficient graph-based simplification algorithms.
+
+# Fields
+$(TYPEDFIELDS)
 """
 struct ZXDiagram{T <: Integer, P <: AbstractPhase} <: AbstractZXCircuit{T, P}
+    "The underlying multigraph structure"
     mg::Multigraph{T}
 
+    "Spider types indexed by vertex"
     st::Dict{T, SpiderType.SType}
+    "Phases of spiders indexed by vertex"
     ps::Dict{T, P}
 
+    "Layout information for visualization"
     layout::ZXLayout{T}
+    "Maps vertex id to its master id and scalar multiplier"
     phase_ids::Dict{T, Tuple{T, Int}}
 
+    "Global scalar factor"
     scalar::Scalar{P}
+    "Ordered input spider vertices"
     inputs::Vector{T}
+    "Ordered output spider vertices"
     outputs::Vector{T}
 
     function ZXDiagram{T, P}(

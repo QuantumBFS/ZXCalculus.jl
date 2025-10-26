@@ -1,3 +1,5 @@
+using DocStringExtensions
+
 abstract type AbstractRule end
 
 """
@@ -32,27 +34,35 @@ struct Rule{L} <: AbstractRule end
 Rule(r::Symbol) = Rule{r}()
 
 """
-    Match{T<:Integer}
+$(TYPEDEF)
 
-A struct for saving matched vertices.
+A struct for saving matched vertices from rule matching.
+
+# Fields
+$(TYPEDFIELDS)
 """
 struct Match{T <: Integer}
+    "Vector of vertex identifiers that match a rule pattern"
     vertices::Vector{T}
 end
 
 """
-    match(r, zxd)
+    $(TYPEDSIGNATURES)
 
-Returns all matched vertices, which will be stored in struct `Match`, for rule `r`
-in a ZX-diagram `zxd`.
+Find all vertices in ZX-diagram `zxd` that match the pattern of rule `r`.
+
+Returns a vector of `Match` objects containing the matched vertex sets.
 """
 Base.match(r::AbstractRule, ::AbstractZXDiagram{T, P}) where {T, P} = error("match not implemented for rule $(r)")
 
 """
-    rewrite!(r, zxd, matches)
+    $(TYPEDSIGNATURES)
 
-Rewrite a ZX-diagram `zxd` with rule `r` for all vertices in `matches`. `matches`
-can be a vector of `Match` or just an instance of `Match`.
+Rewrite a ZX-diagram `zxd` with rule `r` for all vertices in `matches`.
+
+The `matches` parameter can be a vector of `Match` objects or a single `Match` instance.
+
+Returns the modified ZX-diagram.
 """
 function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matches::Vector{Match{T}}) where {T, P}
     for each in matches
@@ -70,18 +80,27 @@ function rewrite!(r::AbstractRule, zxd::AbstractZXDiagram{T, P}, matched::Match{
 end
 
 """
-    rewrite!(r, zxd, vs)
+    $(TYPEDSIGNATURES)
 
-Rewrite a ZX-diagram `zxd` with rule `r` for vertices `vs`.
+Rewrite a ZX-diagram `zxd` with rule `r` for the specific vertices `vs`.
+
+This is the core rewriting function that must be implemented for each rule.
+
+Returns the modified ZX-diagram.
 """
 function rewrite!(r::AbstractRule, ::AbstractZXDiagram{T, P}, ::Vector{T}) where {T, P}
     return error("rewrite! not implemented for rule $(r)!")
 end
 
 """
-    check_rule(r, zxd, vs)
+    $(TYPEDSIGNATURES)
 
 Check whether the vertices `vs` in ZX-diagram `zxd` still match the rule `r`.
+
+This is used to verify that a previously matched pattern is still valid before rewriting,
+as the diagram may have changed since the match was found.
+
+Returns `true` if the vertices still match the rule pattern, `false` otherwise.
 """
 function check_rule(r::AbstractRule, ::AbstractZXDiagram{T, P}, ::Vector{T}) where {T, P}
     return error("check_rule not implemented for rule $(r)!")

@@ -1,11 +1,30 @@
+using DocStringExtensions
+
+"""
+$(TYPEDEF)
+
+This is the type for representing ZX-circuits with explicit circuit structure.
+
+ZXCircuit separates the graph representation (ZXGraph) from circuit semantics
+(ordered inputs/outputs and layout). This design enables efficient graph-based
+simplification while maintaining circuit structure for extraction and visualization.
+
+# Fields
+$(TYPEDFIELDS)
+"""
 struct ZXCircuit{T, P} <: AbstractZXCircuit{T, P}
+    "The underlying ZXGraph representation"
     zx_graph::ZXGraph{T, P}
+    "Ordered input spider vertices"
     inputs::Vector{T}
+    "Ordered output spider vertices"
     outputs::Vector{T}
+    "Layout information for visualization"
     layout::ZXLayout{T}
 
-    # maps a vertex id to its master id and scalar multiplier
+    "Maps vertex id to its master id and scalar multiplier for phase tracking"
     phase_ids::Dict{T, Tuple{T, Int}}
+    "Reference to master circuit for phase tracking (optional)"
     master::Union{Nothing, ZXCircuit{T, P}}
 end
 
