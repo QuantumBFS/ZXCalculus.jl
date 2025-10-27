@@ -71,6 +71,58 @@ function ZXCircuit(zxg::ZXGraph{T, P}) where {T, P}
     return ZXCircuit(zxg, inputs, outputs, layout, phase_ids, nothing)
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Construct an empty ZX-circuit with `nbits` qubits.
+
+Each qubit is represented by a pair of In/Out spiders connected by a simple edge.
+This creates a minimal circuit structure ready for gate insertion.
+
+# Example
+```julia
+julia> circ = ZXCircuit(3)
+ZXCircuit with 3 inputs and 3 outputs...
+```
+"""
+function ZXCircuit(nbits::T) where {T <: Integer}
+    mg = Multigraph(2*nbits)
+    st = Dict{T, SpiderType.SType}()
+    ps = Dict{T, Phase}()
+    et = Dict{Tuple{T, T}, EdgeType.EType}()
+    spider_q = Dict{T, Rational{Int}}()
+    spider_col = Dict{T, Rational{Int}}()
+
+    inputs = Vector{T}()
+    outputs = Vector{T}()
+
+    for i in 1:nbits
+        in_id = T(2*i-1)
+        out_id = T(2*i)
+        add_edge!(mg, in_id, out_id)
+
+        st[in_id] = SpiderType.In
+        st[out_id] = SpiderType.Out
+        ps[in_id] = Phase(0//1)
+        ps[out_id] = Phase(0//1)
+        et[(in_id, out_id)] = EdgeType.SIM
+
+        spider_q[in_id] = i
+        spider_col[in_id] = 0
+        spider_q[out_id] = i
+        spider_col[out_id] = 1
+
+        push!(inputs, in_id)
+        push!(outputs, out_id)
+    end
+
+    layout = ZXLayout(nbits, spider_q, spider_col)
+    zxg = ZXGraph{T, Phase}(mg, ps, st, et, Scalar{Phase}())
+    phase_ids = Dict{T, Tuple{T, Int}}()
+
+    return ZXCircuit(zxg, inputs, outputs, layout, phase_ids)
+end
+
 function ZXDiagram(circ::ZXCircuit{T, P}) where {T, P}
     layout = circ.layout
     phase_ids = circ.phase_ids

@@ -1,7 +1,7 @@
 # Circuit Composition Operations for ZXDiagram (Legacy)
 
 """
-    import_non_in_out!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
+    $(TYPEDSIGNATURES)
 
 Add non input and output spiders of d2 to d1, modify d1. Record the mapping of vertex indices.
 """
@@ -30,7 +30,7 @@ function import_non_in_out!(
 end
 
 """
-    import_edges!(d1::ZXDiagram{T,P}, d2::ZXDiagram{T,P}, v2tov1::Dict{T,T}) where {T,P}
+    $(TYPEDSIGNATURES)
 
 Import edges of d2 to d1, modify d1
 """
@@ -42,7 +42,7 @@ function import_edges!(d1::ZXDiagram{T, P}, d2::ZXDiagram{T, P}, v2tov1::Dict{T,
 end
 
 """
-    concat!(zxd_1::ZXDiagram{T,P}, zxd_2::ZXDiagram{T,P})::ZXDiagram{T,P} where {T,P}
+    $(TYPEDSIGNATURES)
 
 Appends two diagrams, where the second diagram is inverted
 """
@@ -94,12 +94,12 @@ function stype_to_val(st)::Val
 end
 
 """
-    dagger(zxd::ZXDiagram{T,P})::ZXDiagram{T,P} where {T,P}
+    $(TYPEDSIGNATURES)
 
 Dagger of a ZXDiagram by swapping input and outputs and negating the values of the phases
 """
 function dagger(zxd::ZXDiagram{T, P})::ZXDiagram{T, P} where {T, P}
-    ps_i = Dict([k => -v for (k, v) in zxd.ps])
+    ps_i = Dict([k => -v for (k, v) in phases(zxd)])
     zxd_dg = ZXDiagram{T, P}(
         copy(zxd.mg),
         copy(zxd.st),

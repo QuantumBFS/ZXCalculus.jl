@@ -22,6 +22,10 @@ using Vega, DataFrames
         include("ZX/zx_diagram.jl")
     end
 
+    @testset "zx_circuit_basic.jl" begin
+        include("ZX/zx_circuit_basic.jl")
+    end
+
     @testset "rules.jl" begin
         include("ZX/rules.jl")
     end

@@ -8,7 +8,7 @@ Extract a quantum circuit from a general ZX-graph even without a gflow.
 This function can handle ZX-graphs that don't have a generalised flow (gflow),
 and will introduce post-selection operators as needed.
 
-Returns a `ZXDiagram` representing the extracted circuit.
+Returns a `ZXCircuit` representing the extracted circuit.
 """
 function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
     nzxg = copy(zxg)
@@ -35,7 +35,7 @@ function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
     end
 
     frontiers = copy(outs)
-    circ = ZXDiagram(nbits)
+    circ = ZXCircuit(nbits)
     unextracts = Set(spiders(nzxg))
     qubit_map = Dict{Int, Int}()
     for i in eachindex(ins)

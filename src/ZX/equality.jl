@@ -18,6 +18,28 @@ function verify_equality(zxd_1::ZXDiagram, zxd_2::ZXDiagram)
     return contains_only_bare_wires(m_simple)
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Check the equivalence of two different ZX-circuits.
+
+This function concatenates the first circuit with the dagger of the second,
+then performs full reduction. If the result contains only bare wires, the
+circuits are equivalent.
+
+Returns `true` if the circuits are equivalent, `false` otherwise.
+"""
+function verify_equality(circ_1::ZXCircuit, circ_2::ZXCircuit)
+    merged_circuit = copy(circ_1)
+    merged_circuit = concat!(merged_circuit, dagger(circ_2))
+    m_simple = full_reduction(merged_circuit)
+    return contains_only_bare_wires(m_simple)
+end
+
+# Mixed type comparisons
+verify_equality(c1::ZXCircuit, c2::ZXDiagram) = verify_equality(c1, ZXCircuit(c2))
+verify_equality(c1::ZXDiagram, c2::ZXCircuit) = verify_equality(ZXCircuit(c1), c2)
+
 function contains_only_bare_wires(zxd::Union{ZXDiagram, ZXGraph})
     return all(is_in_or_out_spider(st[2]) for st in zxd.st)
 end

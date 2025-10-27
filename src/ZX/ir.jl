@@ -1,4 +1,42 @@
-ZXDiagram(bir::BlockIR) = convert_to_zxd(bir)
+using DocStringExtensions
+
+"""
+    $(TYPEDSIGNATURES)
+
+Convert a BlockIR to a ZXCircuit.
+
+This function converts YaoHIR's BlockIR representation to a ZXCircuit by translating
+each gate operation to the corresponding ZX-diagram representation.
+
+Returns a `ZXCircuit` containing the circuit representation.
+
+See also: [`convert_to_zxd`](@ref)
+"""
+function convert_to_circuit(root::YaoHIR.BlockIR)
+    circ = ZXCircuit(root.nqubits)
+    circuit = canonicalize_single_location(root.circuit)
+    return gates_to_circ(circ, circuit, root)
+end
+
+"""
+    $(TYPEDSIGNATURES)
+
+Convert a BlockIR to a ZXDiagram.
+
+!!! warning "Deprecated"
+    `convert_to_zxd` is deprecated. Use [`convert_to_circuit`](@ref) instead.
+    This function internally converts to ZXCircuit and then wraps it in ZXDiagram.
+
+Returns a `ZXDiagram` for backward compatibility.
+"""
+function convert_to_zxd(root::YaoHIR.BlockIR)
+    Base.depwarn("convert_to_zxd is deprecated, use convert_to_circuit instead", :convert_to_zxd)
+    circ = convert_to_circuit(root)
+    return ZXDiagram(circ)
+end
+
+ZXDiagram(bir::BlockIR) = ZXDiagram(convert_to_circuit(bir))
+ZXCircuit(bir::BlockIR) = convert_to_circuit(bir)
 YaoHIR.Chain(zxd::ZXDiagram) = convert_to_chain(zxd)
 
 convert_to_gate(::Val{:X}, loc) = Gate(X, Locations(loc))
@@ -130,12 +168,6 @@ function gates_to_circ(circ, circuit, root)
         end
     end
     return circ
-end
-
-function convert_to_zxd(root::YaoHIR.BlockIR)
-    diagram = ZXDiagram(root.nqubits)
-    circuit = canonicalize_single_location(root.circuit)
-    return gates_to_circ(diagram, circuit, root)
 end
 
 function push_spider_to_chain!(qc, q, ps, st)

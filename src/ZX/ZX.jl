@@ -31,7 +31,7 @@ export FusionRule, XToZRule,
 
 export rewrite!, simplify!
 
-export convert_to_chain, convert_to_zxd, convert_to_zxwd
+export convert_to_chain, convert_to_circuit, convert_to_zxd, convert_to_zxwd
 export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation
 export plot
 export concat!, dagger, contains_only_bare_wires, verify_equality
