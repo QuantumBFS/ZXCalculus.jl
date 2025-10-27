@@ -1,11 +1,16 @@
+"""
+    $(TYPEDEF)
+
+  - This rule should be only used in circuit extraction.
+  - This rule will do pivoting on u, v but preserve u, v.
+  - And the scalars are not considered in this rule.
+  - gadget_u is the non-Clifford spider
+"""
 struct PivotGadgetRule <: AbstractRule end
 
 function rewrite!(::PivotGadgetRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
-    # This rule should be only used in circuit extraction.
-    # This rule will do pivoting on u, v but preserve u, v.
-    # And the scalars are not considered in this rule.
-    # gadget_u is the non-Clifford spider
     u, gadget_u, v = vs
+    @assert is_hadamard(zxg, u, v) "the edge between $u and $v is not a hadamard edge"
     phase_u = phase(zxg, u)
     phase_v = phase(zxg, v)
 

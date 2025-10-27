@@ -1,3 +1,8 @@
+"""
+    $(TYPEDEF)
+
+Removes identity spiders connected to two spiders or a Pauli spider connected to one Z-spider via a Hadamard edge.
+"""
 struct IdentityRemovalRule <: AbstractRule end
 
 function Base.match(::IdentityRemovalRule, zxg::ZXGraph{T, P}) where {T, P}
@@ -6,6 +11,8 @@ function Base.match(::IdentityRemovalRule, zxg::ZXGraph{T, P}) where {T, P}
         nb2 = neighbors(zxg, v2)
         if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             v1, v3 = nb2
+            is_hadamard(zxg, v2, v1) || continue
+            is_hadamard(zxg, v2, v3) || continue
             if is_zero_phase(phase(zxg, v2))
                 if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
                     push!(matches, Match{T}([v1, v2, v3]))
@@ -33,6 +40,8 @@ function check_rule(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) wh
         nb2 = neighbors(zxg, v2)
         if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             (v1 in nb2 && v3 in nb2) || return false
+            is_hadamard(zxg, v2, v1) || return false
+            is_hadamard(zxg, v2, v3) || return false
             if is_zero_phase(phase(zxg, v2))
                 if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
                     return true
