@@ -1,10 +1,11 @@
 name = "ZXCalculus"
 uuid = "3525faa3-032d-4235-a8d4-8c2939a218dd"
-authors = ["Chen Zhao and contributors"]
 version = "0.7.1"
+authors = ["Chen Zhao and contributors"]
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Expronicon = "6b7a57c9-7cc1-4fdf-b7f5-e857abae3636"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -25,6 +26,7 @@ ZXCalculusExt = ["Vega", "DataFrames"]
 
 [compat]
 DataFrames = "1"
+DocStringExtensions = "0.9.5"
 Expronicon = "0.10.3"
 Graphs = "1"
 MLStyle = "0.4"
