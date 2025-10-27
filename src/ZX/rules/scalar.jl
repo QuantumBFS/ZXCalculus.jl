@@ -27,6 +27,7 @@ end
 
 function rewrite!(::ScalarRule, zxg::Union{ZXGraph{T, P}, ZXDiagram{T, P}}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
+    # TODO: track global scalar
     rem_spider!(zxg, v)
     return zxg
 end
