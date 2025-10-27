@@ -1,3 +1,11 @@
+"""
+    $(TYPEDEF)
+
+The pivoting rule that convert a boundary non-Clifford `u` Z-spider connected to an internal Pauli Z-spider `v` into a phase gadget. Requirements:
+
+    - The boundary non-Clifford spider must have at least two neighbors (otherwise should be extracted directly).
+    - The internal Pauli spider must be connected to the boundary non-Clifford spider via a Hadamard edge.
+"""
 struct Pivot3Rule <: AbstractRule end
 
 function Base.match(::Pivot3Rule, zxg::ZXGraph{T, P}) where {T, P}
@@ -9,24 +17,25 @@ function Base.match(::Pivot3Rule, zxg::ZXGraph{T, P}) where {T, P}
     end
     sort!(vB)
     gadgets = T[]
-    for v in vs
-        if spider_type(zxg, v) == SpiderType.Z && length(neighbors(zxg, v)) == 1
-            push!(gadgets, v, neighbors(zxg, v)[1])
+    for g in vs
+        if spider_type(zxg, g) == SpiderType.Z && length(neighbors(zxg, g)) == 1
+            push!(gadgets, g, neighbors(zxg, g)[1])
         end
     end
     sort!(gadgets)
 
     v_matched = T[]
 
-    for v1 in vB
-        if spider_type(zxg, v1) == SpiderType.Z && length(searchsorted(vB, v1)) > 0 &&
-           !is_clifford_phase(phase(zxg, v1)) && length(neighbors(zxg, v1)) > 1 &&
-           v1 ∉ v_matched
-            for v2 in neighbors(zxg, v1)
-                if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
-                   is_pauli_phase(phase(zxg, v2)) && length(searchsorted(gadgets, v2)) == 0 && v2 ∉ v_matched
-                    push!(matches, Match{T}([v1, v2]))
-                    push!(v_matched, v1, v2)
+    for u in vB
+        if spider_type(zxg, u) == SpiderType.Z && length(searchsorted(vB, u)) > 0 &&
+           !is_clifford_phase(phase(zxg, u)) && length(neighbors(zxg, u)) > 1 &&
+           u ∉ v_matched
+            for v in neighbors(zxg, u)
+                if spider_type(zxg, v) == SpiderType.Z && length(searchsorted(vB, v)) == 0 &&
+                   is_pauli_phase(phase(zxg, v)) && length(searchsorted(gadgets, v)) == 0 &&
+                   v ∉ v_matched && is_hadamard(zxg, u, v)
+                    push!(matches, Match{T}([u, v]))
+                    push!(v_matched, u, v)
                 end
             end
         end
@@ -43,7 +52,7 @@ function check_rule(::Pivot3Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                    is_pauli_phase(phase(zxg, v2))
                     if all(length(neighbors(zxg, u)) > 1 for u in neighbors(zxg, v2))
-                        return true
+                        return is_hadamard(zxg, v1, v2)
                     end
                 end
             end
