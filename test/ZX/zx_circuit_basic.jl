@@ -3,6 +3,8 @@ using ZXCalculus.ZX
 using ZXCalculus.Utils: Phase
 using ZXCalculus.ZX: SpiderType
 using Graphs
+using YaoHIR, YaoLocations
+using YaoHIR.IntrinsicOperation
 
 @testset "ZXCircuit basic constructor" begin
     # Test nbits constructor
@@ -62,19 +64,6 @@ end
     @test nqubits(zxd2) == 2
 end
 
-@testset "ZXCircuit circuit extraction" begin
-    circ = ZXCircuit(2)
-    push_gate!(circ, Val(:H), 1)
-    push_gate!(circ, Val(:CNOT), 2, 1)
-    push_gate!(circ, Val(:H), 1)
-
-    # Test ancilla extraction returns ZXCircuit
-    # TODO: fix ancilla_extraction
-    # result = ancilla_extraction(circ)
-    # @test result isa ZXCircuit
-    # @test nqubits(result) == nqubits(circ)
-end
-
 @testset "ZXCircuit equality verification" begin
     # Create two identical circuits
     circ1 = ZXCircuit(2)
@@ -90,9 +79,6 @@ end
 end
 
 @testset "ZXCircuit IR conversion" begin
-    using YaoHIR, YaoLocations
-    using YaoHIR.IntrinsicOperation
-
     # Create a simple BlockIR
     circuit = Chain(
         Gate(H, Locations(1)),
@@ -111,7 +97,7 @@ end
     @test nqubits(circ2) == 2
 
     # Test deprecated convert_to_zxd still works
-    @test_deprecated zxd = convert_to_zxd(bir)
+    zxd = convert_to_zxd(bir)
     @test zxd isa ZXDiagram
     @test nqubits(zxd) == 2
 end

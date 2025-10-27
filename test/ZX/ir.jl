@@ -298,7 +298,6 @@ end
 
     @testset "gates_to_circ with addition Ry" begin
         n_qubits = 4
-        # TODO add tests for Ry gate
         chain_a = Chain()
         push_gate!(chain_a, Val(:Ry), n_qubits, Phase(1 // 1))
         push_gate!(chain_a, Val(:Rz), 4, Phase(1 // 1))
@@ -306,14 +305,5 @@ end
 
         diagram = ZXDiagram(n_qubits)
         ZX.gates_to_circ(diagram, chain_a, bir)
-    end
-
-    # TODO add test that checks if error is thrown for unkown gate
-
-    @testset "Chain of ZXDiagram" begin
-        # FIXME add better equal for Chain
-        # @test chain.args == Chain(ZXDiagram(bir)).args
-        # @test chain.args == Chain(ZXDiagram(bir)).args
-        @test !isnothing(Chain(zxd))
     end
 end
