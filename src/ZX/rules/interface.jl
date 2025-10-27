@@ -39,6 +39,7 @@ $(TYPEDEF)
 A struct for saving matched vertices from rule matching.
 
 # Fields
+
 $(TYPEDFIELDS)
 """
 struct Match{T <: Integer}

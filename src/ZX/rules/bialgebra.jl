@@ -15,7 +15,7 @@ function Base.match(::BialgebraRule, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v2)) || return false
     if spider_type(zxd, v1) == SpiderType.X && is_zero_phase(phase(zxd, v1)) && (degree(zxd, v1)) == 3
@@ -29,7 +29,7 @@ function check_rule(r::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where
     return false
 end
 
-function rewrite!(r::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     nb1 = neighbors(zxd, v1)
     nb2 = neighbors(zxd, v2)
@@ -50,3 +50,5 @@ function rewrite!(r::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {
     add_power!(zxd, 1)
     return zxd
 end
+
+# TODO: implement for ZXGraph

@@ -14,7 +14,7 @@ function Base.match(::PiRule, zxd::ZXDiagram{T, P}) where {T, P}
     return matches
 end
 
-function check_rule(r::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     (has_vertex(zxd.mg, v1) && has_vertex(zxd.mg, v2)) || return false
     if spider_type(zxd, v1) == SpiderType.X && is_one_phase(phase(zxd, v1)) &&
@@ -28,7 +28,7 @@ function check_rule(r::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     return false
 end
 
-function rewrite!(r::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     add_global_phase!(zxd, phase(zxd, v2))
     set_phase!(zxd, v2, -phase(zxd, v2))
@@ -43,3 +43,5 @@ function rewrite!(r::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     end
     return zxd
 end
+
+# TODO: implement for ZXGraph
