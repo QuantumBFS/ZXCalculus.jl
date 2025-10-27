@@ -34,7 +34,6 @@ function rewrite!(::PiRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     set_phase!(zxd, v2, -phase(zxd, v2))
     nb = neighbors(zxd, v2, count_mul=true)
     for v3 in nb
-        # TODO
         v3 != v1 && insert_spider!(zxd, v2, v3, SpiderType.X, phase(zxd, v1))
     end
     if neighbors(zxd, v1) != [v2]

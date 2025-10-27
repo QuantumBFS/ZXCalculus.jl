@@ -36,7 +36,6 @@ function rewrite!(::BialgebraRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T
     v3, v4 = nb1[nb1 .!= v2]
     v5, v6 = nb2[nb2 .!= v1]
 
-    # TODO
     a1 = insert_spider!(zxd, v1, v3, SpiderType.Z)[1]
     a2 = insert_spider!(zxd, v1, v4, SpiderType.Z)[1]
     a3 = insert_spider!(zxd, v2, v5, SpiderType.X)[1]
