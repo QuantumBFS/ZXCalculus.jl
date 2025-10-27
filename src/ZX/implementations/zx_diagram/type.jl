@@ -14,6 +14,7 @@ This is the type for representing ZX-diagrams.
     and more efficient graph-based simplification algorithms.
 
 # Fields
+
 $(TYPEDFIELDS)
 """
 struct ZXDiagram{T <: Integer, P <: AbstractPhase} <: AbstractZXCircuit{T, P}
@@ -180,7 +181,3 @@ end
 
 nout(zxd::ZXDiagram) = length(zxd.outputs)
 nin(zxd::ZXDiagram) = length(zxd.inputs)
-
-function plot(zxd::ZXDiagram{T, P}; kwargs...) where {T, P}
-    return error("missing extension, please use Vega with 'using Vega, DataFrames'")
-end

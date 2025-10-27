@@ -10,6 +10,7 @@ Spiders of type In/Out can exist but are treated as searchable vertices,
 not as ordered inputs/outputs.
 
 # Fields
+
 $(TYPEDFIELDS)
 """
 struct ZXGraph{T <: Integer, P <: AbstractPhase} <: AbstractZXDiagram{T, P}
@@ -123,8 +124,4 @@ function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
         return true
     end
     return false
-end
-
-function plot(zxd::ZXGraph{T, P}; kwargs...) where {T, P}
-    return error("missing extension, please use Vega with 'using Vega, DataFrames'")
 end

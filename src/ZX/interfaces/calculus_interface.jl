@@ -138,3 +138,10 @@ round_phases!(::AbstractZXDiagram) = error("round_phases! not implemented")
 
 # Base methods are typically not declared here since they're defined in Base
 # Concrete implementations should extend Base.show and Base.copy directly
+
+"""
+    $(TYPEDSIGNATURES)
+
+Plot the ZX-diagram.
+"""
+plot(zxd::AbstractZXDiagram; kwargs...) = error("missing extension, please use Vega with 'using Vega, DataFrames'")
