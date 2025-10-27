@@ -1,6 +1,6 @@
 struct ParallelEdgeRemovalRule <: AbstractRule end
 
-function Base.match(::ParallelEdgeRemovalRule, zxd::AbstractZXDiagram{T, P}) where {T, P}
+function Base.match(::ParallelEdgeRemovalRule, zxd::ZXDiagram{T, P}) where {T, P}
     matches = Match{T}[]
     for e in edges(zxd)
         mul(e) == 1 && continue
@@ -11,12 +11,12 @@ function Base.match(::ParallelEdgeRemovalRule, zxd::AbstractZXDiagram{T, P}) whe
     return matches
 end
 
-function check_rule(::ParallelEdgeRemovalRule, zxd::AbstractZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function check_rule(::ParallelEdgeRemovalRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     return has_edge(zxd, v1, v2) && (mul(zxd, v1, v2) > 1)
 end
 
-function rewrite!(::ParallelEdgeRemovalRule, zxd::AbstractZXDiagram{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::ParallelEdgeRemovalRule, zxd::ZXDiagram{T, P}, vs::Vector{T}) where {T, P}
     v1, v2 = vs
     st1 = spider_type(zxd, v1)
     st2 = spider_type(zxd, v2)
