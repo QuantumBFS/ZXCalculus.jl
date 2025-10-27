@@ -1,3 +1,12 @@
+"""
+    $(TYPEDEF)
+
+Remove a Z-spider with Clifford phase by local complementary. Requirements:
+
+  - The spider must be interior (not connected to inputs/outputs)
+  - The spider must have Clifford phase (±pi/2)
+  - All edges connected to the spider must be hadamard edges.
+"""
 struct LocalCompRule <: AbstractRule end
 
 function Base.match(::LocalCompRule, zxg::ZXGraph{T, P}) where {T, P}
@@ -12,10 +21,11 @@ function Base.match(::LocalCompRule, zxg::ZXGraph{T, P}) where {T, P}
         if spider_type(zxg, v) == SpiderType.Z &&
            is_half_integer_phase(phase(zxg, v))
             if length(searchsorted(vB, v)) == 0
+                all(is_hadamard(zxg, v, u) for u in neighbors(zxg, v)) || continue
                 if degree(zxg, v) == 1
                     # rewrite phase gadgets first
-                    pushfirst!(matches, Match{T}([neighbors(zxg, v)[1]]))
                     pushfirst!(matches, Match{T}([v]))
+                    pushfirst!(matches, Match{T}([neighbors(zxg, v)[1]]))
                 else
                     push!(matches, Match{T}([v]))
                 end
@@ -32,14 +42,14 @@ function check_rule(::LocalCompRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T
         if spider_type(zxg, v) == SpiderType.Z &&
            is_half_integer_phase(phase(zxg, v))
             if is_interior(zxg, v)
-                return true
+                return all(is_hadamard(zxg, v, u) for u in neighbors(zxg, v))
             end
         end
     end
     return false
 end
 
-function rewrite!(r::LocalCompRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
+function rewrite!(::LocalCompRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v = vs[1]
     phase_v = phase(zxg, v)
     if phase_v == 1//2
