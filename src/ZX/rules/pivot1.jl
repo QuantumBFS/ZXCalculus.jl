@@ -1,3 +1,12 @@
+"""
+    $(TYPEDEF)
+
+Remove two adjacent Pauli Z spiders by pivoting. Some requirements:
+
+  - Both spiders must be interior (not connected to inputs/outputs)
+  - Both spiders must have Pauli phases (0 or pi)
+  - The two spiders must be connected by an hadamard edge.
+"""
 struct Pivot1Rule <: AbstractRule end
 
 function Base.match(::Pivot1Rule, zxg::ZXGraph{T, P}) where {T, P}
@@ -14,7 +23,9 @@ function Base.match(::Pivot1Rule, zxg::ZXGraph{T, P}) where {T, P}
             for v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && length(searchsorted(vB, v2)) == 0 &&
                    is_pauli_phase(phase(zxg, v2)) && v2 > v1
-                    push!(matches, Match{T}([v1, v2]))
+                    if is_hadamard(zxg, v1, v2)
+                        push!(matches, Match{T}([v1, v2]))
+                    end
                 end
             end
         end
@@ -31,7 +42,7 @@ function check_rule(::Pivot1Rule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P
             if v2 in neighbors(zxg, v1)
                 if spider_type(zxg, v2) == SpiderType.Z && is_interior(zxg, v2) &&
                    is_pauli_phase(phase(zxg, v2)) && v2 > v1
-                    return true
+                    return is_hadamard(zxg, v1, v2)
                 end
             end
         end
