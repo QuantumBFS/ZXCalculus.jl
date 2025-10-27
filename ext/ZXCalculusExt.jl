@@ -5,6 +5,7 @@ import Graphs: AbstractEdge, src, dst
 using Vega, DataFrames
 using ZXCalculus, ZXCalculus.ZX
 using ZXCalculus: ZX
+using JSON
 
 function spider_type_string(st1)
     st1 == SpiderType.X && return "X"
@@ -52,7 +53,10 @@ function ZXCalculus.ZX.plot(zxg::ZXGraph{T, P}; kwargs...) where {T, P}
     return ZXCalculus.ZX.plot(ZXCircuit(zxg); kwargs...)
 end
 
-function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit}; kwargs...)
+function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit};
+        output_html::Union{String, Nothing}=nothing,
+        open_browser::Bool=true,
+        kwargs...)
     scale = 2
     lattice_unit = 50 * scale
     layout = ZXCalculus.ZX.generate_layout!(zxd)
@@ -257,6 +261,54 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit}; kwargs...)
                 value=false
             }
         ])
+
+    # If output_html is specified, save to file and optionally open in browser
+    if !isnothing(output_html)
+        # Convert spec to JSON
+        spec_json = JSON.json(spec)
+
+        # Create HTML content
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>ZX Diagram</title>
+            <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+        </head>
+        <body>
+            <div id="vis"></div>
+            <script type="text/javascript">
+                var spec = $spec_json;
+                var view = new vega.View(vega.parse(spec))
+                    .renderer('canvas')
+                    .initialize('#vis')
+                    .hover()
+                    .run();
+            </script>
+        </body>
+        </html>
+        """
+
+        # Write to file
+        open(output_html, "w") do io
+            return write(io, html_content)
+        end
+
+        # Open in browser if requested
+        if open_browser
+            if Sys.isapple()
+                run(`open $(output_html)`)
+            elseif Sys.islinux()
+                run(`xdg-open $(output_html)`)
+            elseif Sys.iswindows()
+                run(`cmd /c start $(output_html)`)
+            end
+        end
+
+        return output_html
+    end
+
     return spec
 end
 
