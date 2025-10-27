@@ -1,11 +1,10 @@
-using DocStringExtensions
-
 """
 $(TYPEDEF)
 
 A struct for the layout information of ZX-circuits.
 
 # Fields
+
 $(TYPEDFIELDS)
 """
 struct ZXLayout{T <: Integer}

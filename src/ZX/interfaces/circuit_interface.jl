@@ -8,8 +8,6 @@ Supported gates: :Z, :X, :H, :CNOT, :CZ, :SWAP
 Rotation gates (:Z, :X) accept an optional phase parameter.
 """
 
-using DocStringExtensions
-
 # Circuit structure
 
 """

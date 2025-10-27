@@ -5,8 +5,6 @@ This file declares the ZX-calculus-specific operations for spider and scalar man
 All concrete implementations of AbstractZXDiagram must implement these methods.
 """
 
-using DocStringExtensions
-
 # Spider queries
 
 """

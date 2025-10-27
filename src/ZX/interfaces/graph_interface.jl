@@ -26,8 +26,6 @@ All concrete subtypes of AbstractZXDiagram should implement these methods.
 - `Graphs.rem_edge!(zxd, v1, v2)`: Remove an edge
 """
 
-using Graphs
-
 # Declare interface methods with abstract type signatures
 # Vertex and edge counts
 Graphs.nv(::AbstractZXDiagram) = error("nv not implemented")

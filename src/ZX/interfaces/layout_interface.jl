@@ -10,8 +10,6 @@ All concrete implementations of AbstractZXCircuit must implement these methods.
 - Spider sequence: Vector of vectors, one per qubit, ordered by column
 """
 
-using DocStringExtensions
-
 # Layout queries
 
 """

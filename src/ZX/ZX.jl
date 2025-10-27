@@ -1,5 +1,6 @@
 module ZX
 
+using DocStringExtensions
 using Graphs, Multigraphs, YaoHIR, YaoLocations
 using YaoHIR.IntrinsicOperation
 using YaoHIR: Chain
@@ -12,40 +13,19 @@ using ..Utils: AbstractPhase, Phase,
 import ..Utils: Scalar,
                 add_phase!, add_power!
 
-export spiders,
-       tcount, spider_type, phase, rem_spider!, rem_spiders!
-
-export nqubits, get_inputs, get_outputs,
-       qubit_loc, column_loc, generate_layout!,
-       pushfirst_gate!, push_gate!
-
-export SpiderType, EdgeType
-export AbstractZXDiagram, AbstractZXCircuit, ZXDiagram, ZXGraph, ZXCircuit
-
-export AbstractRule
-export Rule, Match
-export FusionRule, XToZRule,
-       Identity1Rule, HBoxRule,
-       PiRule, CopyRule, BialgebraRule,
-       LocalCompRule,
-       Pivot1Rule, Pivot2Rule, Pivot3Rule,
-       PivotBoundaryRule, PivotGadgetRule,
-       IdentityRemovalRule, GadgetFusionRule,
-       ScalarRule, ParallelEdgeRemovalRule
-
-export rewrite!, simplify!
-
-export convert_to_chain, convert_to_circuit, convert_to_zxd, convert_to_zxwd
-export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation, ancilla_extraction
-export plot
-export concat!, dagger, contains_only_bare_wires, verify_equality
-
 # Load types
+export SpiderType, EdgeType
 include("types/spider_type.jl")
 include("types/edge_type.jl")
 include("types/zx_layout.jl")
 
 # Load interfaces
+export spiders, tcount, spider_type, phase, rem_spider!, rem_spiders!
+export plot
+export nqubits, get_inputs, get_outputs,
+       qubit_loc, column_loc, generate_layout!,
+       pushfirst_gate!, push_gate!
+export AbstractZXDiagram, AbstractZXCircuit
 include("interfaces/abstract_zx_diagram.jl")
 include("interfaces/graph_interface.jl")
 include("interfaces/calculus_interface.jl")
@@ -58,6 +38,7 @@ include("utils/conversion.jl")
 
 # Load implementations
 # ZXDiagram must be loaded first (needed by ZXGraph and ZXCircuit constructors)
+export ZXDiagram
 include("implementations/zx_diagram/type.jl")
 include("implementations/zx_diagram/graph_ops.jl")
 include("implementations/zx_diagram/calculus_ops.jl")
@@ -66,11 +47,13 @@ include("implementations/zx_diagram/layout_ops.jl")
 include("implementations/zx_diagram/composition_ops.jl")
 
 # ZXGraph
+export ZXGraph
 include("implementations/zx_graph/type.jl")
 include("implementations/zx_graph/graph_ops.jl")
 include("implementations/zx_graph/calculus_ops.jl")
 
 # ZXCircuit
+export ZXCircuit
 include("implementations/zx_circuit/type.jl")
 include("implementations/zx_circuit/graph_ops.jl")
 include("implementations/zx_circuit/calculus_ops.jl")
@@ -80,14 +63,27 @@ include("implementations/zx_circuit/composition_ops.jl")
 include("implementations/zx_circuit/phase_tracking.jl")
 
 # Rules and algorithms
+export AbstractRule
+export Rule, Match
+export FusionRule, XToZRule, Identity1Rule, HBoxRule,
+       PiRule, CopyRule, BialgebraRule,
+       LocalCompRule, Pivot1Rule, Pivot2Rule, Pivot3Rule,
+       PivotBoundaryRule, PivotGadgetRule,
+       IdentityRemovalRule, GadgetFusionRule,
+       ScalarRule, ParallelEdgeRemovalRule
 include("rules/rules.jl")
+
+export rewrite!, simplify!
 include("simplify.jl")
 
+export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation, ancilla_extraction
 include("circuit_extraction.jl")
 include("phase_teleportation.jl")
 
+export convert_to_chain, convert_to_circuit, convert_to_zxd
 include("ir.jl")
 
+export concat!, dagger, contains_only_bare_wires, verify_equality
 include("equality.jl")
 
 end
