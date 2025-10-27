@@ -8,6 +8,10 @@ spider_types(circ::ZXCircuit) = spider_types(circ.zx_graph)
 phase(circ::ZXCircuit, v::Integer) = phase(circ.zx_graph, v)
 phases(circ::ZXCircuit) = phases(circ.zx_graph)
 
+edge_type(circ::ZXCircuit, v1::Integer, v2::Integer) = edge_type(circ.zx_graph, v1, v2)
+set_edge_type!(circ::ZXCircuit{T, P}, args...) where {T, P} = set_edge_type!(circ.zx_graph, args...)
+is_zx_spider(circ::ZXCircuit, v::Integer) = is_zx_spider(circ.zx_graph, v)
+
 # Spider manipulation
 set_phase!(circ::ZXCircuit{T, P}, args...) where {T, P} = set_phase!(circ.zx_graph, args...)
 

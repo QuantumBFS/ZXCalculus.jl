@@ -9,24 +9,36 @@ get_outputs(circ::ZXCircuit) = circ.outputs
 
 function push_gate!(circ::ZXCircuit{T, P}, ::Val{:Z}, loc::T, phase=zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(circ)[loc]
+    @assert spider_type(circ, out_id) === SpiderType.Out "Output spider at location $loc is not of type Out."
     @inbounds bound_id = neighbors(circ, out_id)[1]
+    et = edge_type(circ, bound_id, out_id)
     rphase = autoconvert ? safe_convert(P, phase) : phase
-    insert_spider!(circ, bound_id, out_id, SpiderType.Z, rphase)
+    v = insert_spider!(circ, bound_id, out_id, SpiderType.Z, rphase)
+    set_edge_type!(circ, v, bound_id, et)
+    set_edge_type!(circ, v, out_id, EdgeType.SIM)
     return circ
 end
 
 function push_gate!(circ::ZXCircuit{T, P}, ::Val{:X}, loc::T, phase=zero(P); autoconvert::Bool=true) where {T, P}
     @inbounds out_id = get_outputs(circ)[loc]
+    @assert spider_type(circ, out_id) === SpiderType.Out "Output spider at location $loc is not of type Out."
     @inbounds bound_id = neighbors(circ, out_id)[1]
+    et = edge_type(circ, bound_id, out_id)
     rphase = autoconvert ? safe_convert(P, phase) : phase
-    insert_spider!(circ, bound_id, out_id, SpiderType.X, rphase)
+    v = insert_spider!(circ, bound_id, out_id, SpiderType.X, rphase)
+    set_edge_type!(circ, v, bound_id, et)
+    set_edge_type!(circ, v, out_id, EdgeType.SIM)
     return circ
 end
 
 function push_gate!(circ::ZXCircuit{T, P}, ::Val{:H}, loc::T) where {T, P}
     @inbounds out_id = get_outputs(circ)[loc]
+    @assert spider_type(circ, out_id) === SpiderType.Out "Output spider at location $loc is not of type Out."
     @inbounds bound_id = neighbors(circ, out_id)[1]
-    insert_spider!(circ, bound_id, out_id, SpiderType.H)
+    et = edge_type(circ, bound_id, out_id)
+    v = insert_spider!(circ, bound_id, out_id, SpiderType.H)
+    set_edge_type!(circ, v, bound_id, et)
+    set_edge_type!(circ, v, out_id, EdgeType.SIM)
     return circ
 end
 
@@ -39,8 +51,8 @@ function push_gate!(circ::ZXCircuit{T, P}, ::Val{:SWAP}, locs::Vector{T}) where 
     v1, v2, bound_id1, bound_id2 = (sort!(spiders(circ)))[(end - 3):end]
     rem_edge!(circ, v1, bound_id1)
     rem_edge!(circ, v2, bound_id2)
-    add_edge!(circ, v1, bound_id2)
-    add_edge!(circ, v2, bound_id1)
+    add_edge!(circ, v1, bound_id2, EdgeType.SIM)
+    add_edge!(circ, v2, bound_id1, EdgeType.SIM)
     return circ
 end
 
@@ -48,7 +60,7 @@ function push_gate!(circ::ZXCircuit{T, P}, ::Val{:CNOT}, loc::T, ctrl::T) where 
     push_gate!(circ, Val{:Z}(), ctrl)
     push_gate!(circ, Val{:X}(), loc)
     @inbounds v1, v2 = (sort!(spiders(circ)))[(end - 1):end]
-    add_edge!(circ, v1, v2)
+    add_edge!(circ, v1, v2, EdgeType.SIM)
     add_power!(circ, 1)
     return circ
 end
@@ -57,8 +69,7 @@ function push_gate!(circ::ZXCircuit{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T
     push_gate!(circ, Val{:Z}(), ctrl)
     push_gate!(circ, Val{:Z}(), loc)
     @inbounds v1, v2 = (sort!(spiders(circ)))[(end - 1):end]
-    add_edge!(circ, v1, v2)
-    insert_spider!(circ, v1, v2, SpiderType.H)
+    add_edge!(circ, v1, v2, EdgeType.HAD)
     add_power!(circ, 1)
     return circ
 end

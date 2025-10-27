@@ -37,39 +37,3 @@ function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeTyp
     end
     return false
 end
-
-function reduce_parallel_edges!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
-    st1 = spider_type(zxg, v1)
-    st2 = spider_type(zxg, v2)
-    @assert is_zx_spider(zxg, v1) && is_zx_spider(zxg, v2) "Trying to process parallel edges to non-Z/X spider $v1 or $v2"
-    function parallel_edge_helper()
-        add_power!(zxg, -2)
-        return rem_edge!(zxg, v1, v2)
-    end
-
-    if st1 == st2
-        if edge_type(zxg, v1, v2) === etype === EdgeType.HAD
-            parallel_edge_helper()
-        elseif edge_type(zxg, v1, v2) !== etype
-            set_edge_type!(zxg, v1, v2, EdgeType.SIM)
-            reduce_self_loop!(zxg, v1, EdgeType.HAD)
-        end
-    elseif st1 != st2
-        if edge_type(zxg, v1, v2) === etype === EdgeType.SIM
-            parallel_edge_helper()
-        elseif edge_type(zxg, v1, v2) !== etype
-            set_edge_type!(zxg, v1, v2, EdgeType.HAD)
-            reduce_self_loop!(zxg, v1, EdgeType.HAD)
-        end
-    end
-    return zxg
-end
-
-function reduce_self_loop!(zxg::ZXGraph, v::Integer, etype::EdgeType.EType)
-    @assert is_zx_spider(zxg, v) "Trying to process a self-loop on non-Z/X spider $v"
-    if etype == EdgeType.HAD
-        set_phase!(zxg, v, phase(zxg, v)+1)
-        add_power!(zxg, -1)
-    end
-    return zxg
-end
