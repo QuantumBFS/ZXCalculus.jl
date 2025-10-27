@@ -2,6 +2,7 @@ using Test
 using ZXCalculus.ZXW
 using ZXCalculus, ZXCalculus.ZX, ZXCalculus.Utils
 using YaoHIR, YaoLocations
+using ZXCalculus.Utils: Phase
 using Core.Compiler: IRCode
 
 function testing_chain()

@@ -31,14 +31,15 @@ end
     push_gate!(circ, Val(:H), 1)
     push_gate!(circ, Val(:CNOT), 2, 1)
 
-    @test nv(circ) > 6  # More vertices added
+    @test nv(circ) == 9
+    @test tcount(circ) == 1
 
     # Test pushfirst_gate!
     circ2 = ZXCircuit(2)
     pushfirst_gate!(circ2, Val(:H), 1)
     pushfirst_gate!(circ2, Val(:X), 2)
 
-    @test nv(circ2) > 6
+    @test nv(circ2) == 6
 end
 
 @testset "ZXCircuit from ZXDiagram conversion" begin

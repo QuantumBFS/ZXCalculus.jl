@@ -72,6 +72,7 @@ include("implementations/zx_circuit/graph_ops.jl")
 include("implementations/zx_circuit/calculus_ops.jl")
 include("implementations/zx_circuit/circuit_ops.jl")
 include("implementations/zx_circuit/layout_ops.jl")
+include("implementations/zx_circuit/composition_ops.jl")
 include("implementations/zx_circuit/phase_tracking.jl")
 
 # Rules and algorithms
