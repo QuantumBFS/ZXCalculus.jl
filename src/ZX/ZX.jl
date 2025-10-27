@@ -13,7 +13,11 @@ import ..Utils: Scalar,
                 add_phase!, add_power!
 
 export spiders,
-       tcount, spider_type, phase, rem_spider!, rem_spiders!, pushfirst_gate!, push_gate!
+       tcount, spider_type, phase, rem_spider!, rem_spiders!
+
+export nqubits, get_inputs, get_outputs,
+       qubit_loc, column_loc, generate_layout!,
+       pushfirst_gate!, push_gate!
 
 export SpiderType, EdgeType
 export AbstractZXDiagram, AbstractZXCircuit, ZXDiagram, ZXGraph, ZXCircuit
@@ -32,7 +36,7 @@ export FusionRule, XToZRule,
 export rewrite!, simplify!
 
 export convert_to_chain, convert_to_circuit, convert_to_zxd, convert_to_zxwd
-export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation
+export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation, ancilla_extraction
 export plot
 export concat!, dagger, contains_only_bare_wires, verify_equality
 

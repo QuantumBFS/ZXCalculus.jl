@@ -79,8 +79,8 @@ function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
         pushfirst_gate!(circ, Val(:CNOT), step.r1, step.r2)
     end
 
-    simplify!(Identity1Rule(), circ)
-    simplify!(HBoxRule(), circ)
+    # simplify!(Identity1Rule(), circ)
+    # simplify!(HBoxRule(), circ)
     return circ
 end
 

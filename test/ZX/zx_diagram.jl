@@ -1,6 +1,7 @@
 using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
 using ZXCalculus: ZX
-using ZXCalculus.Utils: Phase, SpiderType
+using ZXCalculus.Utils: Phase
+using ZXCalculus.ZX: SpiderType
 
 g = Multigraph([0 1 0; 1 0 1; 0 1 0])
 ps = [Phase(0 // 1) for i in 1:3]

@@ -40,8 +40,8 @@ function simplify!(r::AbstractRule, zxd::AbstractZXDiagram)
 end
 
 function to_z_form!(zxg::Union{ZXGraph, ZXCircuit})
-    simplify!(HBoxRule(), zxg)
     simplify!(XToZRule(), zxg)
+    simplify!(HBoxRule(), zxg)
     simplify!(FusionRule(), zxg)
     return zxg
 end
