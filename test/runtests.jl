@@ -1,6 +1,7 @@
-using ZXCalculus, Documenter, Test
-using Vega, DataFrames
+using Documenter, Test
 
+module TestZX
+using Test
 @testset "ZX module" begin
     @testset "interfaces.jl" begin
         include("ZX/interfaces.jl")
@@ -57,7 +58,10 @@ using Vega, DataFrames
         # include("ZX/challenge.jl")
     end
 end
+end
 
+module TestUtils
+using Test
 @testset "Utils module" begin
     @testset "scalar.jl" begin
         include("Utils/scalar.jl")
@@ -71,7 +75,10 @@ end
         include("Utils/parameter.jl")
     end
 end
+end
 
+module ZXWTest
+using Test
 @testset "ZXW module" begin
     @testset "zxw_diagram.jl" begin
         include("ZXW/zxw_diagram.jl")
@@ -85,13 +92,19 @@ end
         include("ZXW/zxw_rules.jl")
     end
 end
+end
 
+module PMGTest
+using Test
 @testset "PMG module" begin
     @testset "planar multigraphs.jl" begin
         include("PMG/planar_multigraph.jl")
     end
 end
+end
 
+module ZWTest
+using Test
 @testset "ZW module" begin
     @testset "ZW Diagram with Planar Multigraph" begin
         include("ZW/zw_diagram.jl")
@@ -101,11 +114,15 @@ end
         include("ZW/zw_utils.jl")
     end
 end
+end
 
+module ApplicationTest
+using Test
 @testset "Application module" begin
     @testset "to_eincode.jl" begin
         include("Application/to_eincode.jl")
     end
+end
 end
 
 doctest(ZXCalculus)
