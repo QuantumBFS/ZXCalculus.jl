@@ -1,7 +1,10 @@
 using Test
+using Core.Compiler: IRCode
+using YaoHIR: Chain, BlockIR
 using ZXCalculus.Utils: AbstractPhase, Phase,
                         is_zero_phase, is_one_phase, is_pauli_phase,
                         is_half_integer_phase, is_clifford_phase, round_phase
+using ZXCalculus.ZX
 
 @testset "AbstractPhase" begin
     struct MyPhase <: AbstractPhase end
