@@ -57,11 +57,11 @@ include("implementations/zx_diagram/composition_interface.jl")
 # ZXCircuit
 export ZXCircuit
 include("implementations/zx_circuit/type.jl")
-include("implementations/zx_circuit/graph_ops.jl")
-include("implementations/zx_circuit/calculus_ops.jl")
-include("implementations/zx_circuit/circuit_ops.jl")
-include("implementations/zx_circuit/layout_ops.jl")
-include("implementations/zx_circuit/composition_ops.jl")
+include("implementations/zx_circuit/graph_interface.jl")
+include("implementations/zx_circuit/calculus_interface.jl")
+include("implementations/zx_circuit/circuit_interface.jl")
+include("implementations/zx_circuit/layout_interface.jl")
+include("implementations/zx_circuit/composition_interface.jl")
 include("implementations/zx_circuit/phase_tracking.jl")
 
 # Rules and algorithms
