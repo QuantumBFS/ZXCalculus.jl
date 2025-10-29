@@ -5,6 +5,8 @@ function to_eincode(zxg::Union{ZX.ZXGraph, ZX.ZXCircuit})
     return to_eincode_only_regular_edges(converted)
 end
 
+to_eincode(zxd::ZX.ZXDiagram{T, P}) where {T, P} = to_eincode_only_regular_edges(zxd)
+
 function to_eincode_only_regular_edges(zxd::ZX.AbstractZXDiagram{T, P}) where {T, P}
     tensors = []
     ixs = Vector{Tuple{T, T, T}}[]
@@ -72,4 +74,4 @@ end
 z_tensor(n::Int, p::ZX.Phase) = z_tensor(n, exp(im * pi * p.ex))
 x_tensor(n::Int, p::ZX.Phase) = x_tensor(n, exp(im * pi * p.ex))
 
-matrix_shape(zxg::Union{ZX.ZXGraph, ZX.ZXCircuit}) = (1 << ZX.nin(zxg), 1 << ZX.nout(zxg))
+matrix_shape(zxg::ZX.AbstractZXDiagram) = (1 << ZX.nin(zxg), 1 << ZX.nout(zxg))

@@ -23,7 +23,7 @@ function x_tensor(n::Int, factor::Number)
     pos = [1, 1] / sqrt(2)
     neg = [1, -1] / sqrt(2)
     shape = (fill(2, n)...,)
-    return reshape(reduce(kron, fill(pos, n)) + ComplexF64(factor) * reduce(kron, fill(neg, n)), shape)
+    return reshape(reduce(kron, fill(pos, n); init=[1]) + ComplexF64(factor) * reduce(kron, fill(neg, n); init=[1]), shape)
 end
 
 function w_tensor(n::Int)
