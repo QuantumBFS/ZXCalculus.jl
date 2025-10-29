@@ -34,7 +34,6 @@ using ZXCalculus.Utils: Phase
         match(Pivot2Rule(), zxg)
         replace!(Pivot2Rule(), zxg)
         @test zxg.phase_ids[15] == (2, -1)
-        @test !isnothing(zxg)
     end
 
     @testset "Phase ID tracking" begin

@@ -17,13 +17,11 @@ using ZXCalculus.ZX: SpiderType
 
     zxd2 = ZXDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
     @test zxd.mg == zxd2.mg && zxd.st == zxd2.st && zxd.ps == zxd2.ps
-    @test !isnothing(zxd)
 
     zxd2 = copy(zxd)
     @test zxd.st == zxd2.st && zxd.ps == zxd2.ps
     @test ZX.spider_type(zxd, 1) == SpiderType.X
     @test nv(zxd) == 3 && ne(zxd) == 2
-    @test !isnothing(zxd2)
 
     @test rem_edge!(zxd, 2, 3)
     @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
@@ -40,7 +38,6 @@ using ZXCalculus.ZX: SpiderType
     @test ZX.nout(zxd3) == 3
     @test ZX.nout(zxd3) == 3
     @test ZX.qubit_loc(zxd3, 1) == ZX.qubit_loc(zxd3, 2)
-    @test !isnothing(zxd3)
 end
 
 @testset "Phase conversion" begin
@@ -64,7 +61,6 @@ end
     pushfirst_gate!(zxd4, Val(:H), 1)
     pushfirst_gate!(zxd4, Val(:CNOT), 2, 1)
     pushfirst_gate!(zxd4, Val(:CZ), 1, 2)
-    @test !isnothing(zxd4)
     @test indegree(zxd4, 5) == outdegree(zxd4, 5) == degree(zxd4, 5)
 end
 
@@ -73,7 +69,6 @@ end
     push_gate!(zxd, Val(:H), 1)
     push_gate!(zxd, Val(:CNOT), 2, 1)
     zxg = ZXCircuit(zxd)
-    @test !isnothing(zxg)
 
     zxg3 = ZXCircuit(ZXDiagram(3))
     ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))

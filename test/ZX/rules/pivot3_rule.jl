@@ -36,7 +36,6 @@ using ZXCalculus.Utils: Phase
 
         @test nv(zxg) == 16 && ne(zxg) == 28
         @test ZXCalculus.ZX.is_hadamard(zxg, 2, 15) && ZXCalculus.ZX.is_hadamard(zxg, 1, 16)
-        @test !isnothing(zxg)
     end
 
     @testset "Hadamard edge introduction" begin

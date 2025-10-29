@@ -84,7 +84,6 @@ end
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
     zxg1 = ZXGraph(zxd)
-    @test !isnothing(zxg1)
     @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
     @test_throws AssertionError add_edge!(zxg1, 2, 4)

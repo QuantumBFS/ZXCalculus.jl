@@ -9,7 +9,8 @@ using ZXCalculus.Utils: Phase
         for e in [[2, 6], [3, 7], [4, 8], [5, 9]]
             add_edge!(g, e[1], e[2])
         end
-        ps = [Phase(1 // 2), Phase(0), Phase(1 // 4), Phase(1 // 2), Phase(3 // 4), Phase(0), Phase(0), Phase(0), Phase(0)]
+        ps = [Phase(1 // 2), Phase(0), Phase(1 // 4), Phase(1 // 2),
+            Phase(3 // 4), Phase(0), Phase(0), Phase(0), Phase(0)]
         st = [
             SpiderType.Z,
             SpiderType.Z,
@@ -31,7 +32,6 @@ using ZXCalculus.Utils: Phase
               phase(zxg, 3) == 7 // 4 &&
               phase(zxg, 4) == 0 // 1 &&
               phase(zxg, 5) == 1 // 4
-        @test !isnothing(zxg)
     end
 
     @testset "Different neighborhood structures" begin

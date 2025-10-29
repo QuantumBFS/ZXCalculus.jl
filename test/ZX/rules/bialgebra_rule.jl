@@ -30,7 +30,6 @@ using ZXCalculus.Utils: Phase
         rewrite!(BialgebraRule(), zxd, matches)
         @test nv(zxd) == 8 && ne(zxd) == 8
         @test zxd.scalar == Scalar(1, 0 // 1)
-        @test !isnothing(zxd)
     end
 
     @testset "Layout preservation" begin
