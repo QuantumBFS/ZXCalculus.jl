@@ -35,6 +35,7 @@ export nqubits, get_inputs, get_outputs,
        qubit_loc, column_loc, generate_layout!,
        pushfirst_gate!, push_gate!
 include("interfaces/circuit_interface.jl")
+export qubit_loc, column_loc, generate_layout!, spider_sequence
 include("interfaces/layout_interface.jl")
 
 # Load utilities

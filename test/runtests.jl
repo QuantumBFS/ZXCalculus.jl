@@ -6,6 +6,7 @@ using Test
 @testset "ZX module" begin
     @testset "interfaces.jl" begin
         include("ZX/interfaces/abstract_zx_diagram.jl")
+        include("ZX/interfaces/abstract_zx_circuit.jl")
     end
 
     @testset "layout.jl" begin

@@ -35,7 +35,7 @@ end
     @test_throws ErrorException spider_type(zxd, 1)
     @test_throws ErrorException phase(zxd, 2)
     @test_throws ErrorException set_phase!(zxd, 3, Phase(1//1))
-    @test_throws ErrorException add_spider!(zxd, SpiderType.SType.Z, Phase(1//1))
+    @test_throws ErrorException add_spider!(zxd, SpiderType.Z, Phase(1//1))
     @test_throws ErrorException rem_spider!(zxd, 4)
     @test_throws ErrorException rem_spiders!(zxd, [5, 6])
     @test_throws ErrorException insert_spider!(zxd, 1, 2)
