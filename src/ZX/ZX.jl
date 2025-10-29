@@ -9,7 +9,7 @@ using MLStyle
 using ..Utils: AbstractPhase, Phase,
                is_zero_phase, is_one_phase, is_pauli_phase,
                is_half_integer_phase, is_clifford_phase, round_phase
-
+using ..Utils: safe_convert, continued_fraction
 import ..Utils: Scalar,
                 add_phase!, add_power!
 
@@ -37,9 +37,6 @@ export nqubits, get_inputs, get_outputs,
 include("interfaces/circuit_interface.jl")
 export qubit_loc, column_loc, generate_layout!, spider_sequence
 include("interfaces/layout_interface.jl")
-
-# Load utilities
-include("utils/conversion.jl")
 
 # Load implementations
 # ZXDiagram must be loaded first (needed by ZXGraph and ZXCircuit constructors)
