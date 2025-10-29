@@ -92,3 +92,21 @@ function round_phases!(zxg::ZXGraph{T, P}) where {T <: Integer, P}
     end
     return zxg
 end
+
+"""
+    is_interior(zxg::ZXGraph, v)
+
+Return `true` if `v` is a interior spider of `zxg`.
+"""
+function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
+    if has_vertex(zxg, v)
+        (spider_type(zxg, v) == SpiderType.In || spider_type(zxg, v) == SpiderType.Out) && return false
+        for u in neighbors(zxg, v)
+            if spider_type(zxg, u) == SpiderType.In || spider_type(zxg, u) == SpiderType.Out
+                return false
+            end
+        end
+        return true
+    end
+    return false
+end

@@ -62,15 +62,15 @@ end
 function print_spider(io::IO, zxg::ZXGraph{T}, v::T) where {T <: Integer}
     st_v = spider_type(zxg, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
+        printstyled(io, "Z_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
     elseif st_v == SpiderType.X
-        printstyled(io, "S_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:red)
+        printstyled(io, "X_$(v){phase = $(phase(zxg, v))"*(zxg.ps[v] isa Phase ? "}" : "⋅π}"); color=:red)
     elseif st_v == SpiderType.H
         printstyled(io, "H_$(v)", color=:yellow)
     elseif st_v == SpiderType.In
-        print(io, "S_$(v){input}")
+        print(io, "In_$(v)")
     elseif st_v == SpiderType.Out
-        print(io, "S_$(v){output}")
+        print(io, "Out_$(v)")
     end
 end
 
@@ -95,21 +95,3 @@ This is a search utility and does not guarantee circuit structure or ordering.
 """
 find_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
 get_outputs(zxg::ZXGraph) = find_outputs(zxg)
-
-"""
-    is_interior(zxg::ZXGraph, v)
-
-Return `true` if `v` is a interior spider of `zxg`.
-"""
-function is_interior(zxg::ZXGraph{T, P}, v::T) where {T, P}
-    if has_vertex(zxg, v)
-        (spider_type(zxg, v) == SpiderType.In || spider_type(zxg, v) == SpiderType.Out) && return false
-        for u in neighbors(zxg, v)
-            if spider_type(zxg, u) == SpiderType.In || spider_type(zxg, u) == SpiderType.Out
-                return false
-            end
-        end
-        return true
-    end
-    return false
-end

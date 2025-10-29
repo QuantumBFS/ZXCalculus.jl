@@ -63,6 +63,14 @@ end
     @test is_hadamard(zxg, v_z, v_x)
     @test scalar(zxg) == Scalar(-4, 0//1)
     @test phase(zxg, v_z) == Phase(1//2)
+
+    str = repr(zxg)
+    @test contains(str, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges")
+    @test contains(str, "Z_$(v_z)")
+    @test contains(str, "X_$(v_x)")
+    @test contains(str, "H_$(v_h)")
+    @test contains(str, "In_$(v_in)")
+    @test contains(str, "Out_$(v_out)")
 end
 
 @testset "From ZXDiagram" begin
@@ -86,23 +94,5 @@ end
     zxg2 = ZXGraph(zxd)
     @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
 end
-
-# @testset "push gates into Diagram then plot ZXGraph" begin
-#     zxd = ZXDiagram(2)
-#     push_gate!(zxd, Val(:H), 1)
-#     push_gate!(zxd, Val(:CNOT), 2, 1)
-#     zxg = ZXCircuit(zxd)
-#     @test !isnothing(zxg)
-
-#     zxg3 = ZXCircuit(ZXDiagram(3))
-#     ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
-#     ZX.add_power!(zxg3, 3)
-#     @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
-#     @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
-
-#     @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
-#     @test ZX.column_loc(zxg3, 1) == 1 // 1
-#     @test ZX.column_loc(zxg3, 2) == 3 // 1
-# end
 
 end

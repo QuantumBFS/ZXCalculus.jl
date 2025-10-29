@@ -74,6 +74,10 @@ using Test
     @testset "parameter.jl" begin
         include("Utils/parameter.jl")
     end
+
+    @testset "conversion.jl" begin
+        include("Utils/conversion.jl")
+    end
 end
 end
 
