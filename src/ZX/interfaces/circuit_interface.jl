@@ -40,39 +40,15 @@ get_outputs(::AbstractZXCircuit) = error("get_outputs not implemented")
 # Gate operations
 
 """
-    push_gate!(circ::AbstractZXCircuit, ::Val{gate}, locs..., [phase])
+    $(TYPEDSIGNATURES)
 
 Add a gate to the end of the circuit.
-
-# Arguments
-
-  - `circ`: The circuit to modify
-  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
-  - `locs`: Qubit locations where the gate is applied
-  - `phase`: Optional phase parameter for phase gates (:Z, :X)
-
-# Supported gates
-
-  - Single-qubit: `:Z`, `:X`, `:H`
-  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
 """
-function push_gate! end
+push_gate!(::AbstractZXCircuit, args...) = error("push_gate! not implemented")
 
 """
-    pushfirst_gate!(circ::AbstractZXCircuit, ::Val{gate}, locs..., [phase])
+    $(TYPEDSIGNATURES)
 
 Add a gate to the beginning of the circuit.
-
-# Arguments
-
-  - `circ`: The circuit to modify
-  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
-  - `locs`: Qubit locations where the gate is applied
-  - `phase`: Optional phase parameter for phase gates (:Z, :X)
-
-# Supported gates
-
-  - Single-qubit: `:Z`, `:X`, `:H`
-  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
 """
-function pushfirst_gate! end
+pushfirst_gate!(::AbstractZXCircuit, args...) = error("pushfirst_gate! not implemented")

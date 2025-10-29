@@ -10,6 +10,7 @@ ZXCircuit separates the graph representation (ZXGraph) from circuit semantics
 simplification while maintaining circuit structure for extraction and visualization.
 
 # Fields
+
 $(TYPEDFIELDS)
 """
 struct ZXCircuit{T, P} <: AbstractZXCircuit{T, P}
@@ -80,6 +81,7 @@ Each qubit is represented by a pair of In/Out spiders connected by a simple edge
 This creates a minimal circuit structure ready for gate insertion.
 
 # Example
+
 ```julia
 julia> circ = ZXCircuit(3)
 ZXCircuit with 3 inputs and 3 outputs...

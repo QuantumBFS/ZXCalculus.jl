@@ -31,6 +31,27 @@ function _push_first_single_qubit_gate!(circ::ZXCircuit{T, P}, loc::T;
     return v
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Add a gate to the end of the circuit.
+
+# Arguments
+
+  - `circ`: The circuit to modify
+  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
+  - `locs`: Qubit locations where the gate is applied
+  - `phase`: Optional phase parameter for phase gates (:Z, :X)
+
+# Supported gates
+
+  - Single-qubit: `:Z`, `:X`, `:H`
+  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
+"""
+function push_gate!(::ZXCircuit{T, P}, gate::Val{G}, args...) where {T, P, G}
+    return error("push_gate! not implemented for ZXCircuit")
+end
+
 function push_gate!(circ::ZXCircuit{T, P}, ::Val{:Z}, loc::T, phase=zero(P); autoconvert::Bool=true) where {T, P}
     rphase = autoconvert ? safe_convert(P, phase) : phase
     _push_single_qubit_gate!(circ, loc; stype=SpiderType.Z, phase=rphase)
@@ -75,6 +96,27 @@ function push_gate!(circ::ZXCircuit{T, P}, ::Val{:CZ}, loc::T, ctrl::T) where {T
     add_edge!(circ, v1, v2, EdgeType.HAD)
     add_power!(circ, 1)
     return circ
+end
+
+"""
+    $(TYPEDSIGNATURES)
+
+Add a gate to the beginning of the circuit.
+
+# Arguments
+
+  - `circ`: The circuit to modify
+  - `gate`: Gate type as Val (e.g., `Val(:H)`, `Val(:CNOT)`)
+  - `locs`: Qubit locations where the gate is applied
+  - `phase`: Optional phase parameter for phase gates (:Z, :X)
+
+# Supported gates
+
+  - Single-qubit: `:Z`, `:X`, `:H`
+  - Two-qubit: `:CNOT`, `:CZ`, `:SWAP`
+"""
+function pushfirst_gate!(::ZXCircuit{T, P}, gate::Val{G}, args...) where {T, P, G}
+    return error("pushfirst_gate! not implemented for ZXCircuit")
 end
 
 function pushfirst_gate!(

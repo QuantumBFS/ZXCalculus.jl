@@ -19,15 +19,6 @@ spiders(::AbstractZXDiagram) = error("spiders not implemented")
 """
     $(TYPEDSIGNATURES)
 
-Get the type of spider `v` in the ZX-diagram.
-
-Returns a `SpiderType.SType` value (Z, X, H, In, or Out).
-"""
-spider_type(::AbstractZXDiagram, v) = error("spider_type not implemented")
-
-"""
-    $(TYPEDSIGNATURES)
-
 Get all spider types in the ZX-diagram.
 
 Returns a dictionary mapping vertex identifiers to their spider types.
@@ -37,20 +28,29 @@ spider_types(::AbstractZXDiagram) = error("spider_types not implemented")
 """
     $(TYPEDSIGNATURES)
 
-Get the phase of spider `v` in the ZX-diagram.
-
-Returns a phase value (typically `AbstractPhase`).
-"""
-phase(::AbstractZXDiagram, v) = error("phase not implemented")
-
-"""
-    $(TYPEDSIGNATURES)
-
 Get all spider phases in the ZX-diagram.
 
 Returns a dictionary mapping vertex identifiers to their phases.
 """
 phases(::AbstractZXDiagram) = error("phases not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the type of spider `v` in the ZX-diagram.
+
+Returns a `SpiderType.SType` value (Z, X, H, In, or Out).
+"""
+spider_type(::AbstractZXDiagram, v) = error("spider_type not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the phase of spider `v` in the ZX-diagram.
+
+Returns a phase value (typically `AbstractPhase`).
+"""
+phase(::AbstractZXDiagram, v) = error("phase not implemented")
 
 # Spider manipulation
 
