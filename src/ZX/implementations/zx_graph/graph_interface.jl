@@ -13,29 +13,24 @@ Graphs.outdegree(zxg::ZXGraph, v::Integer) = degree(zxg, v)
 Graphs.edges(zxg::ZXGraph) = Graphs.edges(zxg.mg)
 
 function Graphs.rem_edge!(zxg::ZXGraph, v1::Integer, v2::Integer)
-    if rem_edge!(zxg.mg, v1, v2)
-        delete!(zxg.et, (min(v1, v2), max(v1, v2)))
-        return true
-    end
-    return false
+    @assert rem_edge!(zxg.mg, v1, v2) "Failed to remove edge between $v1 and $v2"
+    delete!(zxg.et, (min(v1, v2), max(v1, v2)))
+    return true
 end
 
 function Graphs.add_edge!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType=EdgeType.HAD)
-    if has_vertex(zxg, v1) && has_vertex(zxg, v2)
-        if v1 == v2
-            reduce_self_loop!(zxg, v1, etype)
-            return true
+    @assert has_vertex(zxg, v1) && has_vertex(zxg, v2) "Trying to add an edge to non-existing vertex $v1 or $v2"
+    if v1 == v2
+        reduce_self_loop!(zxg, v1, etype)
+    else
+        if !has_edge(zxg, v1, v2)
+            add_edge!(zxg.mg, v1, v2)
+            zxg.et[(min(v1, v2), max(v1, v2))] = etype
         else
-            if !has_edge(zxg, v1, v2)
-                add_edge!(zxg.mg, v1, v2)
-                zxg.et[(min(v1, v2), max(v1, v2))] = etype
-            else
-                reduce_parallel_edges!(zxg, v1, v2, etype)
-            end
-            return true
+            reduce_parallel_edges!(zxg, v1, v2, etype)
         end
     end
-    return false
+    return true
 end
 
 function reduce_parallel_edges!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)

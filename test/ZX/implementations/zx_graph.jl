@@ -75,15 +75,15 @@ end
     ps = [Phase(0 // 1) for i in 1:6]
     v_t = [SpiderType.In, SpiderType.In, SpiderType.X, SpiderType.Z, SpiderType.Out, SpiderType.Out]
     zxd = ZXDiagram(g, v_t, ps)
-    zxg1 = ZXCircuit(zxd)
+    zxg1 = ZXGraph(zxd)
     @test !isnothing(zxg1)
     @test outneighbors(zxg1, 1) == inneighbors(zxg1, 1)
     @test !ZX.is_hadamard(zxg1, 2, 4) && !ZX.is_hadamard(zxg1, 4, 6)
-    @test_throws AssertionError !add_edge!(zxg1, 2, 4)
-    @test !add_edge!(zxg1, 7, 8)
-    @test sum(ZX.is_hadamard(zxg1, src(e), dst(e)) for e in edges(zxg1)) == 3
+    @test_throws AssertionError add_edge!(zxg1, 2, 4)
+    @test_throws AssertionError add_edge!(zxg1, 7, 8)
+    @test sum(ZX.is_hadamard(zxg1, src(e), dst(e)) for e in edges(zxg1)) == 0
     replace!(BialgebraRule(), zxd)
-    zxg2 = ZXCircuit(zxd)
+    zxg2 = ZXGraph(zxd)
     @test !ZX.is_hadamard(zxg2, 5, 8) && !ZX.is_hadamard(zxg2, 1, 7)
 end
 
