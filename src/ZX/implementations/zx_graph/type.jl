@@ -39,18 +39,6 @@ function ZXGraph()
         Dict{Tuple{Int, Int}, EdgeType.EType}(), Scalar{Phase}(0, Phase(0 // 1)))
 end
 
-function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
-    zxd = copy(zxd)
-    simplify!(ParallelEdgeRemovalRule(), zxd)
-    et = Dict{Tuple{T, T}, EdgeType.EType}()
-    for e in edges(zxd)
-        @assert mul(zxd, src(e), dst(e)) == 1 "ZXCircuit: multiple edges should have been removed."
-        s, d = src(e), dst(e)
-        et[(min(s, d), max(s, d))] = EdgeType.SIM
-    end
-    return ZXGraph{T, P}(zxd.mg, zxd.ps, zxd.st, et, zxd.scalar)
-end
-
 function Base.show(io::IO, zxg::ZXGraph{T}) where {T <: Integer}
     println(io, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges:")
     vs = sort!(spiders(zxg))

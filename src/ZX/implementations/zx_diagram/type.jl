@@ -181,3 +181,15 @@ end
 
 nout(zxd::ZXDiagram) = length(zxd.outputs)
 nin(zxd::ZXDiagram) = length(zxd.inputs)
+
+function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
+    zxd = copy(zxd)
+    simplify!(ParallelEdgeRemovalRule(), zxd)
+    et = Dict{Tuple{T, T}, EdgeType.EType}()
+    for e in edges(zxd)
+        @assert mul(zxd, src(e), dst(e)) == 1 "ZXCircuit: multiple edges should have been removed."
+        s, d = src(e), dst(e)
+        et[(min(s, d), max(s, d))] = EdgeType.SIM
+    end
+    return ZXGraph{T, P}(zxd.mg, zxd.ps, zxd.st, et, zxd.scalar)
+end

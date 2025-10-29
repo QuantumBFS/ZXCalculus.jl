@@ -12,14 +12,8 @@ edge_type(zxg::ZXGraph, v1::Integer, v2::Integer) = zxg.et[(min(v1, v2), max(v1,
 is_zx_spider(zxg::ZXGraph, v::Integer) = spider_type(zxg, v) in (SpiderType.Z, SpiderType.X)
 
 function is_hadamard(zxg::ZXGraph, v1::Integer, v2::Integer)
-    if has_edge(zxg, v1, v2)
-        src = min(v1, v2)
-        dst = max(v1, v2)
-        return zxg.et[(src, dst)] == EdgeType.HAD
-    else
-        error("no edge between $v1 and $v2")
-    end
-    return false
+    @assert has_edge(zxg, v1, v2) "no edge between $v1 and $v2"
+    return edge_type(zxg, v1, v2) == EdgeType.HAD
 end
 
 # Spider manipulation

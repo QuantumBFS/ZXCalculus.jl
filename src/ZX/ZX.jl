@@ -39,7 +39,13 @@ export qubit_loc, column_loc, generate_layout!, spider_sequence
 include("interfaces/layout_interface.jl")
 
 # Load implementations
-# ZXDiagram must be loaded first (needed by ZXGraph and ZXCircuit constructors)
+# ZXGraph
+export ZXGraph
+include("implementations/zx_graph/type.jl")
+include("implementations/zx_graph/graph_interface.jl")
+include("implementations/zx_graph/calculus_interface.jl")
+
+# ZXDiagram
 export ZXDiagram
 include("implementations/zx_diagram/type.jl")
 include("implementations/zx_diagram/graph_interface.jl")
@@ -47,12 +53,6 @@ include("implementations/zx_diagram/calculus_interface.jl")
 include("implementations/zx_diagram/circuit_interface.jl")
 include("implementations/zx_diagram/layout_interface.jl")
 include("implementations/zx_diagram/composition_interface.jl")
-
-# ZXGraph
-export ZXGraph
-include("implementations/zx_graph/type.jl")
-include("implementations/zx_graph/graph_ops.jl")
-include("implementations/zx_graph/calculus_ops.jl")
 
 # ZXCircuit
 export ZXCircuit
