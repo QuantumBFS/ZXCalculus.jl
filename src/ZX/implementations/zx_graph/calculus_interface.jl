@@ -18,37 +18,32 @@ end
 
 # Spider manipulation
 function set_phase!(zxg::ZXGraph{T, P}, v::T, p::P) where {T, P}
-    if has_vertex(zxg, v)
-        while p < 0
-            p += 2
-        end
-        zxg.ps[v] = round_phase(p)
-        return true
-    end
-    return false
+    @assert has_vertex(zxg, v) "no vertex $v in graph"
+    # TODO: should not allow setting phase for non-Z/X spiders
+    # if is_zx_spider(zxg, v)
+    zxg.ps[v] = round_phase(p)
+    return true
+    # end
+    # return false
 end
 
 function set_spider_type!(zxg::ZXGraph, v::Integer, st::SpiderType.SType)
-    if has_vertex(zxg, v)
-        zxg.st[v] = st
-        return true
-    end
-    return false
+    @assert has_vertex(zxg, v) "no vertex $v in graph"
+    zxg.st[v] = st
+    return true
 end
 
 function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
-    if has_edge(zxg, v1, v2)
-        zxg.et[(min(v1, v2), max(v1, v2))] = etype
-        return true
-    end
-    return false
+    @assert has_edge(zxg, v1, v2) "no edge between $v1 and $v2"
+    zxg.et[(min(v1, v2), max(v1, v2))] = etype
+    return true
 end
 
 function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P), connect::Vector{T}=T[]) where {
         T <: Integer, P}
     v = add_vertex!(zxg.mg)[1]
+    set_spider_type!(zxg, v, st)
     set_phase!(zxg, v, phase)
-    zxg.st[v] = st
     if all(has_vertex(zxg, c) for c in connect)
         for c in connect
             add_edge!(zxg, v, c)
