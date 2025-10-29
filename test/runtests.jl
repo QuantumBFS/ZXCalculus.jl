@@ -32,7 +32,16 @@ using Test
     end
 
     @testset "rules.jl" begin
-        include("ZX/rules.jl")
+        # Rule tests organized by rule type
+        include("ZX/rules/fusion_rule.jl")
+        include("ZX/rules/identity1_rule.jl")
+        include("ZX/rules/xtoz_hbox_rule.jl")
+        include("ZX/rules/pi_rule.jl")
+        include("ZX/rules/copy_rule.jl")
+        include("ZX/rules/bialgebra_rule.jl")
+        include("ZX/rules/local_comp_rule.jl")
+        include("ZX/rules/pivot_boundary_rule.jl")
+        include("ZX/rules/pivot3_rule.jl")
     end
 
     @testset "circuit_extraction.jl" begin
