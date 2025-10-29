@@ -43,4 +43,16 @@ end
         @test zxg.scalar == Scalar(-4, 0 // 1)
         @test nv(zxg) == 7 && ne(zxg) == 4
     end
+
+    @testset "Parallel edges" begin
+        # TODO: Test fusion with parallel edges
+    end
+
+    @testset "Self-loops" begin
+        # TODO: Test fusion with self-loops
+    end
+
+    @testset "Phase addition" begin
+        # TODO: Test phase addition during fusion
+    end
 end
