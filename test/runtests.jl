@@ -5,7 +5,11 @@ module TestZX
 using Test
 @testset "ZX module" begin
     @testset "interfaces.jl" begin
-        include("ZX/interfaces.jl")
+        include("ZX/interfaces/abstract_zx_diagram.jl")
+    end
+
+    @testset "layout.jl" begin
+        include("ZX/zx_layout.jl")
     end
 
     @testset "plots.jl" begin
@@ -14,10 +18,6 @@ using Test
 
     @testset "equality.jl" begin
         include("ZX/equality.jl")
-    end
-
-    @testset "abstract_zx_diagram.jl" begin
-        include("ZX/abstract_zx_diagram.jl")
     end
 
     @testset "zx_diagram.jl" begin
