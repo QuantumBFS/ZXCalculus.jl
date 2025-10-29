@@ -1,5 +1,6 @@
 using Test, ZXCalculus, ZXCalculus.ZX
 using ZXCalculus: ZX
+using Vega, DataFrames
 
 # Othertests for ZXGraphs and ZXDigram are embededd into the zx_graph and zx_diagram testsets
 zxd = ZXDiagram(3)

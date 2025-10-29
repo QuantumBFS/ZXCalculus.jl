@@ -1,4 +1,5 @@
 using Documenter, Test
+using ZXCalculus
 
 module TestZX
 using Test

@@ -1,6 +1,7 @@
 using Test, ZXCalculus, ZXCalculus.ZX
 using ZXCalculus.ZX: ancilla_extraction
 using ZXCalculus: ZX
+using Vega, DataFrames
 
 function gen_phase_gadget()
     zxd = ZXDiagram(2)
