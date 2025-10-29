@@ -23,6 +23,8 @@ end
 
 @testset "Calculus interface" begin
     zxg = ZXGraph()
+
+    # Construction
     v_in = add_spider!(zxg, SpiderType.In)
     v_out = add_spider!(zxg, SpiderType.Out)
     add_edge!(zxg, v_in, v_out, EdgeType.SIM)
@@ -30,7 +32,9 @@ end
     v_z = insert_spider!(zxg, v_in, v_out, SpiderType.Z, Phase(1 // 2))
     v_x = insert_spider!(zxg, v_z, v_out, SpiderType.X, Phase(1 // 4))
     v_h = insert_spider!(zxg, v_z, v_x, SpiderType.H)
+    round_phases!(zxg)
 
+    # Properties
     @test length(spiders(zxg)) == length(spider_types(zxg)) == length(phases(zxg)) == 5
     @test spider_type(zxg, v_z) == SpiderType.Z
     @test phase(zxg, v_x) == Phase(1 // 4)
@@ -39,6 +43,26 @@ end
     @test is_hadamard(zxg, v_z, v_h) && is_hadamard(zxg, v_x, v_h)
     @test_throws AssertionError is_hadamard(zxg, v_in, v_out)
     @test is_clifford_phase(phase(zxg, v_z))
+    @test tcount(zxg) == 1
+
+    # Modification
+    add_edge!(zxg, v_z, v_z, EdgeType.HAD)
+    @test phase(zxg, v_z) == Phase(3//2) && scalar(zxg) == Scalar(-1, 0//1)
+    add_edge!(zxg, v_x, v_x, EdgeType.SIM)
+    @test phase(zxg, v_x) == Phase(1//4) && scalar(zxg) == Scalar(-1, 0//1)
+    @test_throws AssertionError add_edge!(zxg, v_z, v_h, EdgeType.HAD)
+    @test add_edge!(zxg, v_z, v_x, EdgeType.SIM)
+    @test add_edge!(zxg, v_z, v_x, EdgeType.SIM)
+    @test scalar(zxg) == Scalar(-3, 0//1)
+
+    add_edge!(zxg, v_z, v_x, EdgeType.HAD)
+    add_edge!(zxg, v_z, v_x, EdgeType.HAD)
+    @test is_hadamard(zxg, v_z, v_x)
+    @test scalar(zxg) == Scalar(-3, 0//1)
+    add_edge!(zxg, v_z, v_x, EdgeType.SIM)
+    @test is_hadamard(zxg, v_z, v_x)
+    @test scalar(zxg) == Scalar(-4, 0//1)
+    @test phase(zxg, v_z) == Phase(1//2)
 end
 
 @testset "From ZXDiagram" begin

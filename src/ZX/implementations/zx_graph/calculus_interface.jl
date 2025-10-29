@@ -53,14 +53,12 @@ function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P),
 end
 
 function rem_spiders!(zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
-    if rem_vertices!(zxg.mg, vs)
-        for v in vs
-            delete!(zxg.ps, v)
-            delete!(zxg.st, v)
-        end
-        return true
+    @assert rem_vertices!(zxg.mg, vs) "Failed to remove vertices $vs from ZXGraph"
+    for v in vs
+        delete!(zxg.ps, v)
+        delete!(zxg.st, v)
     end
-    return false
+    return zxg
 end
 
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
@@ -90,45 +88,7 @@ tcount(cir::ZXGraph) = sum(!is_clifford_phase(phase(cir, v)) for v in spiders(ci
 function round_phases!(zxg::ZXGraph{T, P}) where {T <: Integer, P}
     ps = zxg.ps
     for v in keys(ps)
-        while ps[v] < 0
-            ps[v] += 2
-        end
         ps[v] = round_phase(ps[v])
-    end
-end
-
-function reduce_parallel_edges!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.EType)
-    st1 = spider_type(zxg, v1)
-    st2 = spider_type(zxg, v2)
-    @assert is_zx_spider(zxg, v1) && is_zx_spider(zxg, v2) "Trying to process parallel edges to non-Z/X spider $v1 or $v2"
-    function parallel_edge_helper()
-        add_power!(zxg, -2)
-        return rem_edge!(zxg, v1, v2)
-    end
-
-    if st1 == st2
-        if edge_type(zxg, v1, v2) === etype === EdgeType.HAD
-            parallel_edge_helper()
-        elseif edge_type(zxg, v1, v2) !== etype
-            set_edge_type!(zxg, v1, v2, EdgeType.SIM)
-            reduce_self_loop!(zxg, v1, EdgeType.HAD)
-        end
-    elseif st1 != st2
-        if edge_type(zxg, v1, v2) === etype === EdgeType.SIM
-            parallel_edge_helper()
-        elseif edge_type(zxg, v1, v2) !== etype
-            set_edge_type!(zxg, v1, v2, EdgeType.HAD)
-            reduce_self_loop!(zxg, v1, EdgeType.HAD)
-        end
-    end
-    return zxg
-end
-
-function reduce_self_loop!(zxg::ZXGraph, v::Integer, etype::EdgeType.EType)
-    @assert is_zx_spider(zxg, v) "Trying to process a self-loop on non-Z/X spider $v"
-    if etype == EdgeType.HAD
-        set_phase!(zxg, v, phase(zxg, v)+1)
-        add_power!(zxg, -1)
     end
     return zxg
 end
