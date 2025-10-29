@@ -4,37 +4,35 @@ using ZXCalculus
 module TestZX
 using Test
 @testset "ZX module" begin
+    @testset "types.jl" begin
+        include("ZX/zx_layout.jl")
+    end
+
     @testset "interfaces.jl" begin
         include("ZX/interfaces/abstract_zx_diagram.jl")
         include("ZX/interfaces/abstract_zx_circuit.jl")
-    end
-
-    @testset "layout.jl" begin
-        include("ZX/zx_layout.jl")
     end
 
     @testset "plots.jl" begin
         include("ZX/plots.jl")
     end
 
+    @testset "Implementations" begin
+        @testset "AbstractZXDiagram.jl" begin
+            include("ZX/implementations/zx_graph.jl")
+        end
+        @testset "AbstractZXCircuit" begin
+            include("ZX/implementations/zx_diagram.jl")
+            include("ZX/implementations/zx_circuit.jl")
+        end
+    end
+
     @testset "equality.jl" begin
         include("ZX/equality.jl")
     end
 
-    @testset "zx_diagram.jl" begin
-        include("ZX/zx_diagram.jl")
-    end
-
-    @testset "zx_circuit_basic.jl" begin
-        include("ZX/zx_circuit_basic.jl")
-    end
-
     @testset "rules.jl" begin
         include("ZX/rules.jl")
-    end
-
-    @testset "zx_graph.jl" begin
-        include("ZX/zx_graph.jl")
     end
 
     @testset "circuit_extraction.jl" begin
