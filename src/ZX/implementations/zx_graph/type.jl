@@ -84,7 +84,7 @@ end
 Find all spiders with type `SpiderType.In` in the graph.
 This is a search utility and does not guarantee circuit structure or ordering.
 """
-find_inputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In]
+find_inputs(zxg::ZXGraph) = sort!([v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.In])
 get_inputs(zxg::ZXGraph) = find_inputs(zxg)
 
 """
@@ -93,5 +93,8 @@ get_inputs(zxg::ZXGraph) = find_inputs(zxg)
 Find all spiders with type `SpiderType.Out` in the graph.
 This is a search utility and does not guarantee circuit structure or ordering.
 """
-find_outputs(zxg::ZXGraph) = [v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out]
+find_outputs(zxg::ZXGraph) = sort!([v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out])
 get_outputs(zxg::ZXGraph) = find_outputs(zxg)
+
+nin(zxg::ZXGraph) = length(find_inputs(zxg))
+nout(zxg::ZXGraph) = length(find_outputs(zxg))
