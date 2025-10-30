@@ -31,16 +31,21 @@ using ZXCalculus.Utils: Phase
         for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
             add_edge!(zxg, e[1], e[2])
         end
+        add_spider!(zxg, SpiderType.Z, Phase(0//1), [1, 7])
+        ZX.set_edge_type!(zxg, 7, 15, EdgeType.SIM)
+        zxg_before = copy(zxg)
 
+        @test length(match(Pivot1Rule(), zxg)) == 2
         replace!(Pivot1Rule(), zxg)
         @test !has_edge(zxg, 3, 4) && !has_edge(zxg, 5, 6) && !has_edge(zxg, 7, 8)
-        @test nv(zxg) == 12 && ne(zxg) == 18
+        @test nv(zxg) == 13 && ne(zxg) == 22
         @test phase(zxg, 3) == 1 // 4 &&
               phase(zxg, 4) == 1 // 2 &&
               phase(zxg, 5) == 3 // 4 &&
               phase(zxg, 6) == 1 // 1 &&
               phase(zxg, 7) == 1 // 4 &&
               phase(zxg, 8) == 1 // 2
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Various phase configurations" begin

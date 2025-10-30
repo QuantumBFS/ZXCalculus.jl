@@ -32,6 +32,8 @@ using Test
     end
 
     @testset "rules.jl" begin
+        include("ZX/rules/rule_utils.jl")
+
         # Rule tests organized by rule type
         include("ZX/rules/fusion_rule.jl")
         include("ZX/rules/identity1_rule.jl")
@@ -57,7 +59,7 @@ using Test
 
     @testset "ir.jl" begin
         # TODO: fix infinite loop in convert_to_chain
-        # include("ZX/ir.jl")
+        include("ZX/ir.jl")
     end
 
     @testset "simplify.jl" begin

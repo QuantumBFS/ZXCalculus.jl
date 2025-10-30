@@ -27,21 +27,24 @@ end
         ps = [Phase(i // 4) for i in 1:3]
         v_t = [SpiderType.Z, SpiderType.Z, SpiderType.X]
         zxd = ZXDiagram(g, v_t, ps)
+        zxd_before = copy(zxd)
         matches = match(FusionRule(), zxd)
         rewrite!(FusionRule(), zxd, matches)
         @test sort!(spiders(zxd)) == [1, 3]
         @test phase(zxd, 1) == phase(zxd, 3) == 3 // 4
-        @test !isnothing(zxd)
+        @test check_equivalence(zxd_before, zxd)
     end
 
     @testset "ZXGraph" begin
         zxg = fusion_rule_test()
         ZX.add_edge!(zxg, 7, 8, EdgeType.SIM)
+        zxg_before = copy(zxg)
         @test zxg.scalar == Scalar(-2, 0 // 1)
         matches = match(FusionRule(), zxg)
         rewrite!(FusionRule(), zxg, matches)
         @test zxg.scalar == Scalar(-4, 0 // 1)
         @test nv(zxg) == 7 && ne(zxg) == 4
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Parallel edges" begin

@@ -2,6 +2,7 @@ using Test
 using ZXCalculus, Multigraphs, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
 using ZXCalculus: ZX
 using ZXCalculus.Utils: Phase
+using Vega, DataFrames
 
 @testset "LocalCompRule" begin
     @testset "Basic local complementation" begin
@@ -26,12 +27,18 @@ using ZXCalculus.Utils: Phase
         for e in [[1, 2], [1, 3], [1, 4], [1, 5], [2, 3]]
             add_edge!(zxg, e[1], e[2])
         end
+        add_spider!(zxg, SpiderType.Z, Phase(1//2), [3, 4])
+        ZX.set_edge_type!(zxg, 3, 10, EdgeType.SIM)
+        zxg_before = copy(zxg)
+
+        @test length(match(LocalCompRule(), zxg)) == 1
         replace!(LocalCompRule(), zxg)
-        @test !has_edge(zxg, 2, 3) && ne(zxg) == 9
+        @test !has_edge(zxg, 2, 3) && nv(zxg) == 9 && ne(zxg) == 11
         @test phase(zxg, 2) == 3 // 2 &&
               phase(zxg, 3) == 7 // 4 &&
               phase(zxg, 4) == 0 // 1 &&
               phase(zxg, 5) == 1 // 4
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Different neighborhood structures" begin

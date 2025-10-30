@@ -26,19 +26,22 @@ end
         ps = [Phase(i // 4) for i in 1:3]
         v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
         zxd = ZXDiagram(g, v_t, ps)
+        zxd_before = copy(zxd)
         matches = match(XToZRule(), zxd)
         rewrite!(XToZRule(), zxd, matches)
         @test nv(zxd) == 8 && ne(zxd) == 8
-        @test !isnothing(zxd)
+        @test check_equivalence(zxd_before, zxd)
     end
 
     @testset "ZXGraph" begin
         zxg = xtoz_rule_test()
+        zxg_before = copy(zxg)
         add_edge!(zxg, 8, 5, EdgeType.HAD)
         matches_x2z = match(XToZRule(), zxg)
         @test length(matches_x2z) == 1
         rewrite!(XToZRule(), zxg, matches_x2z)
         @test nv(zxg) == 8 && ne(zxg) == 9
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Multiple X spiders" begin

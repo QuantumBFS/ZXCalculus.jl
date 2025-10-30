@@ -15,10 +15,12 @@ using ZXCalculus.Utils: Phase
         for e in [[1, 2], [2, 3], [1, 4], [1, 5]]
             add_edge!(zxg, e[1], e[2])
         end
+        zxg_before = copy(zxg)
 
         @test length(match(Pivot1Rule(), zxg)) == 1
         replace!(PivotBoundaryRule(), zxg)
         @test nv(zxg) == 6 && ne(zxg) == 6
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Boundary spider handling" begin

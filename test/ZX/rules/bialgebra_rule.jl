@@ -26,10 +26,12 @@ using ZXCalculus.Utils: Phase
             Dict(zip(1:6, [1 // 1, 1, 2, 2, 3, 3]))
         )
         zxd = ZXDiagram(g, v_t, ps, layout)
+        zxd_before = copy(zxd)
         matches = match(BialgebraRule(), zxd)
         rewrite!(BialgebraRule(), zxd, matches)
         @test nv(zxd) == 8 && ne(zxd) == 8
         @test zxd.scalar == Scalar(1, 0 // 1)
+        @test check_equivalence(zxd_before, zxd)
     end
 
     @testset "Layout preservation" begin

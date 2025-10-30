@@ -31,9 +31,11 @@ using ZXCalculus.Utils: Phase
         for e in [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [2, 8]]
             add_edge!(zxg, e[1], e[2])
         end
+        zxg_before = copy(zxg)
         match(Pivot2Rule(), zxg)
         replace!(Pivot2Rule(), zxg)
         @test zxg.phase_ids[15] == (2, -1)
+        @test check_equivalence(zxg_before, zxg; ignore_phase=true)
     end
 
     @testset "Phase ID tracking" begin

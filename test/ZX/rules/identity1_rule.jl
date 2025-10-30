@@ -10,10 +10,11 @@ using ZXCalculus.Utils: Phase
         ps = [Phase(1), Phase(3 // 1), Phase(0), Phase(0), Phase(1)]
         v_t = [SpiderType.X, SpiderType.X, SpiderType.Z, SpiderType.Z, SpiderType.Z]
         zxd = ZXDiagram(g, v_t, ps)
+        zxd_before = copy(zxd)
         matches = match(Identity1Rule(), zxd)
         rewrite!(Identity1Rule(), zxd, matches)
         @test nv(zxd) == 3 && ne(zxd, count_mul=true) == 3 && ne(zxd) == 2
-        @test !isnothing(zxd)
+        @test check_equivalence(zxd_before, zxd)
     end
 
     @testset "Multiple identities" begin

@@ -26,6 +26,7 @@ end
         ps = [Phase(i // 4) for i in 1:3]
         v_t = [SpiderType.X, SpiderType.X, SpiderType.Z]
         zxd = ZXDiagram(g, v_t, ps)
+        zxd_before = copy(zxd)
 
         # First apply XToZRule to create Hadamard boxes
         matches = match(XToZRule(), zxd)
@@ -35,6 +36,7 @@ end
         matches = match(HBoxRule(), zxd)
         rewrite!(HBoxRule(), zxd, matches)
         @test nv(zxd) == 4 && ne(zxd, count_mul=true) == 4 && ne(zxd) == 3
+        @test check_equivalence(zxd_before, zxd)
     end
 
     @testset "ZXGraph" begin
@@ -43,6 +45,7 @@ end
 
         # Apply XToZRule first
         matches_x2z = match(XToZRule(), zxg)
+        zxg_before = copy(zxg)
         rewrite!(XToZRule(), zxg, matches_x2z)
 
         # Add H-box spider and test HBoxRule
@@ -55,6 +58,7 @@ end
         @test ZX.edge_type(zxg, 7, 8) === EdgeType.HAD
         @test ZX.edge_type(zxg, 8, 5) === EdgeType.SIM
         @test ZX.is_one_phase(phase(zxg, 5)) || ZX.is_one_phase(phase(zxg, 8))
+        @test check_equivalence(zxg_before, zxg)
     end
 
     @testset "Various configurations" begin
