@@ -10,7 +10,7 @@ function full_reduction(zxg::Union{ZXCircuit, ZXGraph})
 end
 
 function full_reduction(bir::BlockIR)
-    circ = convert_to_zx_circuit(bir)
+    circ = phase_tracker(convert_to_zx_circuit(bir))
     full_reduction!(circ)
     chain = circuit_extraction(circ)
     return BlockIR(bir.parent, bir.nqubits, chain)

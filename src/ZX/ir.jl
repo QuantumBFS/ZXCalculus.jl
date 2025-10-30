@@ -2,48 +2,13 @@ YaoHIR.Chain(zxd::AbstractZXCircuit) = convert_to_chain(zxd)
 
 # Main implementation on ZXCircuit
 function convert_to_chain(circ::ZXCircuit{TT, P}) where {TT, P}
-    spider_seq = spider_sequence(circ)
-    gates = []
-    for vs in spider_seq
-        if length(vs) == 1
-            v = vs
-            q = Int(qubit_loc(circ, v))
-            push_spider_to_chain!(gates, q, phase(circ, v), spider_type(circ, v))
-        elseif length(vs) == 2
-            v1, v2 = vs
-            q1 = Int(qubit_loc(circ, v1))
-            q2 = Int(qubit_loc(circ, v2))
-            push_spider_to_chain!(gates, q1, phase(circ, v1), spider_type(circ, v1))
-            push_spider_to_chain!(gates, q2, phase(circ, v2), spider_type(circ, v2))
-            if spider_type(circ, v1) == SpiderType.Z && spider_type(circ, v2) == SpiderType.X
-                push!(gates, Ctrl(Gate(X, Locations(q2)), CtrlLocations(q1)))
-            elseif spider_type(circ, v1) == SpiderType.X && spider_type(circ, v2) == SpiderType.Z
-                push!(gates, Ctrl(Gate(X, Locations(q1)), CtrlLocations(q2)))
-            else
-                error("Spiders ($v1, $v2) should represent a CNOT")
-            end
-        elseif length(vs) == 3
-            v1, h, v2 = vs
-            spider_type(circ, h) == SpiderType.H || error("The spider $h should be a H-box")
-            q1 = Int(qubit_loc(circ, v1))
-            q2 = Int(qubit_loc(circ, v2))
-            push_spider_to_chain!(gates, q1, phase(circ, v1), spider_type(circ, v1))
-            push_spider_to_chain!(gates, q2, phase(circ, v2), spider_type(circ, v2))
-            if spider_type(circ, v1) == SpiderType.Z && spider_type(circ, v2) == SpiderType.Z
-                push!(gates, Ctrl(Gate(Z, Locations(q2)), CtrlLocations(q1)))
-            else
-                error("Spiders ($v1, $h, $v2) should represent a CZ")
-            end
-        else
-            error("ZXCircuit without proper circuit structure is not supported")
-        end
-    end
-    return Chain(gates...)
+    zxd = ZXDiagram(circ)
+    return convert_to_chain(zxd)
 end
 
 # Implementation for deprecated ZXDiagram (avoid conversion to preserve structure)
 function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
-    Base.depwarn("ZXDiagram is deprecated for circuit operations. Use ZXCircuit instead.", :convert_to_chain)
+    # Base.depwarn("ZXDiagram is deprecated for circuit operations. Use ZXCircuit instead.", :convert_to_chain)
     spider_seq = spider_sequence(circ)
     gates = []
     for vs in spider_seq
