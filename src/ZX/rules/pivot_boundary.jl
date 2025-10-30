@@ -69,8 +69,10 @@ function rewrite!(::PivotBoundaryRule, circ::ZXCircuit{T, P}, vs::Vector{T}) whe
         circ.phase_ids[w] = (w_master, 1)
     end
 
-    circ.phase_ids[new_v] = circ.phase_ids[v]
-    delete!(circ.phase_ids, v)
+    if !isnothing(circ.master)
+        circ.phase_ids[new_v] = circ.phase_ids[v]
+        delete!(circ.phase_ids, v)
+    end
 
     return circ
 end

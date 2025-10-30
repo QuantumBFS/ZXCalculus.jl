@@ -11,6 +11,7 @@ function phase_tracker(circ::ZXCircuit{T, P}) where {T, P}
 end
 
 function flip_phase_tracking_sign!(circ::ZXCircuit, v::Integer)
+    isnothing(circ.master) && return true
     if haskey(circ.phase_ids, v)
         id, sign = circ.phase_ids[v]
         circ.phase_ids[v] = (id, -sign)
@@ -20,6 +21,7 @@ function flip_phase_tracking_sign!(circ::ZXCircuit, v::Integer)
 end
 
 function merge_phase_tracking!(circ::ZXCircuit{T, P}, v_from::T, v_to::T) where {T, P}
+    isnothing(circ.master) && return true
     if haskey(circ.phase_ids, v_from) && haskey(circ.phase_ids, v_to)
         id_from, sign_from = circ.phase_ids[v_from]
         id_to, sign_to = circ.phase_ids[v_to]
