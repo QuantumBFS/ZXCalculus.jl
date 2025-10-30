@@ -95,6 +95,3 @@ This is a search utility and does not guarantee circuit structure or ordering.
 """
 find_outputs(zxg::ZXGraph) = sort!([v for v in spiders(zxg) if spider_type(zxg, v) == SpiderType.Out])
 get_outputs(zxg::ZXGraph) = find_outputs(zxg)
-
-nin(zxg::ZXGraph) = length(find_inputs(zxg))
-nout(zxg::ZXGraph) = length(find_outputs(zxg))

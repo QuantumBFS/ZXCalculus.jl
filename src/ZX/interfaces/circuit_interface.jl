@@ -52,3 +52,17 @@ push_gate!(::AbstractZXCircuit, args...) = error("push_gate! not implemented")
 Add a gate to the beginning of the circuit.
 """
 pushfirst_gate!(::AbstractZXCircuit, args...) = error("pushfirst_gate! not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the number of input spiders in the circuit.
+"""
+nin(zxd::AbstractZXDiagram) = length(get_inputs(zxd))
+
+"""
+    $(TYPEDSIGNATURES)
+
+Get the number of output spiders in the circuit.
+"""
+nout(zxd::AbstractZXDiagram) = length(get_outputs(zxd))

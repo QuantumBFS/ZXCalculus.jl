@@ -179,9 +179,6 @@ function Base.show(io::IO, zxd::ZXDiagram{T, P}) where {T <: Integer, P}
     end
 end
 
-nout(zxd::ZXDiagram) = length(zxd.outputs)
-nin(zxd::ZXDiagram) = length(zxd.inputs)
-
 function ZXGraph(zxd::ZXDiagram{T, P}) where {T, P}
     zxd = copy(zxd)
     simplify!(ParallelEdgeRemovalRule(), zxd)
