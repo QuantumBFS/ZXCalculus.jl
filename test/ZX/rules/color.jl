@@ -35,8 +35,8 @@ end
 
     @testset "ZXGraph" begin
         zxg = xtoz_rule_test()
-        zxg_before = copy(zxg)
         add_edge!(zxg, 8, 5, EdgeType.HAD)
+        zxg_before = copy(zxg)
         matches_x2z = match(XToZRule(), zxg)
         @test length(matches_x2z) == 1
         rewrite!(XToZRule(), zxg, matches_x2z)

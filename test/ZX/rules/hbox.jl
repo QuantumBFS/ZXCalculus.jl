@@ -47,9 +47,11 @@ end
         matches_x2z = match(XToZRule(), zxg)
         zxg_before = copy(zxg)
         rewrite!(XToZRule(), zxg, matches_x2z)
+        @test check_equivalence(zxg_before, zxg)
 
         # Add H-box spider and test HBoxRule
         v = ZX.add_spider!(zxg, SpiderType.H, Phase(0//1), [8, 5])
+        zxg_before = copy(zxg)
         matches_box = match(HBoxRule(), zxg)
         @test length(matches_box) == 1
         rewrite!(HBoxRule(), zxg, matches_box)
