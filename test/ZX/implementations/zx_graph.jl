@@ -63,6 +63,7 @@ end
     @test is_hadamard(zxg, v_z, v_x)
     @test scalar(zxg) == Scalar(-4, 0//1)
     @test phase(zxg, v_z) == Phase(1//2)
+    ZX.set_edge_type!(zxg, v_z, v_in, EdgeType.SIM)
 
     str = repr(zxg)
     @test contains(str, "ZX-graph with $(nv(zxg)) vertices and $(ne(zxg)) edges")

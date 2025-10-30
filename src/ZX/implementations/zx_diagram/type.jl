@@ -152,15 +152,15 @@ end
 function print_spider(io::IO, zxd::ZXDiagram{T, P}, v::T) where {T <: Integer, P}
     st_v = spider_type(zxd, v)
     if st_v == SpiderType.Z
-        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
+        printstyled(io, "Z_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color=:green)
     elseif st_v == SpiderType.X
-        printstyled(io, "S_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color=:red)
+        printstyled(io, "X_$(v){phase = $(zxd.ps[v])"*(zxd.ps[v] isa Phase ? "}" : "⋅π}"); color=:red)
     elseif st_v == SpiderType.H
-        printstyled(io, "S_$(v){H}"; color=:yellow)
+        printstyled(io, "H_$(v)"; color=:yellow)
     elseif st_v == SpiderType.In
-        print(io, "S_$(v){input}")
+        print(io, "In_$(v){input}")
     elseif st_v == SpiderType.Out
-        print(io, "S_$(v){output}")
+        print(io, "Out_$(v){output}")
     end
 end
 

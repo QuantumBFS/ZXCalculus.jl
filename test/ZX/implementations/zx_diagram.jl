@@ -62,6 +62,15 @@ end
     pushfirst_gate!(zxd4, Val(:CNOT), 2, 1)
     pushfirst_gate!(zxd4, Val(:CZ), 1, 2)
     @test indegree(zxd4, 5) == outdegree(zxd4, 5) == degree(zxd4, 5)
+
+    # printing test
+    str = repr(zxd4)
+    @test contains(str, "ZX-diagram with $(nv(zxd4)) vertices and $(ne(zxd4)) multiple edges")
+    @test contains(str, "In")
+    @test contains(str, "Out")
+    @test contains(str, "Z")
+    @test contains(str, "X")
+    @test contains(str, "H")
 end
 
 @testset "push gates into Diagram then plot ZXGraph" begin
