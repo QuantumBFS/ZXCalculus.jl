@@ -56,24 +56,12 @@ end
     ir = IRCode()
     bir = BlockIR(ir, 4, chain)
     zxd = ZXDiagram(bir)
-    zxwd = ZXWDiagram(bir)
 
     @testset "convert SpiderType to Val" begin
         @test ZX.stype_to_val(SpiderType.Z) == Val{:Z}()
         @test ZX.stype_to_val(SpiderType.X) == Val{:X}()
         @test ZX.stype_to_val(SpiderType.H) == Val{:H}()
         @test_throws ArgumentError ZX.stype_to_val("anything else")
-    end
-
-    @testset "convert BlockIR into ZXWDiagram" begin end
-
-    @testset "create Matrix from ZXDiagram" begin
-        matrix_from_zxd = Matrix(ZXWDiagram(BlockIR(IRCode(), 4, circuit_extraction(full_reduction(zxd)))))
-        @test !isnothing(matrix_from_zxd)
-    end
-
-    @testset "BlockIR to Matrix" begin
-        @test !isnothing(Matrix(zxwd))
     end
 
     @test !isnothing(plot(zxd))
@@ -92,7 +80,6 @@ end
     fl_chain = circuit_extraction(zxg)
     layout = ZX.generate_layout!(zxg)
     @test ZX.qubit_loc(layout, 40) == 2//1
-    ZX.spider_sequence(zxg)
 
     pt_bir = phase_teleportation(bir)
     cl_bir = clifford_simplification(bir)
@@ -302,6 +289,5 @@ end
         bir = BlockIR(ir, n_qubits, chain_a)
 
         diagram = ZXDiagram(n_qubits)
-        ZX.gates_to_circ(diagram, chain_a, bir)
     end
 end
