@@ -1,53 +1,70 @@
 # Tutorials
 
-ZX-diagrams are the basic objects in ZX-calculus. In our implementation, each ZX-diagram consists of a multigraph and vertices information including the type of vertices and the phase of vertices. [`ZXCalculus.ZX.ZXDiagram`](@ref) is the data structure for representing
-ZX-diagrams.
+ZX-diagrams are the basic objects in ZX-calculus. In our implementation, each ZX-diagram consists of a multigraph and vertices information including the type of vertices and the phase of vertices.
+
+**Note:** [`ZXCalculus.ZX.ZXDiagram`](@ref) is deprecated for circuit-based operations. For quantum circuits, use [`ZXCalculus.ZX.ZXCircuit`](@ref) which provides the recommended interface with [`ZXCalculus.ZX.ZXGraph`](@ref) as the underlying graph representation.
 
 There are 5 types of vertices: `In`, `Out`, `Z`, `X`, `H` which represent the inputs of quantum circuits, outputs of quantum circuits, Z-spiders, X-spiders, H-boxes. There can be a phase for each vertex. The phase of a vertex of `Z` or `X` is the phase of a Z or X-spider. For the other types of vertices, the phase is zero by default.
 
-In each `ZXDiagram`, there is a `layout` for storing layout information for the quantum circuit, and a `phase_ids` for storing information which is needed in phase teleportation.
+In `ZXCircuit`, there is a `layout` for storing layout information for the quantum circuit, and a `phase_ids` for storing information which is needed in phase teleportation.
 
 ## Construction of ZX-diagrams
 
-As we usually focus on quantum circuits, the recommended way to construct `ZXDiagram`s is by the following function [`ZXCalculus.ZX.ZXDiagram(nbits::T) where {T<:Integer}`](@ref).
+As we usually focus on quantum circuits, the recommended way to construct quantum circuits is by using [`ZXCalculus.ZX.ZXCircuit(nbits::T) where {T<:Integer}`](@ref):
+```julia
+zxc = ZXCircuit(4)  # Create a circuit with 4 qubits
+```
 
-Then one can use [`ZXCalculus.ZX.push_gate!`](@ref) to push quantum gates at the end of a quantum circuit, or use [`ZXCalculus.ZX.pushfirst_gate!`](@ref)to push gates at the beginning of a quantum circuit.
+Then one can use [`ZXCalculus.ZX.push_gate!`](@ref) to push quantum gates at the end of a quantum circuit, or use [`ZXCalculus.ZX.pushfirst_gate!`](@ref) to push gates at the beginning of a quantum circuit.
 
 For example, in `example\ex1.jl`, one can generate the demo circuit by the function
 ```julia
 using ZXCalculus
 function generate_example()
-    zxd = ZXCalculus.ZX.ZXDiagram(4)
-    push_gate!(zxd, Val(:Z), 1, 3//2)
-    push_gate!(zxd, Val(:H), 1)
-    push_gate!(zxd, Val(:Z), 1, 1//2)
-    push_gate!(zxd, Val(:Z), 2, 1//2)
-    push_gate!(zxd, Val(:H), 4)
-    push_gate!(zxd, Val(:CNOT), 3, 2)
-    push_gate!(zxd, Val(:CZ), 4, 1)
-    push_gate!(zxd, Val(:H), 2)
-    push_gate!(zxd, Val(:CNOT), 3, 2)
-    push_gate!(zxd, Val(:CNOT), 1, 4)
-    push_gate!(zxd, Val(:H), 1)
-    push_gate!(zxd, Val(:Z), 2, 1//4)
-    push_gate!(zxd, Val(:Z), 3, 1//2)
-    push_gate!(zxd, Val(:H), 4)
-    push_gate!(zxd, Val(:Z), 1, 1//4)
-    push_gate!(zxd, Val(:H), 2)
-    push_gate!(zxd, Val(:H), 3)
-    push_gate!(zxd, Val(:Z), 4, 3//2)
-    push_gate!(zxd, Val(:Z), 3, 1//2)
-    push_gate!(zxd, Val(:X), 4, 1//1)
-    push_gate!(zxd, Val(:CNOT), 3, 2)
-    push_gate!(zxd, Val(:H), 1)
-    push_gate!(zxd, Val(:Z), 4, 1//2)
-    push_gate!(zxd, Val(:X), 4, 1//1)
+    zxc = ZXCircuit(4)
+    push_gate!(zxc, Val(:Z), 1, 3//2)
+    push_gate!(zxc, Val(:H), 1)
+    push_gate!(zxc, Val(:Z), 1, 1//2)
+    push_gate!(zxc, Val(:Z), 2, 1//2)
+    push_gate!(zxc, Val(:H), 4)
+    push_gate!(zxc, Val(:CNOT), 3, 2)
+    push_gate!(zxc, Val(:CZ), 4, 1)
+    push_gate!(zxc, Val(:H), 2)
+    push_gate!(zxc, Val(:CNOT), 3, 2)
+    push_gate!(zxc, Val(:CNOT), 1, 4)
+    push_gate!(zxc, Val(:H), 1)
+    push_gate!(zxc, Val(:Z), 2, 1//4)
+    push_gate!(zxc, Val(:Z), 3, 1//2)
+    push_gate!(zxc, Val(:H), 4)
+    push_gate!(zxc, Val(:Z), 1, 1//4)
+    push_gate!(zxc, Val(:H), 2)
+    push_gate!(zxc, Val(:H), 3)
+    push_gate!(zxc, Val(:Z), 4, 3//2)
+    push_gate!(zxc, Val(:Z), 3, 1//2)
+    push_gate!(zxc, Val(:X), 4, 1//1)
+    push_gate!(zxc, Val(:CNOT), 3, 2)
+    push_gate!(zxc, Val(:H), 1)
+    push_gate!(zxc, Val(:Z), 4, 1//2)
+    push_gate!(zxc, Val(:X), 4, 1//1)
 
-    return zxd
+    return zxc
 end
 ```
 
-In the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178), they introduced a special type of ZX-diagrams, graph-like ZX-diagrams, which consists of Z-spiders with 2 different types of edges only. We use [`ZXCalculus.ZX.ZXGraph`](@ref) for representing this special type of ZX-diagrams. One can convert a `ZXDiagram` into a `ZXGraph` by simply use the construction function [`ZXCalculus.ZX.ZXCircuit(zxd::ZXCalculus.ZX.ZXDiagram{T, P}) where {T, P}`](@ref):
+In the paper [arXiv:1902.03178](https://arxiv.org/abs/1902.03178), they introduced a special type of ZX-diagrams, graph-like ZX-diagrams, which consists of Z-spiders with 2 different types of edges only.
+
+**Data Structure Hierarchy:**
+- [`ZXCalculus.ZX.ZXGraph`](@ref): The low-level graph representation for ZX-diagrams, used for base ZX-graph operations
+- [`ZXCalculus.ZX.ZXCircuit`](@ref): The high-level interface wrapping `ZXGraph`, providing circuit-oriented operations and simplification algorithms
+
+**For circuit simplification and manipulation, always use `ZXCircuit`.** It provides access to graph-based simplification rules like `LocalCompRule` and `Pivot1Rule`.
+
+If you have an old `ZXDiagram` (deprecated), you can convert it to `ZXCircuit`:
+```julia
+zxc = ZXCircuit(zxd)  # Convert deprecated ZXDiagram to ZXCircuit
+```
+
+However, for new code, directly construct using `ZXCircuit(nbits)` as shown above.
 
 ## Visualization
 
@@ -55,7 +72,7 @@ With the package [`YaoPlots.jl`](https://github.com/QuantumBFS/YaoPlots.jl), one
 ```julia
 plot(zxd[; linetype = lt])
 ```
-Here `zxd` can be either a `ZXDiagram` or `ZXGraph`. The argument `lt` is set to `"straight"` by default. One can also set it to `"curve"` to make the edges curves.
+Here `zxd` can be a `ZXDiagram`, `ZXCircuit`, or `ZXGraph`. The argument `lt` is set to `"straight"` by default. One can also set it to `"curve"` to make the edges curves.
 
 
 ## Manipulating ZX-diagrams
@@ -71,14 +88,15 @@ The input of these algorithms will be a ZX-diagram representing a quantum circui
 
 One can rewrite ZX-diagrams with rules. In `ZXCalculus.jl`, rules are identified as data structures [`Rule`](@ref). And we can use the following functions to simplify ZX-diagrams: [`ZXCalculus.ZX.simplify!`](@ref) and [`ZXCalculus.ZX.replace!`](@ref).
 
-For example, in `example/ex1.jl`, we can get a simplified graph-like ZX-diagram by:
+For example, in `example/ex1.jl`, we can get a simplified graph-like ZX-diagram:
 ```julia
-zxd = generate_example()
-zxg = ZXCircuit(zxd)
-simplify!(LocalCompRule(), zxg)
-simplify!(Pivot1Rule(), zxg)
-replace!(PivotBoundaryRule(), zxg)
+zxc = generate_example()
+simplify!(LocalCompRule(), zxc)
+simplify!(Pivot1Rule(), zxc)
+replace!(PivotBoundaryRule(), zxc)
 ```
+
+Note that graph-based simplification rules like `LocalCompRule`, `Pivot1Rule`, and `PivotBoundaryRule` work on `ZXCircuit` (which uses `ZXGraph` internally for the graph representation).
 
 The difference between `simplify!` and `replace!` is that `replace!` only matches vertices and tries to rewrite with all matched vertices once, while `simplify!` will keep matching until nothing matched.
 
