@@ -120,3 +120,5 @@ function rewrite!(::Pivot2Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, 
     delete!(circ.phase_ids, u)
     return circ
 end
+
+# TODO: fix scalar tracking

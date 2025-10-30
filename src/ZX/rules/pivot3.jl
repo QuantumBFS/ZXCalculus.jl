@@ -133,3 +133,5 @@ function rewrite!(::Pivot3Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, 
 
     return circ
 end
+
+# TODO: fix scalar tracking
