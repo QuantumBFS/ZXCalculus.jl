@@ -76,13 +76,15 @@ export FusionRule, XToZRule, Identity1Rule, HBoxRule,
 include("rules/rules.jl")
 
 export rewrite!, simplify!
-include("simplify.jl")
+include("algorithms/simplify.jl")
 
 export clifford_simplification, full_reduction, circuit_extraction, phase_teleportation, ancilla_extraction
-include("circuit_extraction.jl")
-include("phase_teleportation.jl")
+include("algorithms/clifford_simplification.jl")
+include("algorithms/full_reduction.jl")
+include("algorithms/circuit_extraction.jl")
+include("algorithms/phase_teleportation.jl")
 
-export convert_to_chain, convert_to_circuit, convert_to_zxd
+export convert_to_chain, convert_to_zx_circuit, convert_to_zxd
 include("ir.jl")
 
 export concat!, dagger, contains_only_bare_wires, verify_equality

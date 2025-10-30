@@ -1,6 +1,7 @@
 YaoHIR.Chain(zxd::AbstractZXCircuit) = convert_to_chain(zxd)
-convert_to_chain(circ::ZXCircuit) = convert_to_chain(ZXDiagram(circ))
-function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
+
+# Main implementation on ZXCircuit
+function convert_to_chain(circ::ZXCircuit{TT, P}) where {TT, P}
     spider_seq = spider_sequence(circ)
     gates = []
     for vs in spider_seq
@@ -34,7 +35,49 @@ function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
                 error("Spiders ($v1, $h, $v2) should represent a CZ")
             end
         else
-            error("ZXDiagram's without circuit structure are not supported")
+            error("ZXCircuit without proper circuit structure is not supported")
+        end
+    end
+    return Chain(gates...)
+end
+
+# Implementation for deprecated ZXDiagram (avoid conversion to preserve structure)
+function convert_to_chain(circ::ZXDiagram{TT, P}) where {TT, P}
+    Base.depwarn("ZXDiagram is deprecated for circuit operations. Use ZXCircuit instead.", :convert_to_chain)
+    spider_seq = spider_sequence(circ)
+    gates = []
+    for vs in spider_seq
+        if length(vs) == 1
+            v = vs
+            q = Int(qubit_loc(circ, v))
+            push_spider_to_chain!(gates, q, phase(circ, v), spider_type(circ, v))
+        elseif length(vs) == 2
+            v1, v2 = vs
+            q1 = Int(qubit_loc(circ, v1))
+            q2 = Int(qubit_loc(circ, v2))
+            push_spider_to_chain!(gates, q1, phase(circ, v1), spider_type(circ, v1))
+            push_spider_to_chain!(gates, q2, phase(circ, v2), spider_type(circ, v2))
+            if spider_type(circ, v1) == SpiderType.Z && spider_type(circ, v2) == SpiderType.X
+                push!(gates, Ctrl(Gate(X, Locations(q2)), CtrlLocations(q1)))
+            elseif spider_type(circ, v1) == SpiderType.X && spider_type(circ, v2) == SpiderType.Z
+                push!(gates, Ctrl(Gate(X, Locations(q1)), CtrlLocations(q2)))
+            else
+                error("Spiders ($v1, $v2) should represent a CNOT")
+            end
+        elseif length(vs) == 3
+            v1, h, v2 = vs
+            spider_type(circ, h) == SpiderType.H || error("The spider $h should be a H-box")
+            q1 = Int(qubit_loc(circ, v1))
+            q2 = Int(qubit_loc(circ, v2))
+            push_spider_to_chain!(gates, q1, phase(circ, v1), spider_type(circ, v1))
+            push_spider_to_chain!(gates, q2, phase(circ, v2), spider_type(circ, v2))
+            if spider_type(circ, v1) == SpiderType.Z && spider_type(circ, v2) == SpiderType.Z
+                push!(gates, Ctrl(Gate(Z, Locations(q2)), CtrlLocations(q1)))
+            else
+                error("Spiders ($v1, $h, $v2) should represent a CZ")
+            end
+        else
+            error("ZXDiagram without proper circuit structure is not supported")
         end
     end
     return Chain(gates...)
@@ -163,14 +206,34 @@ end
 
 Convert a BlockIR to a ZXCircuit.
 
-This function converts YaoHIR's BlockIR representation to a ZXCircuit by translating
-each gate operation to the corresponding ZX-diagram representation.
+This is the main conversion function from YaoHIR's BlockIR representation to ZXCalculus.
+It translates each gate operation in the BlockIR to the corresponding ZX-diagram
+representation in a ZXCircuit.
 
-Returns a `ZXCircuit` containing the circuit representation.
+# Arguments
+- `root::YaoHIR.BlockIR`: The BlockIR representation to convert
 
-See also: [`convert_to_zxd`](@ref)
+# Returns
+- `ZXCircuit`: The circuit representation in ZX-calculus form
+
+# Examples
+```julia
+using YaoHIR, ZXCalculus
+
+# Create a BlockIR from a quantum circuit
+bir = BlockIR(...)
+
+# Convert to ZXCircuit (two equivalent ways)
+zxc = convert_to_zx_circuit(bir)
+zxc = ZXCircuit(bir)  # Constructor syntax
+
+# Convert back to YaoHIR Chain
+chain = convert_to_chain(zxc)
+```
+
+See also: [`ZXCircuit`](@ref), [`convert_to_chain`](@ref)
 """
-function convert_to_circuit(root::YaoHIR.BlockIR)
+function convert_to_zx_circuit(root::YaoHIR.BlockIR)
     circ = ZXCircuit(root.nqubits)
     circuit = canonicalize_single_location(root.circuit)
     return _append_chain_to_zx_circ!(circ, circuit, root)
@@ -183,19 +246,26 @@ Convert a BlockIR to a ZXDiagram.
 
 !!! warning "Deprecated"
 
-    `convert_to_zxd` is deprecated. Use [`convert_to_circuit`](@ref) instead.
-    This function internally converts to ZXCircuit and then wraps it in ZXDiagram.
+    `convert_to_zxd` is deprecated. Use [`convert_to_zx_circuit`](@ref) or
+    `ZXCircuit(bir)` instead. This function internally converts to ZXCircuit
+    and then wraps it in deprecated ZXDiagram.
 
 Returns a `ZXDiagram` for backward compatibility.
 """
 function convert_to_zxd(root::YaoHIR.BlockIR)
-    Base.depwarn("Use convert_to_circuit instead", :convert_to_zxd)
-    circ = convert_to_circuit(root)
+    Base.depwarn("convert_to_zxd is deprecated. Use convert_to_zx_circuit or ZXCircuit(bir) instead", :convert_to_zxd)
+    circ = convert_to_zx_circuit(root)
     return ZXDiagram(circ)
 end
 
-ZXDiagram(bir::BlockIR) = ZXDiagram(convert_to_circuit(bir))
-ZXCircuit(bir::BlockIR) = convert_to_circuit(bir)
+# Main constructor for BlockIR
+ZXCircuit(bir::BlockIR) = convert_to_zx_circuit(bir)
+
+# Deprecated constructor for backward compatibility
+function ZXDiagram(bir::BlockIR)
+    Base.depwarn("ZXDiagram is deprecated for circuit operations. Use ZXCircuit(bir) instead", :ZXDiagram)
+    return ZXDiagram(convert_to_zx_circuit(bir))
+end
 
 function _append_chain_to_zx_circ!(circ::AbstractZXCircuit, circuit, root)
     for gate in YaoHIR.leaves(circuit)

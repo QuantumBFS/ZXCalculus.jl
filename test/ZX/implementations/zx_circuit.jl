@@ -86,8 +86,8 @@ end
     )
     bir = BlockIR(Core.Compiler.IRCode(), 2, circuit)
 
-    # Test convert_to_circuit
-    circ = convert_to_circuit(bir)
+    # Test convert_to_zx_circuit
+    circ = convert_to_zx_circuit(bir)
     @test circ isa ZXCircuit
     @test nqubits(circ) == 2
 
