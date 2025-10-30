@@ -1,11 +1,15 @@
 include("./interface.jl")
+
+# Rules for ZXDiagram
 include("./fusion.jl")
 include("./color.jl")
 include("./identity1.jl")
 include("./hbox.jl")
-include("./pi_rule.jl")
-include("./copy_rule.jl")
+include("./pi.jl")
+include("./copy.jl")
 include("./bialgebra.jl")
+
+# Rules for ZXGraph and ZXCircuit
 include("./local_comp.jl")
 include("./pivot1.jl")
 include("./pivot_boundary.jl")

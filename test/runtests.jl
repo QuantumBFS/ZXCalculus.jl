@@ -35,18 +35,21 @@ using Test
         include("ZX/rules/rule_utils.jl")
 
         # Rule tests organized by rule type
-        include("ZX/rules/fusion_rule.jl")
-        include("ZX/rules/identity1_rule.jl")
-        include("ZX/rules/xtoz_rule.jl")
-        include("ZX/rules/hbox_rule.jl")
-        include("ZX/rules/pi_rule.jl")
-        include("ZX/rules/copy_rule.jl")
-        include("ZX/rules/bialgebra_rule.jl")
-        include("ZX/rules/local_comp_rule.jl")
-        include("ZX/rules/pivot1_rule.jl")
-        include("ZX/rules/pivot_boundary_rule.jl")
-        include("ZX/rules/pivot2_rule.jl")
-        include("ZX/rules/pivot3_rule.jl")
+        # Rules for ZXDiagram
+        include("ZX/rules/fusion.jl")
+        include("ZX/rules/color.jl")
+        include("ZX/rules/identity1.jl")
+        include("ZX/rules/hbox.jl")
+        include("ZX/rules/pi.jl")
+        include("ZX/rules/copy.jl")
+        include("ZX/rules/bialgebra.jl")
+
+        # Rules for ZXGraph and ZXCircuit
+        include("ZX/rules/local_comp.jl")
+        include("ZX/rules/pivot1.jl")
+        include("ZX/rules/pivot_boundary.jl")
+        include("ZX/rules/pivot2.jl")
+        include("ZX/rules/pivot3.jl")
     end
 
     @testset "circuit_extraction.jl" begin
