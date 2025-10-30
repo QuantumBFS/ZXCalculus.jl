@@ -43,16 +43,4 @@ end
         @test nv(zxg) == 8 && ne(zxg) == 9
         @test check_equivalence(zxg_before, zxg)
     end
-
-    @testset "Multiple X spiders" begin
-        # TODO: Test edge cases with multiple X spiders
-    end
-
-    @testset "Different edge types" begin
-        # TODO: Test interaction with different edge types
-    end
-
-    @testset "Phase preservation" begin
-        # TODO: Test phase preservation during conversion
-    end
 end

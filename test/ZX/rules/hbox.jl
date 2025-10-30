@@ -60,16 +60,4 @@ end
         @test ZX.is_one_phase(phase(zxg, 5)) || ZX.is_one_phase(phase(zxg, 8))
         @test check_equivalence(zxg_before, zxg)
     end
-
-    @testset "Various configurations" begin
-        # TODO: Test Hadamard box simplification with various configurations
-    end
-
-    @testset "Boundary spiders" begin
-        # TODO: Test interaction with boundary spiders
-    end
-
-    @testset "Scalar factor updates" begin
-        # TODO: Test scalar factor updates during rewriting
-    end
 end

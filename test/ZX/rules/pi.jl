@@ -41,12 +41,4 @@ using ZXCalculus.Utils: Phase
         @test zxd.scalar == Scalar(0, 1 // 2)
         @test check_equivalence(zxd_before, zxd)
     end
-
-    @testset "Scalar tracking" begin
-        # TODO: Test scalar factor tracking during pi phase elimination
-    end
-
-    @testset "Multiple pi spiders" begin
-        # TODO: Test multiple pi phase spiders in the same diagram
-    end
 end
