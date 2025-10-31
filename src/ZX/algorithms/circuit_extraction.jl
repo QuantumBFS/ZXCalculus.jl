@@ -30,7 +30,7 @@ function ancilla_extraction(zxg::Union{ZXGraph, ZXCircuit})
         v = ins[i]
         @inbounds u = neighbors(nzxg, v)[1]
         if !is_hadamard(nzxg, u, v)
-            insert_spider!(nzxg, u, v)
+            insert_spider!(nzxg, u, v, SpiderType.Z)
         end
     end
 
@@ -212,7 +212,7 @@ function circuit_extraction(zxg::Union{ZXGraph{T, P}, ZXCircuit{T, P}}) where {T
     for v1 in Ins
         @inbounds v2 = neighbors(nzxg, v1)[1]
         if !is_hadamard(nzxg, v1, v2)
-            insert_spider!(nzxg, v1, v2)
+            insert_spider!(nzxg, v1, v2, SpiderType.Z)
         end
     end
     @inbounds frontier = [neighbors(nzxg, v)[1] for v in Outs]
