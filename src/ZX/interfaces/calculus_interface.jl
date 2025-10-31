@@ -82,7 +82,7 @@ add_spider!(circ::AbstractZXCircuit, stype, args...) = add_spider!(base_zx_graph
 
 Remove spider `v` from the ZX-diagram.
 """
-rem_spider!(::AbstractZXDiagram, v) = error("rem_spider! not implemented")
+rem_spider!(zxd::AbstractZXDiagram, v) = rem_spiders!(zxd, [v])
 rem_spider!(circ::AbstractZXCircuit, v) = rem_spider!(base_zx_graph(circ), v)
 
 """
@@ -160,3 +160,27 @@ round_phases!(circ::AbstractZXCircuit) = round_phases!(base_zx_graph(circ))
 Plot the ZX-diagram.
 """
 plot(zxd::AbstractZXDiagram; kwargs...) = error("missing extension, please use Vega with 'using Vega, DataFrames'")
+
+"""
+    $(TYPEDSIGNATURES)
+
+Return the edge type between vertices v1 and v2 in the ZX-diagram.
+"""
+edge_type(::AbstractZXDiagram, v1, v2) = error("edge_type not implemented")
+edge_type(circ::AbstractZXCircuit, v1, v2) = edge_type(base_zx_graph(circ), v1, v2)
+
+"""
+    $(TYPEDSIGNATURES)
+
+Return `true` if the edge between vertices v1 and v2 is a Hadamard edge in the ZX-diagram.
+"""
+is_hadamard(zxg::AbstractZXDiagram, v1, v2) = (edge_type(zxg, v1, v2) == EdgeType.HAD)
+is_hadamard(circ::AbstractZXCircuit, v1, v2) = is_hadamard(base_zx_graph(circ), v1, v2)
+
+"""
+    $(TYPEDSIGNATURES)
+
+Set the edge type between vertices v1 and v2 in the ZX-diagram.
+"""
+set_edge_type!(::AbstractZXDiagram, v1, v2, etype) = error("set_edge_type! not implemented")
+set_edge_type!(circ::AbstractZXCircuit, v1, v2, etype) = set_edge_type!(base_zx_graph(circ), v1, v2, etype)

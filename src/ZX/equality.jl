@@ -43,7 +43,7 @@ verify_equality(c1::ZXDiagram, c2::ZXCircuit) = verify_equality(ZXCircuit(c1), c
 function contains_only_bare_wires(zxd::Union{ZXDiagram, ZXGraph})
     return all(is_in_or_out_spider(st[2]) for st in zxd.st)
 end
-contains_only_bare_wires(zxd::ZXCircuit) = contains_only_bare_wires(zxd.zx_graph)
+contains_only_bare_wires(zxd::ZXCircuit) = contains_only_bare_wires(base_zx_graph(zxd))
 
 function is_in_or_out_spider(st::SpiderType.SType)
     return st == SpiderType.In || st == SpiderType.Out
