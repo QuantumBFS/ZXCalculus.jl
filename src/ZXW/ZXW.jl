@@ -8,8 +8,8 @@ using YaoHIR
 using YaoHIR: BlockIR
 
 import ..Utils: add_power!
-import ..ZX:
-    rewrite!, simplify!, push_gate!, pushfirst_gate!, spiders, rem_spider!, rem_spiders!, canonicalize_single_location, gates_to_circ
+import ..ZX: rewrite!, simplify!, push_gate!, pushfirst_gate!, spiders, rem_spider!, rem_spiders!,
+             canonicalize_single_location
 
 export ZXWDiagram, substitute_variables!
 
