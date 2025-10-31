@@ -29,19 +29,30 @@ All concrete subtypes of AbstractZXDiagram should implement these methods.
 # Declare interface methods with abstract type signatures
 # Vertex and edge counts
 Graphs.nv(::AbstractZXDiagram) = error("nv not implemented")
+Graphs.nv(circ::AbstractZXCircuit) = Graphs.nv(base_zx_graph(circ))
 Graphs.ne(::AbstractZXDiagram) = error("ne not implemented")
+Graphs.ne(circ::AbstractZXCircuit) = Graphs.ne(base_zx_graph(circ))
 
 # Degree queries
 Graphs.degree(::AbstractZXDiagram, v) = error("degree not implemented")
+Graphs.degree(circ::AbstractZXCircuit, v) = Graphs.degree(base_zx_graph(circ), v)
 Graphs.indegree(::AbstractZXDiagram, v) = error("indegree not implemented")
+Graphs.indegree(circ::AbstractZXCircuit, v) = Graphs.indegree(base_zx_graph(circ), v)
 Graphs.outdegree(::AbstractZXDiagram, v) = error("outdegree not implemented")
+Graphs.outdegree(circ::AbstractZXCircuit, v) = Graphs.outdegree(base_zx_graph(circ), v)
 
 # Neighbor queries
 Graphs.neighbors(::AbstractZXDiagram, v) = error("neighbors not implemented")
+Graphs.neighbors(circ::AbstractZXCircuit, v) = Graphs.neighbors(base_zx_graph(circ), v)
 Graphs.outneighbors(::AbstractZXDiagram, v) = error("outneighbors not implemented")
+Graphs.outneighbors(circ::AbstractZXCircuit, v) = Graphs.outneighbors(base_zx_graph(circ), v)
 Graphs.inneighbors(::AbstractZXDiagram, v) = error("inneighbors not implemented")
+Graphs.inneighbors(circ::AbstractZXCircuit, v) = Graphs.inneighbors(base_zx_graph(circ), v)
 
 # Edge operations
 Graphs.has_edge(::AbstractZXDiagram, v1, v2) = error("has_edge not implemented")
+Graphs.has_edge(circ::AbstractZXCircuit, v1, v2) = Graphs.has_edge(base_zx_graph(circ), v1, v2)
 Graphs.add_edge!(::AbstractZXDiagram, v1, v2) = error("add_edge! not implemented")
+Graphs.add_edge!(circ::AbstractZXCircuit, v1, v2) = Graphs.add_edge!(base_zx_graph(circ), v1, v2)
 Graphs.rem_edge!(::AbstractZXDiagram, v1, v2) = error("rem_edge! not implemented")
+Graphs.rem_edge!(circ::AbstractZXCircuit, v1, v2) = Graphs.rem_edge!(base_zx_graph(circ), v1, v2)

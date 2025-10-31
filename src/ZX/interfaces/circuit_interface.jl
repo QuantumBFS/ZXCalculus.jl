@@ -13,6 +13,13 @@ Rotation gates (:Z, :X) accept an optional phase parameter.
 """
     $(TYPEDSIGNATURES)
 
+Get the underlying ZXGraph of the circuit.
+"""
+base_zx_graph(::AbstractZXCircuit) = error("base_zx_graph not implemented")
+
+"""
+    $(TYPEDSIGNATURES)
+
 Get the number of qubits in the circuit.
 
 Returns an integer representing the qubit count.
