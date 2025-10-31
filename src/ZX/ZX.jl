@@ -22,15 +22,15 @@ include("types/zx_layout.jl")
 # Load interfaces
 export AbstractZXDiagram
 include("interfaces/abstract_zx_diagram.jl")
+export AbstractZXCircuit
+include("interfaces/abstract_zx_circuit.jl")
+
 include("interfaces/graph_interface.jl")
 export spiders, spider_types, phases, spider_type, phase,
        set_phase!, add_spider!, rem_spider!, rem_spiders!, insert_spider!,
        scalar, add_global_phase!, add_power!,
        tcount, round_phases!, plot
 include("interfaces/calculus_interface.jl")
-
-export AbstractZXCircuit
-include("interfaces/abstract_zx_circuit.jl")
 export nqubits, get_inputs, get_outputs,
        qubit_loc, column_loc, generate_layout!,
        pushfirst_gate!, push_gate!, base_zx_graph
