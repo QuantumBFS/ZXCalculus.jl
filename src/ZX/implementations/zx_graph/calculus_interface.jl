@@ -39,14 +39,15 @@ function set_edge_type!(zxg::ZXGraph, v1::Integer, v2::Integer, etype::EdgeType.
     return true
 end
 
-function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P), connect::Vector{T}=T[]) where {
+function add_spider!(zxg::ZXGraph{T, P}, st::SpiderType.SType, phase::P=zero(P),
+        connect::Vector{T}=T[], etypes::Vector{EdgeType.EType}=[EdgeType.HAD for _ in connect]) where {
         T <: Integer, P}
     v = add_vertex!(zxg.mg)[1]
     set_spider_type!(zxg, v, st)
     set_phase!(zxg, v, phase)
     if all(has_vertex(zxg, c) for c in connect)
-        for c in connect
-            add_edge!(zxg, v, c)
+        for (c, etype) in zip(connect, etypes)
+            add_edge!(zxg, v, c, etype)
         end
     end
     return v
@@ -64,8 +65,10 @@ end
 rem_spider!(zxg::ZXGraph{T, P}, v::T) where {T, P} = rem_spiders!(zxg, [v])
 
 function insert_spider!(zxg::ZXGraph{T, P}, v1::T, v2::T,
-        stype::SpiderType.SType=SpiderType.Z, phase::P=zero(P)) where {T <: Integer, P}
-    v = add_spider!(zxg, stype, phase, [v1, v2])
+        stype::SpiderType.SType=SpiderType.Z, phase::P=zero(P),
+        etypes::Vector{EdgeType.EType}=[EdgeType.HAD for _ in 1:2]) where {
+        T <: Integer, P}
+    v = add_spider!(zxg, stype, phase, [v1, v2], etypes)
     rem_edge!(zxg, v1, v2)
     return v
 end
