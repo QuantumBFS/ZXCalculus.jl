@@ -12,14 +12,7 @@ function Base.match(::IdentityRemovalRule, zxg::ZXGraph{T, P}) where {T, P}
         if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             v1, v3 = nb2
             if is_zero_phase(phase(zxg, v2))
-                if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
-                    if is_hadamard(zxg, v1, v2) && is_hadamard(zxg, v2, v3)
-                        push!(matches, Match{T}([v1, v2, v3]))
-                    end
-                elseif (spider_type(zxg, v1) in (SpiderType.In, SpiderType.Out)) &&
-                       (spider_type(zxg, v3) in (SpiderType.In, SpiderType.Out))
-                    push!(matches, Match{T}([v1, v2, v3]))
-                end
+                push!(matches, Match{T}([v1, v2, v3]))
             elseif is_one_phase(phase(zxg, v2))
                 if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
                     is_hadamard(zxg, v2, v3) || continue
@@ -43,15 +36,8 @@ function check_rule(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) wh
         if spider_type(zxg, v2) == SpiderType.Z && length(nb2) == 2
             (v1 in nb2 && v3 in nb2) || return false
             if is_zero_phase(phase(zxg, v2))
-                if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
-                    return is_hadamard(zxg, v1, v2) && is_hadamard(zxg, v2, v3)
-                end
-                if (spider_type(zxg, v1) in (SpiderType.In, SpiderType.Out)) &&
-                   (spider_type(zxg, v3) in (SpiderType.In, SpiderType.Out))
-                    return true
-                end
-            else
-                is_one_phase(phase(zxg, v2))
+                return true
+            elseif is_one_phase(phase(zxg, v2))
                 if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z
                     return degree(zxg, v1) == 1 && is_hadamard(zxg, v2, v3) && is_hadamard(zxg, v2, v1)
                 end
@@ -67,18 +53,17 @@ function rewrite!(::IdentityRemovalRule, zxg::ZXGraph{T, P}, vs::Vector{T}) wher
         set_phase!(zxg, v2, zero(P))
         set_phase!(zxg, v1, -phase(zxg, v1))
     end
-    if (spider_type(zxg, v1) in (SpiderType.In, SpiderType.Out)) ||
-       (spider_type(zxg, v3) in (SpiderType.In, SpiderType.Out))
+    if spider_type(zxg, v1) == spider_type(zxg, v3) == SpiderType.Z &&
+       edge_type(zxg, v1, v2) == edge_type(zxg, v2, v3)
         rem_spider!(zxg, v2)
-        et = (edge_type(zxg, v1, v2) == edge_type(zxg, v2, v3)) ? EdgeType.HAD : EdgeType.SIM
-        add_edge!(zxg, v1, v3, et)
-    else
-        set_phase!(zxg, v3, phase(zxg, v3)+phase(zxg, v1))
-        for v in neighbors(zxg, v1)
-            v == v2 && continue
-            add_edge!(zxg, v, v3, edge_type(zxg, v, v1))
+        if v1 != v3
+            add_edge!(zxg, v1, v3, EdgeType.SIM)
+            rewrite!(FusionRule(), zxg, Match{T}([v1, v3]))
         end
-        rem_spiders!(zxg, [v1, v2])
+    else
+        et = (edge_type(zxg, v1, v2) == edge_type(zxg, v2, v3)) ? EdgeType.SIM : EdgeType.HAD
+        rem_spider!(zxg, v2)
+        add_edge!(zxg, v1, v3, et)
     end
     return zxg
 end
@@ -89,8 +74,8 @@ function rewrite!(::IdentityRemovalRule, circ::ZXCircuit{T, P}, vs::Vector{T}) w
         @assert flip_phase_tracking_sign!(circ, v1) "failed to flip phase tracking sign for $v1"
     end
 
-    if spider_type(circ, v1) == spider_type(circ, v3) == SpiderType.Z
-        @assert merge_phase_tracking!(circ, v1, v3) "failed to merge phase tracking id from $v1 to $v3"
+    if spider_type(circ, v1) == spider_type(circ, v3) == SpiderType.Z && v1 != v3
+        @assert merge_phase_tracking!(circ, v3, v1) "failed to merge phase tracking id from $v3 to $v1"
     end
 
     rewrite!(IdentityRemovalRule(), circ.zx_graph, vs)
