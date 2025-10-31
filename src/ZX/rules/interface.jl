@@ -107,6 +107,10 @@ function check_rule(r::AbstractRule, ::AbstractZXDiagram{T, P}, ::Vector{T}) whe
     return error("check_rule not implemented for rule $(r)!")
 end
 
-Base.match(r::AbstractRule, zxc::ZXCircuit{T, P}) where {T, P} = match(r, zxc.zx_graph)
-rewrite!(r::AbstractRule, zxc::ZXCircuit{T, P}, vs::Vector{T}) where {T, P} = rewrite!(r, zxc.zx_graph, vs)
-check_rule(r::AbstractRule, zxc::ZXCircuit{T, P}, vs::Vector{T}) where {T, P} = check_rule(r, zxc.zx_graph, vs)
+Base.match(r::AbstractRule, zxc::AbstractZXCircuit{T, P}) where {T, P} = match(r, base_zx_graph(zxc))
+function rewrite!(r::AbstractRule, zxc::AbstractZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    return rewrite!(r, base_zx_graph(zxc), vs)
+end
+function check_rule(r::AbstractRule, zxc::AbstractZXCircuit{T, P}, vs::Vector{T}) where {T, P}
+    return check_rule(r, base_zx_graph(zxc), vs)
+end

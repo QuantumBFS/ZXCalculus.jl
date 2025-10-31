@@ -74,8 +74,8 @@ Add a new spider with spider type `st` and phase `p` to the ZX-diagram.
 
 Returns the vertex identifier of the newly added spider.
 """
-add_spider!(::AbstractZXDiagram, st, p, connections) = error("add_spider! not implemented")
-add_spider!(circ::AbstractZXCircuit, st, p, connections) = add_spider!(base_zx_graph(circ), st, p, connections)
+add_spider!(::AbstractZXDiagram, stype, args...) = error("add_spider! not implemented")
+add_spider!(circ::AbstractZXCircuit, stype, args...) = add_spider!(base_zx_graph(circ), stype, args...)
 
 """
     $(TYPEDSIGNATURES)
@@ -100,8 +100,10 @@ Insert a new spider on the edge between vertices `v1` and `v2`.
 
 Returns the vertex identifier of the newly inserted spider.
 """
-insert_spider!(::AbstractZXDiagram, v1, v2, stype) = error("insert_spider! not implemented")
-insert_spider!(circ::AbstractZXCircuit, v1, v2, stype) = insert_spider!(base_zx_graph(circ), v1, v2, stype)
+insert_spider!(::AbstractZXDiagram, v1, v2, stype, args...) = error("insert_spider! not implemented")
+function insert_spider!(circ::AbstractZXCircuit, v1, v2, stype, args...)
+    return insert_spider!(base_zx_graph(circ), v1, v2, stype, args...)
+end
 
 # Global properties and scalar
 

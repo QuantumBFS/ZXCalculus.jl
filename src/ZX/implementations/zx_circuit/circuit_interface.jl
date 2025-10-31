@@ -1,5 +1,7 @@
 # Circuit Interface Implementation for ZXCircuit
 
+base_zx_graph(circ::ZXCircuit) = circ.zx_graph
+
 nqubits(circ::ZXCircuit) = circ.layout.nbits
 get_inputs(circ::ZXCircuit) = circ.inputs
 get_outputs(circ::ZXCircuit) = circ.outputs

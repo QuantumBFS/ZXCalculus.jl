@@ -26,7 +26,7 @@ function column_loc(zxg::ZXCircuit{T, P}, v::T) where {T, P}
 end
 
 function generate_layout!(circ::ZXCircuit{T, P}) where {T, P}
-    zxg = circ.zx_graph
+    zxg = base_zx_graph(circ)
     layout = circ.layout
     inputs = circ.inputs
     outputs = circ.outputs

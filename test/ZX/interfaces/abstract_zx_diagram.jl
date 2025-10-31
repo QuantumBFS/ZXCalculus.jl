@@ -38,7 +38,7 @@ end
     @test_throws ErrorException add_spider!(zxd, SpiderType.Z, Phase(1//1))
     @test_throws ErrorException rem_spider!(zxd, 4)
     @test_throws ErrorException rem_spiders!(zxd, [5, 6])
-    @test_throws ErrorException insert_spider!(zxd, 1, 2)
+    @test_throws ErrorException insert_spider!(zxd, 1, 2, SpiderType.X, Phase(1//2))
 
     @test_throws ErrorException scalar(zxd)
     @test_throws ErrorException add_global_phase!(zxd, Phase(1//1))

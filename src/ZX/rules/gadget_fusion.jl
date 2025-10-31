@@ -62,6 +62,6 @@ end
 function rewrite!(::GadgetFusionRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
     v, _, u, _ = vs
     @assert merge_phase_tracking!(circ, u, v) "Failed to merge phase tracking of $u and $v in Gadget Fusion rule."
-    rewrite!(GadgetFusionRule(), circ.zx_graph, vs)
+    rewrite!(GadgetFusionRule(), base_zx_graph(circ), vs)
     return circ
 end

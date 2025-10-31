@@ -14,8 +14,8 @@ function import_non_in_out!(
         circ2::ZXCircuit{T, P},
         v2tov1::Dict{T, T}
 ) where {T, P}
-    zxg1 = circ1.zx_graph
-    zxg2 = circ2.zx_graph
+    zxg1 = base_zx_graph(circ1)
+    zxg2 = base_zx_graph(circ2)
 
     for v2 in spiders(zxg2)
         st = spider_type(zxg2, v2)
@@ -38,8 +38,8 @@ end
 Import edges of circ2 to circ1, modifying circ1.
 """
 function import_edges!(circ1::ZXCircuit{T, P}, circ2::ZXCircuit{T, P}, v2tov1::Dict{T, T}) where {T, P}
-    zxg1 = circ1.zx_graph
-    zxg2 = circ2.zx_graph
+    zxg1 = base_zx_graph(circ1)
+    zxg2 = base_zx_graph(circ2)
 
     for v2_src in spiders(zxg2)
         for v2_dst in neighbors(zxg2, v2_src)
@@ -70,7 +70,7 @@ function concat!(circ1::ZXCircuit{T, P}, circ2::ZXCircuit{T, P})::ZXCircuit{T, P
     v2tov1 = Dict{T, T}()
     import_non_in_out!(circ1, circ2, v2tov1)
 
-    zxg1 = circ1.zx_graph
+    zxg1 = base_zx_graph(circ1)
 
     # Connect outputs of circ1 to inputs of circ2
     for i in 1:length(circ1.outputs)
@@ -90,8 +90,8 @@ function concat!(circ1::ZXCircuit{T, P}, circ2::ZXCircuit{T, P})::ZXCircuit{T, P
     import_edges!(circ1, circ2, v2tov1)
 
     # Add scalar factors
-    add_global_phase!(zxg1, scalar(circ2.zx_graph).phase)
-    add_power!(zxg1, scalar(circ2.zx_graph).power_of_sqrt_2)
+    add_global_phase!(zxg1, scalar(circ2).phase)
+    add_power!(zxg1, scalar(circ2).power_of_sqrt_2)
 
     return circ1
 end
@@ -108,7 +108,7 @@ Returns a new ZX-circuit representing the adjoint operation.
 """
 function dagger(circ::ZXCircuit{T, P})::ZXCircuit{T, P} where {T, P}
     @assert isnothing(circ.master) "Dagger of a circuit with a master circuit is not supported."
-    zxg = circ.zx_graph
+    zxg = base_zx_graph(circ)
 
     # Negate all phases
     ps_new = Dict{T, P}()

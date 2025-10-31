@@ -75,6 +75,6 @@ function rewrite!(::PivotGadgetRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where
     zxg.phase_ids[v] = phase_id_gadget_u
     zxg.phase_ids[u] = (u, 1)
 
-    rewrite!(PivotGadgetRule(), circ.zx_graph, vs)
+    rewrite!(PivotGadgetRule(), base_zx_graph(circ), vs)
     return circ
 end

@@ -81,7 +81,7 @@ end
 
 function rewrite!(::FusionRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
     v_to, v_from = vs
-    rewrite!(FusionRule(), circ.zx_graph, vs)
+    rewrite!(FusionRule(), base_zx_graph(circ), vs)
     merge_phase_tracking!(circ, v_from, v_to)
     return circ
 end

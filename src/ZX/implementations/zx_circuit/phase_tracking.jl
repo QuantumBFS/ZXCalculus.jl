@@ -3,7 +3,7 @@
 function phase_tracker(circ::ZXCircuit{T, P}) where {T, P}
     master_circ = circ
     phase_ids = Dict{T, Tuple{T, Int}}(
-        (v, (v, 1)) for v in spiders(circ.zx_graph) if spider_type(circ.zx_graph, v) in (SpiderType.Z, SpiderType.X)
+        (v, (v, 1)) for v in spiders(circ) if spider_type(circ, v) in (SpiderType.Z, SpiderType.X)
     )
     return ZXCircuit{T, P}(copy(circ.zx_graph),
         copy(circ.inputs), copy(circ.outputs), copy(circ.layout),

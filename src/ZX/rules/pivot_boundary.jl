@@ -54,7 +54,7 @@ end
 
 function rewrite!(::PivotBoundaryRule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, P}
     _, v, b = vs
-    _, new_v, w = rewrite!(PivotBoundaryRule(), circ.zx_graph, vs)
+    _, new_v, w = rewrite!(PivotBoundaryRule(), base_zx_graph(circ), vs)
 
     v_bound_master = b
     if !isnothing(circ.master)

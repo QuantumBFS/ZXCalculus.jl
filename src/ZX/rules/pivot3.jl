@@ -125,7 +125,7 @@ function rewrite!(::Pivot3Rule, circ::ZXCircuit{T, P}, vs::Vector{T}) where {T, 
     phase_id_u = circ.phase_ids[u]
     phase_id_v = circ.phase_ids[v]
 
-    _, gad = rewrite!(Pivot3Rule(), circ.zx_graph, vs)
+    _, gad = rewrite!(Pivot3Rule(), base_zx_graph(circ), vs)
 
     circ.phase_ids[gad] = phase_id_u
     circ.phase_ids[u] = phase_id_v

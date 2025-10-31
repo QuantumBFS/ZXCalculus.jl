@@ -89,8 +89,8 @@ vertices `v1` and `v2`. It will insert multiple times if the edge between
 `v1` and `v2` is a multiple edge. Also it will remove the original edge between
 `v1` and `v2`.
 """
-function insert_spider!(
-        zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType, phase::P=zero(P)) where {T <: Integer, P}
+function insert_spider!(zxd::ZXDiagram{T, P}, v1::T, v2::T, st::SpiderType.SType,
+        phase::P=zero(P)) where {T <: Integer, P}
     mt = mul(zxd.mg, v1, v2)
     vs = Vector{T}(undef, mt)
     for i in 1:mt

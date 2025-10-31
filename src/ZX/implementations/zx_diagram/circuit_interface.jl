@@ -33,7 +33,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:Z}, loc::T, phase=zero(P); auto
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
-    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, rphase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.Z, Phase(rphase))
     return zxd
 end
 
@@ -41,7 +41,7 @@ function push_gate!(zxd::ZXDiagram{T, P}, ::Val{:X}, loc::T, phase=zero(P); auto
     @inbounds out_id = get_outputs(zxd)[loc]
     @inbounds bound_id = neighbors(zxd, out_id)[1]
     rphase = autoconvert ? safe_convert(P, phase) : phase
-    insert_spider!(zxd, bound_id, out_id, SpiderType.X, rphase)
+    insert_spider!(zxd, bound_id, out_id, SpiderType.X, Phase(rphase))
     return zxd
 end
 

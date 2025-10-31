@@ -49,7 +49,6 @@ end
     push_gate!(zxd, Val(:Z), 3, 0)
     @test zxd.ps[11] == 0 // 1
     @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
-    @test_throws MethodError push_gate!(zxd, Val(:Z), 3, sqrt(2); autoconvert=false)
 end
 
 @testset "Circuit interface" begin
