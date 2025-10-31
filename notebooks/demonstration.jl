@@ -6,18 +6,16 @@ using InteractiveUtils
 
 # ╔═╡ aa11ea12-6a9c-11ee-11b6-77a1fbfdf4b5
 begin
-	# Extensions
-  using OpenQASM
-	using Vega
-	using DataFrames
+    # Extensions
+    using OpenQASM
+    using Vega
+    using DataFrames
 
-  # ZX Calculus Tools
-  using ZXCalculus, ZXCalculus.ZX
-  using YaoHIR: BlockIR
-  
-  
-  using PlutoUI
+    # ZX Calculus Tools
+    using ZXCalculus, ZXCalculus.ZX
+    using YaoHIR: BlockIR
 
+    using PlutoUI
 end
 
 # ╔═╡ c467fe63-487b-4087-b166-01ed41a47eec
@@ -25,12 +23,11 @@ using MLStyle
 
 # ╔═╡ 6ebebc14-6b0f-48b7-a8e4-fb6f7f9f7f0e
 begin
-    function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
+    function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
         g = ZXCalculus.plot(zx)
-        Base.show(io, mime, g)
+        return Base.show(io, mime, g)
     end
 end
-
 
 # ╔═╡ 639aaf18-e63b-4b07-8557-8e21a874d91a
 begin
@@ -126,7 +123,6 @@ begin
    h q[105];
    	""")
     c1 = ZXDiagram(b1)
-
 end
 
 # ╔═╡ 69587b8e-26cf-4862-abe6-f81cc6967db3
@@ -561,11 +557,9 @@ h q[103];
 h q[104];
 cx q[105],q[106];
 h q[105];
-	"""))
-
+"""))
 
 # ╔═╡ e22922f8-5a54-475b-b325-dda82547c556
-
 
 # ╔═╡ 37954f01-da8c-4018-a7e1-811d4a86fb26
 c2_inv = dagger(c2)
@@ -643,8 +637,7 @@ dj_m = concat!(copy(dj3), dagger(dj3))
 dj3_reduced = full_reduction(dj_m)
 
 # ╔═╡ dd5c40da-0530-4975-8245-78538ad6d244
-replace!(Rule{:id}(), dj3_reduced)
-
+replace!(IdentityRemovalRule(), dj3_reduced)
 
 # ╔═╡ a48d68b5-559a-4937-a2b7-c13e5f5181b0
 show(dj3_reduced)

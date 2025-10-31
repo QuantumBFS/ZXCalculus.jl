@@ -6,31 +6,29 @@ using InteractiveUtils
 
 # ╔═╡ dd08aa73-0d86-4f8b-970b-59f9ad9fac2d
 begin
-  # Used for creating the IRCode for a BlockIR
-  using Core.Compiler: IRCode
+    # Used for creating the IRCode for a BlockIR
+    using Core.Compiler: IRCode
 
-  # Pluto
-  using PlutoUI
+    # Pluto
+    using PlutoUI
 
-  # Weak Dependencies
-  using Vega
-  using OpenQASM
-  using DataFrames
-  using YaoHIR
-  using YaoLocations
-  using YaoHIR: BlockIR
-  using YaoHIR.IntrinsicOperation
-  using ZXCalculus, ZXCalculus.ZX,  ZXCalculus.ZXW
-  using DynamicQuantumCircuits
-
+    # Weak Dependencies
+    using Vega
+    using OpenQASM
+    using DataFrames
+    using YaoHIR
+    using YaoLocations
+    using YaoHIR: BlockIR
+    using YaoHIR.IntrinsicOperation
+    using ZXCalculus, ZXCalculus.ZX, ZXCalculus.ZXW
+    using DynamicQuantumCircuits
 end
 
 # ╔═╡ 506db9e1-4260-408d-ba72-51581b548e53
-function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram,ZXGraph})
-  g = plot(zx)
-  Base.show(io, mime, g)
+function Base.show(io::IO, mime::MIME"text/html", zx::Union{ZXDiagram, ZXGraph})
+    g = plot(zx)
+    return Base.show(io, mime, g)
 end
-
 
 # ╔═╡ db7e9cf8-9abf-448b-be68-43231853faff
 md"""
@@ -78,16 +76,12 @@ Of three CNOT Gats that are equal to a SWAP Gate
 
 """
 
-
-
-
 # ╔═╡ c06c5b9f-e5c1-4d0c-8ed5-937ad3871d3d
 begin
-  zx1 = ZXDiagram(2)
-  push_gate!(zx1, Val(:CNOT), 1, 2)
-  push_gate!(zx1, Val(:CNOT), 2, 1)
-  push_gate!(zx1, Val(:CNOT), 1, 2)
-
+    zx1 = ZXDiagram(2)
+    push_gate!(zx1, Val(:CNOT), 1, 2)
+    push_gate!(zx1, Val(:CNOT), 2, 1)
+    push_gate!(zx1, Val(:CNOT), 1, 2)
 end
 
 # ╔═╡ 5e0fb39e-68b3-45f6-8cb2-2dd0b79b35d4
@@ -165,8 +159,8 @@ What happens if we add an extra Z gate to the first qubit?
 
 # ╔═╡ e3aa4e99-cb1f-478b-9e80-82b0ab02f606
 begin
-  push_gate!(bv_101_static, Val(:X), 1, 1 // 1)
-  verify_equality(bv_101_dynamic, bv_101_static)
+    push_gate!(bv_101_static, Val(:X), 1, 1 // 1)
+    verify_equality(bv_101_dynamic, bv_101_static)
 end
 
 # ╔═╡ a44ef98a-61fb-4271-9d36-c4d096f7e600
@@ -202,28 +196,29 @@ bv_101_difference = full_reduction(concat!(ZXDiagram(BlockIR(unitary_reconstruct
    CX q[0],q[1];
    h q[0];
    measure q[0] -> c[2];
-   """)))), dagger(ZXDiagram(BlockIR(unitary_reconstruction(OpenQASM.parse("""
-   OPENQASM 2.0;
-   include "qelib1.inc";
-   qreg q[2];
-   creg c[3];
-   x q[1];
-   h q[0];
-   h q[1];
-   CX q[0],q[1];
-   h q[0];
-   measure q[0] -> c[0];
-   reset q[0];
-   h q[0];
-   h q[0];
-   measure q[0] -> c[1];
-   reset q[0];
-   h q[0];
-   CX q[0],q[1];
-   h q[0];
-   x q[0];
-   measure q[0] -> c[2];
-    """)))))))
+   """)))),
+    dagger(ZXDiagram(BlockIR(unitary_reconstruction(OpenQASM.parse("""
+OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[2];
+creg c[3];
+x q[1];
+h q[0];
+h q[1];
+CX q[0],q[1];
+h q[0];
+measure q[0] -> c[0];
+reset q[0];
+h q[0];
+h q[0];
+measure q[0] -> c[1];
+reset q[0];
+h q[0];
+CX q[0],q[1];
+h q[0];
+x q[0];
+measure q[0] -> c[2];
+ """)))))))
 
 # ╔═╡ 742750be-1262-4cbe-b476-f62e5e5c1fcf
 bir = circuit_extraction(bv_101_difference)
@@ -234,7 +229,6 @@ ZXW.convert_to_zxwd(BlockIR(IRCode(), 4, bir))
 # ╔═╡ 9af85660-a4e3-4f27-b6cb-cf36d9b50d91
 z1 = ZXDiagram(1)
 
-
 # ╔═╡ 785ec008-63af-4f56-9792-f66b27a27388
 md"""
 Add a green spider
@@ -242,78 +236,65 @@ Add a green spider
 
 # ╔═╡ 44cbd3d8-6d36-4a0b-8613-552bbba48f3d
 begin
-  zx_z = ZXDiagram(1)
-  push_gate!(zx_z, Val(:Z), 1)
+    zx_z = ZXDiagram(1)
+    push_gate!(zx_z, Val(:Z), 1)
 end
 
 # ╔═╡ 0c2b4e33-5dcc-476d-8a9c-1e4244231e05
 begin
-  zx_x = ZXDiagram(1)
-  push_gate!(zx_x, Val(:X), 1, 1 // 1)
+    zx_x = ZXDiagram(1)
+    push_gate!(zx_x, Val(:X), 1, 1 // 1)
 end
-
 
 # ╔═╡ eebd1e46-0c0f-487d-8bee-07b1c17552c4
 begin
-  zx_s = ZXDiagram(1)
-  push_gate!(zx_s, Val(:Z), 1, 1 // 2)
+    zx_s = ZXDiagram(1)
+    push_gate!(zx_s, Val(:Z), 1, 1 // 2)
 end
-
-
-
 
 # ╔═╡ 9200a1b1-11f7-4428-8840-c52dd4403c45
 begin
-  zx_t = ZXDiagram(1)
-  push_gate!(zx_t, Val(:Z), 1, 1 // 4)
+    zx_t = ZXDiagram(1)
+    push_gate!(zx_t, Val(:Z), 1, 1 // 4)
 end
-
-
-
 
 # ╔═╡ 924efc08-681b-4804-93c6-38acc125315a
 begin
-  zx_h = ZXDiagram(1)
-  push_gate!(zx_h, Val(:H), 1)
+    zx_h = ZXDiagram(1)
+    push_gate!(zx_h, Val(:H), 1)
 end
-
-
-
 
 # ╔═╡ 5fdc6a08-c284-414e-9e96-8734289a98de
 begin
-  zx_cnot = ZXDiagram(2)
-  push_gate!(zx_cnot, Val(:CNOT), 1, 2)
-
+    zx_cnot = ZXDiagram(2)
+    push_gate!(zx_cnot, Val(:CNOT), 1, 2)
 end
 
 # ╔═╡ 0523c034-06ac-4383-b50f-6b68e6b1739f
 begin
-  zx = ZXDiagram(3)
-  push_gate!(zx, Val(:X), 1, 1 // 1)
-  push_gate!(zx, Val(:CNOT), 1, 2)
-  push_gate!(zx, Val(:H), 1)
-  push_gate!(zx, Val(:CNOT), 2, 3)
-  push_gate!(zx, Val(:H), 2)
+    zx = ZXDiagram(3)
+    push_gate!(zx, Val(:X), 1, 1 // 1)
+    push_gate!(zx, Val(:CNOT), 1, 2)
+    push_gate!(zx, Val(:H), 1)
+    push_gate!(zx, Val(:CNOT), 2, 3)
+    push_gate!(zx, Val(:H), 2)
 end
-
 
 # ╔═╡ 4d7d8a96-5aba-4b63-a5da-959716f2d2bf
 md"## Converting ZXDiagrams into ZXGraphs"
 
 # ╔═╡ 7da637f0-e359-41d9-b395-27168459c20c
-zx_graph = ZXGraph(zx)
+zx_graph = ZXCircuit(zx)
 
 # ╔═╡ bed7a0c5-da16-40b5-9d84-4dad2dfb8739
 begin
-  zx_id = ZXDiagram(2)
-  push_gate!(zx_id, Val(:X), 1)
-  push_gate!(zx_id, Val(:X), 1)
+    zx_id = ZXDiagram(2)
+    push_gate!(zx_id, Val(:X), 1)
+    push_gate!(zx_id, Val(:X), 1)
 end
 
-
 # ╔═╡ 8cde99fd-ee0a-4d94-a94e-23ebc9ac8608
-zx_id_graph = ZXGraph(zx_id)
+zx_id_graph = ZXCircuit(zx_id)
 
 # ╔═╡ 17389edf-33d2-4dd8-bf86-df0467e65059
 full_reduction(zx_id)
@@ -330,7 +311,6 @@ concat!(zx, zx_dagger)
 # ╔═╡ 0b838710-91e4-4572-9fe0-5c97e579ddd1
 m_simple = full_reduction(zx)
 
-
 # ╔═╡ fdb7ca6a-bf5c-4216-8a18-a7c3603240ea
 contains_only_bare_wires(m_simple)
 
@@ -342,54 +322,51 @@ md"DQC Example"
 
 # ╔═╡ cee877f2-8fd8-4a4e-9b8c-199411d449c5
 begin
-  traditional = """
-  OPENQASM 2.0;
-  include "qelib1.inc";
-  qreg q0[3];
-  creg c0[2];
-  h q0[0];
-  h q0[1];
-  x q0[2];
-  h q0[2];
-  CX q0[0],q0[2];
-  h q0[0];
-  CX q0[1],q0[2];
-  h q0[1];
-  measure q0[0] -> c0[0];
-  measure q0[1] -> c0[1];
-  """
-  c1 = ZXDiagram(BlockIR(traditional))
+    traditional = """
+    OPENQASM 2.0;
+    include "qelib1.inc";
+    qreg q0[3];
+    creg c0[2];
+    h q0[0];
+    h q0[1];
+    x q0[2];
+    h q0[2];
+    CX q0[0],q0[2];
+    h q0[0];
+    CX q0[1],q0[2];
+    h q0[1];
+    measure q0[0] -> c0[0];
+    measure q0[1] -> c0[1];
+    """
+    c1 = ZXDiagram(BlockIR(traditional))
 end
 
 # ╔═╡ 20886e57-0c2c-4bf3-8c3d-8ed7d4f33fec
 begin
-  dynamic = OpenQASM.parse("""
-     OPENQASM 2.0;
-     include "qelib1.inc";
-     qreg q0[2];
-     creg mcm[1];
-     creg end[1];
-     h q0[0];
-     x q0[1];
-     h q0[1];
-     CX q0[0],q0[1];
-     h q0[0];
-     measure q0[0] -> mcm[0];
-     reset q0[0];
-     h q0[0];
-     CX q0[0],q0[1];
-     h q0[0];
-     measure q0[0] -> end[0];
-     """)
-  unitary = unitary_reconstruction(dynamic)
-  c2 = ZXDiagram(BlockIR(unitary))
-
-
+    dynamic = OpenQASM.parse("""
+       OPENQASM 2.0;
+       include "qelib1.inc";
+       qreg q0[2];
+       creg mcm[1];
+       creg end[1];
+       h q0[0];
+       x q0[1];
+       h q0[1];
+       CX q0[0],q0[1];
+       h q0[0];
+       measure q0[0] -> mcm[0];
+       reset q0[0];
+       h q0[0];
+       CX q0[0],q0[1];
+       h q0[0];
+       measure q0[0] -> end[0];
+       """)
+    unitary = unitary_reconstruction(dynamic)
+    c2 = ZXDiagram(BlockIR(unitary))
 end
 
 # ╔═╡ 9b838e52-79f6-49bd-9574-62d94f941558
 c2_dagger = dagger(c2)
-
 
 # ╔═╡ 91ea0d20-8f8b-4bec-a98d-6aebbc4228e1
 dqc_merged = concat!(c1, c2_dagger)

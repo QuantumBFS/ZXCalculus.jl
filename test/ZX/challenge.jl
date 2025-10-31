@@ -188,14 +188,16 @@ es = Dict(
     (24+1, 49+1) => EdgeType.HAD,
     (25+1, 50+1) => EdgeType.HAD,
     (26+1, 51+1) => EdgeType.HAD,
-    (38+1, 39+1) => EdgeType.HAD,
     (40+1, 41+1) => EdgeType.HAD,
+    (38+1, 39+1) => EdgeType.HAD,
     (42+1, 43+1) => EdgeType.HAD,
     (44+1, 45+1) => EdgeType.HAD,
     (46+1, 47+1) => EdgeType.HAD
 )
 
-zxg = ZXGraph(ZXDiagram(0))
+zxg = ZXCircuit(ZXDiagram(0))
+push!(zxg.inputs, 1, 2, 3, 4, 5)
+push!(zxg.outputs, 24, 25, 26, 27, 28)
 vs = 1:52
 for v in vs
     ZX.add_spider!(zxg, st[v], Phase(ps[v]))
@@ -203,10 +205,7 @@ end
 for (e, _) in es
     Graphs.add_edge!(zxg, e[1], e[2])
 end
-for i in 1:5
-    push!(zxg.inputs, i)
-    push!(zxg.outputs, i+23)
-end
 
+plot(zxg)
 @test !isnothing(plot(zxg))
-ZX.ancilla_extraction(zxg)
+ZX.ancilla_extraction(zxg) |> plot

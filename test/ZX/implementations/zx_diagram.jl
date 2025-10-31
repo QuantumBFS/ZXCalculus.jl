@@ -1,0 +1,92 @@
+module ZXDiagramTests
+
+using Test, ZXCalculus, Multigraphs, Graphs, ZXCalculus.ZX
+using ZXCalculus: ZX
+using ZXCalculus.Utils: Phase, Scalar
+using ZXCalculus.ZX: SpiderType
+
+@testset "Graph Interface" begin
+    g = Multigraph([0 1 0; 1 0 1; 0 1 0])
+    ps = [Phase(0 // 1) for i in 1:3]
+    v_t = [SpiderType.X, SpiderType.Z, SpiderType.X]
+    zxd = ZXDiagram(g, v_t, ps)
+    @test mul(zxd, 1, 2) == 1
+    @testset for e in edges(zxd)
+        @test has_edge(zxd, src(e), dst(e)) && mul(zxd, src(e), dst(e)) == 1
+    end
+
+    zxd2 = ZXDiagram(g, Dict(zip(1:3, v_t)), Dict(zip(1:3, ps)))
+    @test zxd.mg == zxd2.mg && zxd.st == zxd2.st && zxd.ps == zxd2.ps
+
+    zxd2 = copy(zxd)
+    @test zxd.st == zxd2.st && zxd.ps == zxd2.ps
+    @test ZX.spider_type(zxd, 1) == SpiderType.X
+    @test nv(zxd) == 3 && ne(zxd) == 2
+
+    @test rem_edge!(zxd, 2, 3)
+    @test outneighbors(zxd, 2) == inneighbors(zxd, 2)
+
+    ZX.add_spider!(zxd, SpiderType.H, Phase(0 // 1), [2, 3])
+    ZX.insert_spider!(zxd, 2, 4, SpiderType.H)
+    @test nv(zxd) == 5 && ne(zxd) == 4
+
+    zxd3 = ZXDiagram(3)
+    ZX.insert_spider!(zxd3, 1, 2, SpiderType.H)
+    pushfirst_gate!(zxd3, Val{:SWAP}(), [1, 2])
+    push_gate!(zxd3, Val{:SWAP}(), [2, 3])
+
+    @test ZX.nout(zxd3) == 3
+    @test ZX.nout(zxd3) == 3
+    @test ZX.qubit_loc(zxd3, 1) == ZX.qubit_loc(zxd3, 2)
+end
+
+@testset "Phase conversion" begin
+    zxd = ZXDiagram(4)
+    push_gate!(zxd, Val(:X), 3, 0.5)
+    @test zxd.ps[9] == 1 // 2
+    push_gate!(zxd, Val(:X), 3, -0.5)
+    @test zxd.ps[10] == 3 // 2
+    push_gate!(zxd, Val(:Z), 3, 0)
+    @test zxd.ps[11] == 0 // 1
+    @test_warn "" push_gate!(zxd, Val(:Z), 3, sqrt(2))
+end
+
+@testset "Circuit interface" begin
+    zxd4 = ZXDiagram(2)
+    ZX.add_global_phase!(zxd4, ZXCalculus.Utils.Phase(1 // 2))
+    ZX.add_power!(zxd4, 2)
+    @test ZX.scalar(zxd4) == ZXCalculus.Utils.Scalar(2, 1 // 2)
+    pushfirst_gate!(zxd4, Val(:X), 1)
+    pushfirst_gate!(zxd4, Val(:H), 1)
+    pushfirst_gate!(zxd4, Val(:CNOT), 2, 1)
+    pushfirst_gate!(zxd4, Val(:CZ), 1, 2)
+    @test indegree(zxd4, 5) == outdegree(zxd4, 5) == degree(zxd4, 5)
+
+    # printing test
+    str = repr(zxd4)
+    @test contains(str, "ZX-diagram with $(nv(zxd4)) vertices and $(ne(zxd4)) multiple edges")
+    @test contains(str, "In")
+    @test contains(str, "Out")
+    @test contains(str, "Z")
+    @test contains(str, "X")
+    @test contains(str, "H")
+end
+
+@testset "push gates into Diagram then plot ZXGraph" begin
+    zxd = ZXDiagram(2)
+    push_gate!(zxd, Val(:H), 1)
+    push_gate!(zxd, Val(:CNOT), 2, 1)
+    zxg = ZXCircuit(zxd)
+
+    zxg3 = ZXCircuit(ZXDiagram(3))
+    ZX.add_global_phase!(zxg3, ZXCalculus.Utils.Phase(1 // 4))
+    ZX.add_power!(zxg3, 3)
+    @test ZX.scalar(zxg3) == Scalar(3, 1 // 4)
+    @test degree(zxg3, 1) == indegree(zxg3, 1) == outdegree(zxg3, 1)
+
+    @test ZX.qubit_loc(zxg3, 1) == ZX.qubit_loc(zxg3, 2)
+    @test ZX.column_loc(zxg3, 1) == 1 // 1
+    @test ZX.column_loc(zxg3, 2) == 3 // 1
+end
+
+end
