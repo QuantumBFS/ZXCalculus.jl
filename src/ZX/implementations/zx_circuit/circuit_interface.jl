@@ -15,9 +15,7 @@ function _push_single_qubit_gate!(circ::ZXCircuit{T, P}, loc::T;
     @assert spider_type(circ, out_id) === SpiderType.Out "Output spider at location $loc is not of type Out."
     @inbounds bound_id = neighbors(circ, out_id)[1]
     et = edge_type(circ, bound_id, out_id)
-    v = insert_spider!(circ, bound_id, out_id, stype, phase)
-    set_edge_type!(circ, v, bound_id, et)
-    set_edge_type!(circ, v, out_id, EdgeType.SIM)
+    v = insert_spider!(circ, bound_id, out_id, stype, phase, [et, EdgeType.SIM])
     return v
 end
 
@@ -27,9 +25,7 @@ function _push_first_single_qubit_gate!(circ::ZXCircuit{T, P}, loc::T;
     @assert spider_type(circ, in_id) === SpiderType.In "Input spider at location $loc is not of type In."
     @inbounds bound_id = neighbors(circ, in_id)[1]
     et = edge_type(circ, in_id, bound_id)
-    v = insert_spider!(circ, in_id, bound_id, stype, phase)
-    set_edge_type!(circ, bound_id, v, et)
-    set_edge_type!(circ, v, in_id, EdgeType.SIM)
+    v = insert_spider!(circ, in_id, bound_id, stype, phase, [EdgeType.SIM, et])
     return v
 end
 

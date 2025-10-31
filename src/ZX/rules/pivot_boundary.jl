@@ -43,9 +43,8 @@ end
 function rewrite!(::PivotBoundaryRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     u, v, b = vs
     et = edge_type(zxg, v, b)
-    new_v = insert_spider!(zxg, v, b)[1]
-    w = insert_spider!(zxg, v, new_v)
-    set_edge_type!(zxg, b, new_v, et)
+    new_v = insert_spider!(zxg, v, b, SpiderType.Z, zero(P), [EdgeType.SIM, et])
+    w = insert_spider!(zxg, v, new_v, SpiderType.Z, zero(P), [EdgeType.HAD, EdgeType.HAD])
     set_phase!(zxg, new_v, phase(zxg, v))
     set_phase!(zxg, v, zero(P))
     rewrite!(Pivot1Rule(), zxg, Match{T}([min(u, v), max(u, v)]))
@@ -61,15 +60,14 @@ function rewrite!(::PivotBoundaryRule, circ::ZXCircuit{T, P}, vs::Vector{T}) whe
         v_master = neighbors(circ.master, v_bound_master)[1]
         # TODO: add edge type here for simple edges
         if is_hadamard(circ, new_v, b)
-            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.Z)[1]
+            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.Z, zero(P),
+                [EdgeType.HAD, EdgeType.HAD])
         else
             # TODO: add edge type here for simple edges
-            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.X)[1]
+            w_master = insert_spider!(circ.master, v_bound_master, v_master, SpiderType.X, zero(P),
+                [EdgeType.SIM, EdgeType.SIM])
         end
         circ.phase_ids[w] = (w_master, 1)
-    end
-
-    if !isnothing(circ.master)
         circ.phase_ids[new_v] = circ.phase_ids[v]
         delete!(circ.phase_ids, v)
     end

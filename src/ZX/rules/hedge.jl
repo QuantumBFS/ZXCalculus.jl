@@ -19,8 +19,6 @@ end
 function rewrite!(::HEdgeRule, zxg::ZXGraph{T, P}, vs::Vector{T}) where {T, P}
     @inbounds v1, v2 = vs
     rem_edge!(zxg, v1, v2)
-    u = add_spider!(zxg, SpiderType.H, zero(P), [v1, v2])
-    set_edge_type!(zxg, v1, u, EdgeType.SIM)
-    set_edge_type!(zxg, u, v2, EdgeType.SIM)
+    add_spider!(zxg, SpiderType.H, zero(P), [v1, v2], [EdgeType.SIM, EdgeType.SIM])
     return zxg
 end
