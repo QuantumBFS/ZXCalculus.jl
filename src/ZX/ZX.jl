@@ -57,7 +57,6 @@ include("implementations/zx_diagram/composition_interface.jl")
 # ZXCircuit
 export ZXCircuit
 include("implementations/zx_circuit/type.jl")
-include("implementations/zx_circuit/graph_interface.jl")
 include("implementations/zx_circuit/calculus_interface.jl")
 include("implementations/zx_circuit/circuit_interface.jl")
 include("implementations/zx_circuit/layout_interface.jl")

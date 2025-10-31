@@ -52,7 +52,7 @@ Graphs.inneighbors(circ::AbstractZXCircuit, v) = Graphs.inneighbors(base_zx_grap
 # Edge operations
 Graphs.has_edge(::AbstractZXDiagram, v1, v2) = error("has_edge not implemented")
 Graphs.has_edge(circ::AbstractZXCircuit, v1, v2) = Graphs.has_edge(base_zx_graph(circ), v1, v2)
-Graphs.add_edge!(::AbstractZXDiagram, v1, v2) = error("add_edge! not implemented")
-Graphs.add_edge!(circ::AbstractZXCircuit, v1, v2) = Graphs.add_edge!(base_zx_graph(circ), v1, v2)
+Graphs.add_edge!(::AbstractZXDiagram, v1, v2, args...) = error("add_edge! not implemented")
+Graphs.add_edge!(circ::AbstractZXCircuit, v1, v2, args...) = Graphs.add_edge!(base_zx_graph(circ), v1, v2, args...)
 Graphs.rem_edge!(::AbstractZXDiagram, v1, v2) = error("rem_edge! not implemented")
 Graphs.rem_edge!(circ::AbstractZXCircuit, v1, v2) = Graphs.rem_edge!(base_zx_graph(circ), v1, v2)
