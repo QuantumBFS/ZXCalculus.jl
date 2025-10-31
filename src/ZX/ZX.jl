@@ -33,7 +33,7 @@ export AbstractZXCircuit
 include("interfaces/abstract_zx_circuit.jl")
 export nqubits, get_inputs, get_outputs,
        qubit_loc, column_loc, generate_layout!,
-       pushfirst_gate!, push_gate!
+       pushfirst_gate!, push_gate!, base_zx_graph
 include("interfaces/circuit_interface.jl")
 export qubit_loc, column_loc, generate_layout!, spider_sequence
 include("interfaces/layout_interface.jl")
