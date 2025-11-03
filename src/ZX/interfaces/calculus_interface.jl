@@ -62,6 +62,14 @@ phase(circ::AbstractZXCircuit, v) = phase(base_zx_graph(circ), v)
 """
     $(TYPEDSIGNATURES)
 
+Set the spider type of vertex `v` to `st` in the ZX-diagram.
+"""
+set_spider_type!(::AbstractZXDiagram, v, st) = error("set_spider_type! not implemented")
+set_spider_type!(circ::AbstractZXCircuit, v, st) = set_spider_type!(base_zx_graph(circ), v, st)
+
+"""
+    $(TYPEDSIGNATURES)
+
 Set the phase of spider `v` to `p` in the ZX-diagram.
 """
 set_phase!(::AbstractZXDiagram, v, p) = error("set_phase! not implemented")

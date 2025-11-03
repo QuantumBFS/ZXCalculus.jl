@@ -66,7 +66,7 @@ include("implementations/zx_circuit/phase_tracking.jl")
 # Rules and algorithms
 export AbstractRule
 export Rule, Match
-export FusionRule, XToZRule, Identity1Rule, HBoxRule,
+export FusionRule, XToZRule, ZToXRule, Identity1Rule, HBoxRule,
        PiRule, CopyRule, BialgebraRule,
        LocalCompRule, Pivot1Rule, Pivot2Rule, Pivot3Rule,
        PivotBoundaryRule, PivotGadgetRule,
