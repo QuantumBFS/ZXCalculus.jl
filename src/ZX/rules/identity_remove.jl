@@ -78,6 +78,6 @@ function rewrite!(::IdentityRemovalRule, circ::ZXCircuit{T, P}, vs::Vector{T}) w
         @assert merge_phase_tracking!(circ, v3, v1) "failed to merge phase tracking id from $v3 to $v1"
     end
 
-    rewrite!(IdentityRemovalRule(), circ.zx_graph, vs)
+    rewrite!(IdentityRemovalRule(), base_zx_graph(circ), vs)
     return circ
 end
