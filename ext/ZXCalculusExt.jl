@@ -47,19 +47,19 @@ function generate_d_edges(zxd::ZXGraph)
     end
     return DataFrame(src=s, dst=d, isHadamard=isH)
 end
-generate_d_edges(zxd::ZXCircuit) = generate_d_edges(zxd.zx_graph)
+generate_d_edges(zxd::ZXCircuit) = generate_d_edges(base_zx_graph(zxd))
 
 function ZXCalculus.ZX.plot(zxg::ZXGraph{T, P}; kwargs...) where {T, P}
     return ZXCalculus.ZX.plot(ZXCircuit(zxg); kwargs...)
 end
 
 function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit};
+        layout::ZXCalculus.ZX.ZXLayout=ZXCalculus.ZX.generate_layout!(zxd),
         output_html::Union{String, Nothing}=nothing,
         open_browser::Bool=true,
         kwargs...)
     scale = 2
     lattice_unit = 50 * scale
-    layout = ZXCalculus.ZX.generate_layout!(zxd)
     vs = spiders(zxd)
     x_locs = layout.spider_col
     x_min = minimum(values(x_locs), init=0)
@@ -83,6 +83,11 @@ function ZXCalculus.ZX.plot(zxd::Union{ZXDiagram, ZXCircuit};
 
     d_spiders = generate_d_spiders(vs, st, ps, x_locs_normal, y_locs_normal)
     d_edges = generate_d_edges(zxd)
+    sort!(d_spiders, :id)
+    for row in eachrow(d_spiders)
+        isnothing(row.x) && (row.x = 0)
+        isnothing(row.y) && (row.y = 0)
+    end
 
     spec = @vgplot($schema="https://vega.github.io/schema/vega/v5.json",
         height=y_range,
