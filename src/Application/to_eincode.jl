@@ -15,7 +15,7 @@ function z_tensor(n::Int, factor::Number)
     shape = (fill(2, n)...,)
     out = zeros(ComplexF64, shape...)
     out[1] = 1
-    out[fill(2, n)...] = factor
+    out[fill(2, n)...] += factor
     return out
 end
 
