@@ -1,11 +1,9 @@
 using Test, ZXCalculus, ZXCalculus.ZW, ZXCalculus.Utils, ZXCalculus.PMG
 using ZXCalculus.ZW:
                      ZWSpiderType,
-                     set_phase!,
                      parameter,
                      nin,
                      nout,
-                     nqubits,
                      nv,
                      ne,
                      degree,
@@ -16,8 +14,6 @@ using ZXCalculus.ZW:
                      neighbors,
                      spiders,
                      scalar,
-                     get_inputs,
-                     get_outputs,
                      get_input_idx,
                      get_output_idx,
                      add_power!,
@@ -25,7 +21,6 @@ using ZXCalculus.ZW:
                      neighbors,
                      join_spider!,
                      add_edge!,
-                     add_spider!,
                      rem_edge!,
                      rem_spider!
 
@@ -37,7 +32,7 @@ using ZXCalculus.Utils: Parameter
 
     @test ZW.spider_type(zw, 1) == ZW.Input(1)
     @test parameter(zw, 2) == 1
-    @test nqubits(zw) == 3
+    @test ZW.nqubits(zw) == 3
     @test nin(zw) == 3
     @test nout(zw) == 3
     @test nv(zw) == 6
@@ -50,8 +45,8 @@ using ZXCalculus.Utils: Parameter
     @test outdegree(zw, 1) == 2
 
     @test sort(spiders(zw)) == [1, 2, 3, 4, 5, 6]
-    @test sort(get_inputs(zw)) == [1, 3, 5]
-    @test sort(get_outputs(zw)) == [2, 4, 6]
+    @test sort(ZW.get_inputs(zw)) == [1, 3, 5]
+    @test sort(ZW.get_outputs(zw)) == [2, 4, 6]
 
     @test get_input_idx(zw, 2) == 3
     @test get_output_idx(zw, 2) == 4
@@ -151,7 +146,7 @@ end
     ZW.insert_spider!(zw, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
     @test zw.pmg == pmg2
 
-    set_phase!(zw, 7, Parameter(Val(:PiUnit), 1))
+    ZW.set_phase!(zw, 7, Parameter(Val(:PiUnit), 1))
     @test zw.st[7] == ZW.binZ(Parameter(Val(:PiUnit), 1))
 
     join_spider!(zw, 1, 4)
@@ -251,7 +246,7 @@ end
     zw2 = ZWDiagram(3)
     ZW.insert_spider!(zw2, 12, ZW.binZ(Parameter(Val(:Factor), 2.0)))
 
-    add_spider!(zw2, ZW.fSWAP, [1, 7, 4])
+    ZW.add_spider!(zw2, ZW.fSWAP, [1, 7, 4])
     st2 = Dict(
         5 => ZWSpiderType.Input(qubit=3),
         4 => ZWSpiderType.Output(qubit=2),

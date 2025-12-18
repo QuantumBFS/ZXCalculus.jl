@@ -1,4 +1,5 @@
 using Test, Multigraphs, ZXCalculus, ZXCalculus.ZX, ZXCalculus.Utils, Graphs
+using Vega, DataFrames
 
 zxd = ZXDiagram(4)
 push_gate!(zxd, Val{:Z}(), 1, 3//2)
@@ -26,9 +27,9 @@ push_gate!(zxd, Val{:H}(), 1)
 push_gate!(zxd, Val{:Z}(), 4, 1//2)
 push_gate!(zxd, Val{:X}(), 4, 1//1)
 
-zxg = ZXGraph(zxd)
-replace!(Rule{:lc}(), zxg)
-replace!(Rule{:pab}(), zxg)
+zxg = ZXCircuit(zxd)
+replace!(LocalCompRule(), zxg)
+replace!(PivotBoundaryRule(), zxg)
 
 cir = circuit_extraction(zxg)
 

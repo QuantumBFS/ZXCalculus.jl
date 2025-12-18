@@ -1,6 +1,8 @@
+using Test
 using YaoHIR: BlockIR
 using YaoHIR, YaoLocations
 using Core.Compiler: IRCode
+using ZXCalculus.ZX
 
 chain = Chain()
 push_gate!(chain, Val(:H), 1)
@@ -21,5 +23,5 @@ d2 = copy(d1)
 # Push H spider with Val spidertype
 push_gate!(d2, Val(:H), 1)
 
-@test verify_equality(copy(d1), copy(d1)) == true
-@test verify_equality(copy(d1), copy(d2)) == false
+@test verify_equality(d1, d1) == true
+@test verify_equality(d1, d2) == false
